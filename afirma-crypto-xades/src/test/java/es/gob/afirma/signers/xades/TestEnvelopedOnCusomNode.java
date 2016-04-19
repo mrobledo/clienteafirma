@@ -43,10 +43,13 @@ public final class TestEnvelopedOnCusomNode {
 	    p2.setProperty("useManifest", "true"); //$NON-NLS-1$ //$NON-NLS-2$
     }
 
-    private static final Properties p1 = new Properties();
+    private static final Properties ENVELOPED_WITHOUT_XPATH_EXTRAPARAMS = new Properties();
     static {
-	    p1.setProperty("format", AOSignConstants.SIGN_FORMAT_XADES_ENVELOPED); //$NON-NLS-1$
-	    p1.setProperty("avoidXpathExtraTransformsOnEnveloped", "true"); //$NON-NLS-1$ //$NON-NLS-2$
+	    ENVELOPED_WITHOUT_XPATH_EXTRAPARAMS.setProperty("format", AOSignConstants.SIGN_FORMAT_XADES_ENVELOPED); //$NON-NLS-1$
+	    ENVELOPED_WITHOUT_XPATH_EXTRAPARAMS.setProperty("avoidXpathExtraTransformsOnEnveloped", "true"); //$NON-NLS-1$ //$NON-NLS-2$
+	    ENVELOPED_WITHOUT_XPATH_EXTRAPARAMS.setProperty("canonicalizationAlgorithm", "none"); //$NON-NLS-1$ //$NON-NLS-2$
+	    ENVELOPED_WITHOUT_XPATH_EXTRAPARAMS.setProperty("addKeyInfoKeyName", "true"); //$NON-NLS-1$ //$NON-NLS-2$
+	    ENVELOPED_WITHOUT_XPATH_EXTRAPARAMS.setProperty("addKeyInfoX509IssuerSerial", "true"); //$NON-NLS-1$ //$NON-NLS-2$
     }
 
 	/** Prueba de XAdES Enveloped con inserci&oacute;n de firma en el mismo nodo espec&iacute;fico
@@ -157,17 +160,19 @@ public final class TestEnvelopedOnCusomNode {
         pke = (PrivateKeyEntry) ks.getEntry(CERT_ALIAS, new KeyStore.PasswordProtection(CERT_PASS.toCharArray()));
         final AOSigner signer = new AOXAdESSigner();
 
-        final byte[] data = AOUtil.getDataFromInputStream(ClassLoader.getSystemResourceAsStream("xpathnodenveloped.xml")); //$NON-NLS-1$
+        final byte[] data = AOUtil.getDataFromInputStream(
+    		ClassLoader.getSystemResourceAsStream("sample-encoding-UTF-8.xml") //$NON-NLS-1$
+		);
 
         final byte[] result = signer.sign(
     		data,
     		"SHA512withRSA", //$NON-NLS-1$
     		pke.getPrivateKey(),
     		pke.getCertificateChain(),
-    		p1
+    		ENVELOPED_WITHOUT_XPATH_EXTRAPARAMS
 		);
 
-        final File f = File.createTempFile("xpathnodenveloped-", ".xml"); //$NON-NLS-1$ //$NON-NLS-2$
+        final File f = File.createTempFile("EnvelopedWithoutXpath-", ".xml"); //$NON-NLS-1$ //$NON-NLS-2$
         final java.io.FileOutputStream fos = new java.io.FileOutputStream(f);
         fos.write(result);
         fos.flush(); fos.close();

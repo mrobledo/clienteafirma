@@ -2,6 +2,8 @@ package es.gob.afirma.standalone.ui.preferences;
 
 import static es.gob.afirma.standalone.ui.preferences.PreferencesManager.PREFERENCE_KEYSTORE_ACCEPTED_POLICIES_ONLY_CERTS;
 import static es.gob.afirma.standalone.ui.preferences.PreferencesManager.PREFERENCE_KEYSTORE_ALIAS_ONLY_CERTS;
+import static es.gob.afirma.standalone.ui.preferences.PreferencesManager.PREFERENCE_KEYSTORE_CLOSE_KEYSTORE;
+import static es.gob.afirma.standalone.ui.preferences.PreferencesManager.PREFERENCE_KEYSTORE_CLOSE_KEYSTORE_TIMEOUT;
 import static es.gob.afirma.standalone.ui.preferences.PreferencesManager.PREFERENCE_KEYSTORE_CYPH_ONLY_CERTS;
 import static es.gob.afirma.standalone.ui.preferences.PreferencesManager.PREFERENCE_KEYSTORE_DEFAULT_STORE;
 import static es.gob.afirma.standalone.ui.preferences.PreferencesManager.PREFERENCE_KEYSTORE_PRIORITARY_STORE;
@@ -15,6 +17,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.ArrayList;
 import java.util.List;
@@ -24,11 +27,18 @@ import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
+import javax.swing.JFormattedTextField;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JSpinner;
+import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.text.DefaultFormatter;
 
 import es.gob.afirma.core.misc.Platform;
 import es.gob.afirma.core.ui.AOUIFactory;
@@ -44,6 +54,11 @@ final class PreferencesPanelKeyStores extends JPanel {
 
 	private static final long serialVersionUID = 3255071607793273334L;
 
+	private static final int MAX_WAIT_TIME = Integer.MAX_VALUE;
+	private static final int MIN_WAIT_TIME = 7200;
+	private static final int STEP_WAIT_TIME = 1;
+	private static final int INIT_WAIT_TIME = 54000;
+
 	private final JCheckBox onlySignature = new JCheckBox(
 		SimpleAfirmaMessages.getString("PreferencesPanelKeyStores.0"), //$NON-NLS-1$
 		PreferencesManager.getBoolean(PREFERENCE_KEYSTORE_SIGN_ONLY_CERTS, false)
@@ -58,6 +73,28 @@ final class PreferencesPanelKeyStores extends JPanel {
 		SimpleAfirmaMessages.getString("PreferencesPanelKeyStores.4"), //$NON-NLS-1$
 		PreferencesManager.getBoolean(PREFERENCE_KEYSTORE_ALIAS_ONLY_CERTS, false)
 	);
+
+	private final JCheckBox closeKeyStore = new JCheckBox(
+		SimpleAfirmaMessages.getString("PreferencesPanelKeyStores.21"), //$NON-NLS-1$
+		PreferencesManager.getBoolean(PREFERENCE_KEYSTORE_CLOSE_KEYSTORE, false)
+	);
+
+	SpinnerNumberModel sizeSpinnerModel = new SpinnerNumberModel(
+		INIT_WAIT_TIME,
+		MIN_WAIT_TIME,
+		MAX_WAIT_TIME,
+		STEP_WAIT_TIME
+	);
+	JSpinner sizeSpinner = new JSpinner(this.sizeSpinnerModel);
+	String getSelectedTimeout() {
+		return this.sizeSpinner.getValue().toString();
+	}
+	void setSizeSpinnerEnabled(final boolean enable) {
+		this.sizeSpinner.setEnabled(enable);
+	}
+	JSpinner getSizeSpinner() {
+		return this.sizeSpinner;
+	}
 
 	private final JComboBox<String> prioritaryKeyStoreComboBox = new JComboBox<>(
 		new String[] {
@@ -208,6 +245,7 @@ final class PreferencesPanelKeyStores extends JPanel {
 		pksc.anchor = GridBagConstraints.LINE_START;
 		pksc.weightx = 1.0;
 		pksc.gridy = 0;
+		pksc.gridwidth = 2;
 		pksc.fill = GridBagConstraints.HORIZONTAL;
 		pksc.insets = new Insets(5, 7, 5, 7);
 
@@ -220,10 +258,54 @@ final class PreferencesPanelKeyStores extends JPanel {
 		this.prioritaryKeyStoreComboBox.addItemListener(modificationListener);
 		this.prioritaryKeyStoreComboBox.addKeyListener(keyListener);
 
+		this.closeKeyStore.addItemListener(
+			new ItemListener() {
+				@Override
+				public void itemStateChanged(final ItemEvent e) {
+					if (e.getStateChange() == ItemEvent.SELECTED) {
+						setSizeSpinnerEnabled(true);
+					}
+					else {
+						setSizeSpinnerEnabled(false);
+					}
+				}
+			}
+		);
+		this.closeKeyStore.addItemListener(modificationListener);
+		this.closeKeyStore.addKeyListener(keyListener);
+		this.closeKeyStore.setMnemonic('r');
+	    this.closeKeyStore.setEnabled(unprotected);
+
+		final JComponent comp = this.sizeSpinner.getEditor();
+	    final JFormattedTextField field = (JFormattedTextField) comp.getComponent(0);
+	    field.setColumns(7);
+	    final DefaultFormatter formatter = (DefaultFormatter) field.getFormatter();
+	    formatter.setAllowsInvalid(false);
+	    this.sizeSpinner.addChangeListener(
+			new ChangeListener() {
+				@Override
+				public void stateChanged(final ChangeEvent e) {
+					modificationListener.keyReleased(new KeyEvent(getSizeSpinner(), 1, 1, 1, 1, 'a'));
+				}
+			}
+		);
+		this.sizeSpinner.getEditor().getComponent(0).addKeyListener(keyListener);
+		this.sizeSpinner.setEnabled(this.closeKeyStore.isSelected());
+		this.closeKeyStore.setEnabled(unprotected);
+
+		final JPanel closePanel = new JPanel();
+		closePanel.setLayout(new FlowLayout(FlowLayout.LEFT));
+
+		closePanel.add(this.closeKeyStore);
+		closePanel.add(this.sizeSpinner);
+
 		priorityKeysStorePanel.add(cpriorityKeysStoreLabel, pksc);
 		pksc.gridy++;
+		pksc.gridwidth = 1;
 		pksc.fill = GridBagConstraints.NONE;
 		priorityKeysStorePanel.add(this.prioritaryKeyStoreComboBox, pksc);
+		pksc.gridy++;
+		priorityKeysStorePanel.add(closePanel, pksc);
 
         final JPanel keysStorePanel = new JPanel(new GridBagLayout());
         keysStorePanel.setBorder(
@@ -347,6 +429,8 @@ final class PreferencesPanelKeyStores extends JPanel {
 		PreferencesManager.putBoolean(PREFERENCE_KEYSTORE_SIGN_ONLY_CERTS, this.onlySignature.isSelected());
 		PreferencesManager.putBoolean(PREFERENCE_KEYSTORE_CYPH_ONLY_CERTS, this.onlyEncipherment.isSelected());
 		PreferencesManager.putBoolean(PREFERENCE_KEYSTORE_ALIAS_ONLY_CERTS, this.onlyAlias.isSelected());
+		PreferencesManager.putBoolean(PREFERENCE_KEYSTORE_CLOSE_KEYSTORE, this.closeKeyStore.isSelected());
+		PreferencesManager.put(PREFERENCE_KEYSTORE_CLOSE_KEYSTORE_TIMEOUT, getSelectedTimeout());
 		PreferencesManager.put(
 			PREFERENCE_KEYSTORE_DEFAULT_STORE,
 			getDefaultStore().toString()

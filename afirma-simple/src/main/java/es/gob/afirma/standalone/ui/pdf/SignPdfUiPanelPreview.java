@@ -84,10 +84,12 @@ import es.gob.afirma.standalone.SimpleAfirmaMessages;
 import es.gob.afirma.standalone.ui.EditorFocusManager;
 import es.gob.afirma.standalone.ui.EditorFocusManagerAction;
 import es.gob.afirma.standalone.ui.pdf.SignPdfUiPanel.SignPdfUiPanelListener;
+import es.gob.afirma.standalone.ui.preferences.PreferencesManager;
 
 final class SignPdfUiPanelPreview extends JPanel implements KeyListener {
 
 	private static final long serialVersionUID = 1848879900511003335L;
+	static final Logger LOGGER = Logger.getLogger("es.gob.afirma"); //$NON-NLS-1$
 	private static final int PREFERRED_WIDTH = 600;
 	private static final int PREFERRED_HEIGHT = 140;
 	private static final int MAX_TEXT_SIZE = 50;
@@ -107,6 +109,10 @@ final class SignPdfUiPanelPreview extends JPanel implements KeyListener {
 	}
 	void setSignImage(final BufferedImage bi) {
 		this.signImage = bi;
+	}
+	private String signImagePath;
+	String getSignImagePath() {
+		return this.signImagePath;
 	}
 
 	private final SignPdfUiPanelListener listener;
@@ -278,9 +284,7 @@ final class SignPdfUiPanelPreview extends JPanel implements KeyListener {
                         transData = tr.getTransferData(DataFlavor.javaFileListFlavor);
                     }
                     catch (final Exception e) {
-                    	Logger.getLogger("es.gob.afirma").warning( //$NON-NLS-1$
-                            "Ha fallado la operacion de arrastrar y soltar: " + e //$NON-NLS-1$
-                        );
+                    	LOGGER.warning("Ha fallado la operacion de arrastrar y soltar: " + e); //$NON-NLS-1$
                         dtde.dropComplete(false);
                         return;
                     }
@@ -319,7 +323,7 @@ final class SignPdfUiPanelPreview extends JPanel implements KeyListener {
                             	file = new File(new URI(filename));
                             }
                             catch (final Exception e) {
-                            	Logger.getLogger("es.gob.afirma").warning( //$NON-NLS-1$
+                            	LOGGER.warning(
                             		"Ha fallado la operacion de arrastrar y soltar al obtener la ruta del fichero arrastrado: " + e //$NON-NLS-1$
                                 );
                                 dtde.dropComplete(false);
@@ -330,9 +334,7 @@ final class SignPdfUiPanelPreview extends JPanel implements KeyListener {
                             loadFile(file != null ? file : new File(filename));
                         }
                         catch (final Exception e) {
-                        	Logger.getLogger("es.gob.afirma").warning( //$NON-NLS-1$
-                                "Ha fallado la operacion de arrastrar y soltar al cargar el fichero arrastrado: " + e //$NON-NLS-1$
-                            );
+                        	LOGGER.warning("Ha fallado la operacion de arrastrar y soltar al cargar el fichero arrastrado: " + e); //$NON-NLS-1$
                             dtde.dropComplete(false);
                         }
                     }
@@ -396,12 +398,10 @@ final class SignPdfUiPanelPreview extends JPanel implements KeyListener {
 							showPreview();
 						}
 						catch(final AOCancelledOperationException ex) {
-							// Operacion cancelada por el usuario
+							LOGGER.severe("Operacion cancelada por el usuario: " + ex); //$NON-NLS-1$
 						}
 	                	catch (final Exception e) {
-							Logger.getLogger("es.gob.afirma").severe( //$NON-NLS-1$
-								"No ha sido posible cargar la imagen: " + e //$NON-NLS-1$
-							);
+	                		LOGGER.severe("No ha sido posible cargar la imagen: " + e); //$NON-NLS-1$
 							AOUIFactory.showMessageDialog(
 								SignPdfUiPanelPreview.this,
 								SignPdfUiMessages.getString("SignPdfUiPreview.24"),  //$NON-NLS-1$
@@ -414,6 +414,19 @@ final class SignPdfUiPanelPreview extends JPanel implements KeyListener {
 			}
 		);
 		this.viewLabel.setCursor(new Cursor(Cursor.HAND_CURSOR));
+
+		this.signImagePath = PreferencesManager.get(PreferencesManager.PREFERENCE_PADES_RUBRIC_IMAGE, null);
+		if (this.signImagePath != null) {
+			try{
+				paintImage(this.signImagePath);
+			}
+			catch(final AOCancelledOperationException ex) {
+				LOGGER.severe("Operacion cancelada por el usuario: " + ex); //$NON-NLS-1$
+			}
+			catch (final Exception e) {
+				LOGGER.severe("No ha sido posible cargar la imagen por defecto: " + e); //$NON-NLS-1$
+			}
+		}
 
 		panel.add(this.viewLabel, c);
 
@@ -606,6 +619,7 @@ final class SignPdfUiPanelPreview extends JPanel implements KeyListener {
 	                    }
 	                }
 	                catch (final Exception e) {
+	                	LOGGER.severe("No ha sido posible recuperar la informacion de la URL: " + e); //$NON-NLS-1$
 	                	AOUIFactory.showErrorMessage(
 	            			SignPdfUiPanelPreview.this,
 	                        SimpleAfirmaMessages.getString("SignResultPanel.0") + he.getURL(), //$NON-NLS-1$
@@ -741,6 +755,7 @@ final class SignPdfUiPanelPreview extends JPanel implements KeyListener {
 							"imagePage", //$NON-NLS-1$
 							getProp().getProperty("signaturePage") //$NON-NLS-1$
 						);
+						PreferencesManager.put(PreferencesManager.PREFERENCE_PADES_RUBRIC_IMAGE, getSignImagePath());
 					}
 					getListener().positionSelected(getProp());
 				}
@@ -832,9 +847,7 @@ final class SignPdfUiPanelPreview extends JPanel implements KeyListener {
 			return Base64.encode(osImage.toByteArray());
 		}
         catch (final Exception e1) {
-        	Logger.getLogger("es.gob.afirma").severe( //$NON-NLS-1$
-				"No ha sido posible pasar la imagen a JPG: " + e1 //$NON-NLS-1$
-			);
+        	LOGGER.severe("No ha sido posible pasar la imagen a JPG: " + e1); //$NON-NLS-1$
 		}
 		return null;
 	}
@@ -865,6 +878,7 @@ final class SignPdfUiPanelPreview extends JPanel implements KeyListener {
 		g.drawImage(bi.getScaledInstance(this.image.getWidth(), this.image.getHeight(), Image.SCALE_SMOOTH), 0, 0, null);
 		g.dispose();
 		this.signImage = newImage;
+		this.signImagePath = path;
 	}
 
 	public static String breakLines(final String input, final int maxLineLength, final FontMetrics fm ) {

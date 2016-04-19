@@ -29,12 +29,14 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLServerSocketFactory;
 import javax.net.ssl.SSLSocket;
+import javax.script.ScriptEngine;
 import javax.swing.Timer;
 
 import es.gob.afirma.core.misc.Base64;
+import es.gob.afirma.keystores.mozilla.MozillaKeyStoreUtilitiesOsX;
 import es.gob.afirma.standalone.AutoFirmaUtil;
 
-final class ServiceInvocationManager {
+public final class ServiceInvocationManager {
 
 	static final Logger LOGGER = Logger.getLogger("es.gob.afirma"); //$NON-NLS-1$
 
@@ -99,9 +101,44 @@ final class ServiceInvocationManager {
 		@Override
 		public void actionPerformed(final ActionEvent evt){
 			LOGGER.warning("Se ha caducado la conexion. Se deja de escuchar en el puerto..."); //$NON-NLS-1$
+			ServiceInvocationManager.closeOSXService();
 			System.exit(-4);
 		}
 	});
+
+	/**
+     * Mata el proceso de AutoFirma cuando estamos en OS X. En el resto de sistemas
+     * no har&aacute; nada.
+     */
+	public static void closeOSXService() {
+	    LOGGER.warning("Ejecuto kill"); //$NON-NLS-1$
+	    final String script = "do shell script \""  //$NON-NLS-1$
+			+ "kill -9 $(ps -ef | grep " + idSession + " | awk '{print $2}')"  //$NON-NLS-1$ //$NON-NLS-2$
+			+ "\" " //$NON-NLS-1$
+		;
+	    try {
+	    	final ScriptEngine se = MozillaKeyStoreUtilitiesOsX.getAppleScriptEngine();
+	    	se.eval(script);
+	    }
+	    catch (final Exception e) {
+	    	LOGGER.warning("Fallo kill: " + e); //$NON-NLS-1$
+	    }
+	}
+
+	/**
+	 * Coge el foco del sistema en OS X. En el resto del sistemas no har&aacute; nada.
+	 */
+	public static void focusApplication() {
+		LOGGER.warning("Coge el foco de aplicacion en OS X"); //$NON-NLS-1$
+	    final String script = "tell me to activate"; //$NON-NLS-1$
+	    try {
+	    	final ScriptEngine se = MozillaKeyStoreUtilitiesOsX.getAppleScriptEngine();
+	    	se.eval(script);
+	    }
+	    catch (final Exception e) {
+	    	LOGGER.warning("Fallo al coger el foco de aplicacion: " + e); //$NON-NLS-1$
+	    }
+	}
 
 	private final static List<String> request = new ArrayList<>();
 	private final static List<String> toSend = new ArrayList<>();
