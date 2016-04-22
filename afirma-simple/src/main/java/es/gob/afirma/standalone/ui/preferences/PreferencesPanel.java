@@ -50,7 +50,8 @@ final class PreferencesPanel extends JPanel implements KeyListener, DisposableIn
 	private PreferencesPanelKeyStores preferencesPanelKeyStores;
 	private PreferencesPanelFacturaE preferencesPanelFacturaE;
 	private PreferencesPanelXades preferencesPanelXades;
-
+	private PreferencesPanelValideCerts preferencesPanelValideCerts;
+	
 	private final JTabbedPane tabbedPane = new JTabbedPane();
 
 	void createUI(final int selectedTabIndex) {
@@ -64,6 +65,7 @@ final class PreferencesPanel extends JPanel implements KeyListener, DisposableIn
 		this.preferencesPanelFacturaE = new PreferencesPanelFacturaE(this, this.modificationListener, unprotected);
 		this.preferencesPanelXades = new PreferencesPanelXades(this, this.modificationListener, unprotected);
 		this.preferencesPanelCipherment = new PreferencesPanelCipherment(this, this.modificationListener, unprotected);
+		this.preferencesPanelValideCerts = new PreferencesPanelValideCerts(this, this.modificationListener, unprotected);
 
 		this.tabbedPane.addKeyListener(this);
 
@@ -132,6 +134,16 @@ final class PreferencesPanel extends JPanel implements KeyListener, DisposableIn
 			SimpleAfirmaMessages.getString("PreferencesPanel.138") //$NON-NLS-1$
 		);
 		this.tabbedPane.setMnemonicAt(count, KeyEvent.VK_I);
+		
+		//TODO: Descomentar una vez se entregue
+		count = this.tabbedPane.getTabCount();
+		this.tabbedPane.addTab(
+			SimpleAfirmaMessages.getString("PreferencesPanel.139"), //$NON-NLS-1$
+			null,
+			this.preferencesPanelValideCerts,
+			SimpleAfirmaMessages.getString("PreferencesPanel.140") //$NON-NLS-1$
+		);
+		this.tabbedPane.setMnemonicAt(count, KeyEvent.VK_V);
 
 		this.tabbedPane.setSelectedIndex(selectedTabIndex);
 

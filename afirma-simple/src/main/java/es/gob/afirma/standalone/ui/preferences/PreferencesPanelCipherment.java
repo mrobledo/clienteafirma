@@ -381,7 +381,6 @@ final class PreferencesPanelCipherment extends JPanel {
 		rpc.gridy++;
 		repositoryPanel.add(this.accessMethods, rpc);
 
-
 		cipherConfigPanel.add(keyUsagesPanel, ccc);
 		ccc.gridy++;
 		ccc.insets = new Insets(20, 0, 0, 0);

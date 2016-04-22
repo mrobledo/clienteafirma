@@ -78,13 +78,18 @@ public final class CertificateVerifierFactory {
 				);
 			}
 		}
-		else if ("ocsp".equalsIgnoreCase(validationMethod)) { //$NON-NLS-1$
-			LOGGER.info("Se usara OCSP para la validacion"); //$NON-NLS-1$
-			return new OcspCertificateVerifier(validationProperties, cert);
-		}
-		else if ("crl".equalsIgnoreCase(validationMethod)) { //$NON-NLS-1$"
-			LOGGER.info("Se usaran listas de revocacion para la validacion"); //$NON-NLS-1$
-			return new CrlCertificateVerifier(validationProperties, cert);
+		else{
+			try{
+				final Class<?> certVerifierClass = Class.forName(validationMethod); 
+				return (CertificateVerifier) certVerifierClass.getConstructor(
+						String.class, X509Certificate.class).newInstance(validationProperties, cert);
+			}
+			catch (final ClassNotFoundException e) {
+				LOGGER.warning("No se encuentran la clase validadora: " + e.toString()); //$NON-NLS-1$
+			}
+			catch (final Exception e) {
+				LOGGER.warning("No se ha podido instanciar el vereificador del certificado: " + e); //$NON-NLS-1$
+			}
 		}
 		throw new IllegalStateException(
 			"No se soporta el medio de validacion: " + validationMethod //$NON-NLS-1$
