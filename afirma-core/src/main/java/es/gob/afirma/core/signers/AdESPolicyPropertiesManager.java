@@ -10,10 +10,10 @@
 
 package es.gob.afirma.core.signers;
 
-import java.io.IOException;
 import java.util.Locale;
 import java.util.Properties;
 import java.util.ResourceBundle;
+import java.util.logging.Logger;
 
 /** Gestiona el fichero con las propiedades de las pol&iacute;ticas de firma configuradas
  * en el fichero de propiedades.
@@ -53,6 +53,9 @@ final class AdESPolicyPropertiesManager {
 
 	static final String FORMAT_PADES = "PAdES"; //$NON-NLS-1$
 
+	/** Manejador del log. */
+	private static final Logger LOGGER = Logger.getLogger("es.gob.afirma"); //$NON-NLS-1$
+
 	private static final String BUNDLE_NAME = "policy"; //$NON-NLS-1$
 
 	private static final ResourceBundle RESOURCE_BUNDLE = ResourceBundle
@@ -70,29 +73,28 @@ final class AdESPolicyPropertiesManager {
 	 * @param policyId Identificador de la pol&iacute;tica. Si no se indica, se usar&aacute;n los valores
 	 * 			gen&eacute;ricos configurados.
 	 * @param format Formato de firma particular al que deben corresponder los valores. Si no se indica se
-	 * 			usar&aacute;n los gen&eacute;ricos de la pol&iacute;tica.
-	 * @throws IOException Cuando no se encuentra o no puede leerse el fichero de propiedades. */
-	static void setProperties(final Properties prop, final String policyId, final String format) throws IOException {
+	 * 			usar&aacute;n los gen&eacute;ricos de la pol&iacute;tica. */
+	static void setProperties(final Properties prop, final String policyId, final String format) {
 
 		String value = getProperty(policyId, PROPERTY_POLICY_IDENTIFIER, format);
 		if (value != null) {
-			prop.setProperty(PROPERTY_POLICY_IDENTIFIER, value);
+			setProperty(prop, PROPERTY_POLICY_IDENTIFIER, value);
 		}
 		value = getProperty(policyId, PROPERTY_POLICY_HASH_ALGORITHM, format);
 		if (value != null) {
-			prop.setProperty(PROPERTY_POLICY_HASH_ALGORITHM, value);
+			setProperty(prop, PROPERTY_POLICY_HASH_ALGORITHM, value);
 		}
 		value = getProperty(policyId, PROPERTY_POLICY_HASH, format);
 		if (value != null) {
-			prop.setProperty(PROPERTY_POLICY_HASH, value);
+			setProperty(prop, PROPERTY_POLICY_HASH, value);
 		}
 		value = getProperty(policyId, PROPERTY_POLICY_QUALIFIER, format);
 		if (value != null) {
-			prop.setProperty(PROPERTY_POLICY_QUALIFIER, value);
+			setProperty(prop, PROPERTY_POLICY_QUALIFIER, value);
 		}
 		value = getProperty(policyId, PROPERTY_POLICY_DESCRIPTION, format);
 		if (value != null) {
-			prop.setProperty(PROPERTY_POLICY_DESCRIPTION, value);
+			setProperty(prop, PROPERTY_POLICY_DESCRIPTION, value);
 		}
 	}
 
@@ -132,5 +134,19 @@ final class AdESPolicyPropertiesManager {
 			return RESOURCE_BUNDLE.getString(key);
 		}
 		return null;
+	}
+
+	/**
+	 * Establece una nueva propiedad, informando por log si esta hace que se omita un valor establecido previamente.
+	 * @param config Configuraci&oacute;n a la uqe agregar la propiedad.
+	 * @param property Nombre de la propiedad.
+	 * @param value Valor a establecer.
+	 */
+	private static void setProperty(final Properties config, final String property, final String value) {
+
+		if (config.containsKey(property)) {
+			LOGGER.warning("La siguiente propiedad se ignora en favor del valor derivado de la politica establecida: " + property);  //$NON-NLS-1$
+		}
+		config.setProperty(property, value);
 	}
 }

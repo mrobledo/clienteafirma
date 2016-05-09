@@ -10,17 +10,11 @@
 
 package es.gob.afirma.core.misc;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.util.Properties;
 import java.util.logging.Logger;
-
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-
-import org.xml.sax.SAXException;
 
 
 /** M&eacute;todos de utilidad para la gesti&oacute;n de MimeType y OID
@@ -28,6 +22,9 @@ import org.xml.sax.SAXException;
 public final class MimeHelper {
 
     private static final Logger LOGGER = Logger.getLogger("es.gob.afirma"); //$NON-NLS-1$
+
+    /** Valor que devuelve JMimeMagic por defecto cuando no sabe identificar la extension o el mimetype de unos datos. */
+    public static final String UNKNOWN_JMIMEMAGIC_VALUE = "???"; //$NON-NLS-1$
 
     /** MimeType por defecto. */
     public static final String DEFAULT_MIMETYPE = "application/octet-stream"; //$NON-NLS-1$
@@ -73,9 +70,21 @@ public final class MimeHelper {
             final Object magicMatchObject = getMagicMatchMethod.invoke(null, this.data);
 
             final Class<?> magicMatchClass = Class.forName("net.sf.jmimemagic.MagicMatch"); //$NON-NLS-1$
-            this.mimeInfo.setMimeType((String) magicMatchClass.getMethod("getMimeType", (Class[]) null).invoke(magicMatchObject, (Object[]) null)); //$NON-NLS-1$
-            this.mimeInfo.setExtension((String)magicMatchClass.getMethod("getExtension", (Class[]) null).invoke(magicMatchObject, (Object[]) null)); //$NON-NLS-1$
-            this.mimeInfo.setDescription((String) magicMatchClass.getMethod("getDescription", (Class[]) null).invoke(magicMatchObject, (Object[]) null)); //$NON-NLS-1$
+            String mt = (String) magicMatchClass.getMethod("getMimeType", (Class[]) null).invoke(magicMatchObject, (Object[]) null); //$NON-NLS-1$
+            if (mt != null && UNKNOWN_JMIMEMAGIC_VALUE.equals(mt)) {
+            	mt = null;
+            }
+            this.mimeInfo.setMimeType(mt);
+            String ext = (String)magicMatchClass.getMethod("getExtension", (Class[]) null).invoke(magicMatchObject, (Object[]) null); //$NON-NLS-1$
+            if (ext != null && UNKNOWN_JMIMEMAGIC_VALUE.equals(ext)) {
+            	ext = null;
+            }
+            this.mimeInfo.setExtension(ext);
+            String desc = (String) magicMatchClass.getMethod("getDescription", (Class[]) null).invoke(magicMatchObject, (Object[]) null); //$NON-NLS-1$
+            if (desc != null && UNKNOWN_JMIMEMAGIC_VALUE.equals(desc)) {
+            	desc = null;
+            }
+            this.mimeInfo.setDescription(desc);
         }
         catch (final ClassNotFoundException e) {
             LOGGER.warning("No se encontro la biblioteca JMimeMagic para la deteccion del tipo de dato"); //$NON-NLS-1$
@@ -169,16 +178,9 @@ public final class MimeHelper {
         	// Si no hubo analisis inicial o este indico que los datos son XML, comprobamos
             // si los datos son XML en realidad
             if (this.mimeInfo == null || "text/xml".equals(this.mimeType)) { //$NON-NLS-1$
-            	try {
-            		DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(new ByteArrayInputStream(this.data));
+            	if (AOFileUtils.isXML(this.data)) {
             		this.mimeType = "text/xml"; //$NON-NLS-1$
             	}
-            	catch (final ParserConfigurationException e) {
-            		LOGGER.severe("No se ha podido crear un DocumentBuilder XML, no se comprobara si es XML: " + e); //$NON-NLS-1$
-            	}
-            	catch (final SAXException e) {
-            		// Ignoramos, es porque no es XML
-				}
             }
 
             // Cuando el MimeType sea el de un fichero ZIP o el de Microsoft Word, comprobamos si es en
@@ -202,17 +204,11 @@ public final class MimeHelper {
 
         String extension = null;
 
-        // Probamos a pasear los datos como si fuesen un XML, si no lanzan
-        // una excepcion, entonces son datos XML.
-        try {
-            DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(new ByteArrayInputStream(this.data));
+        // Comprobamossi los datos son XML, si no, los parseamos
+        if (AOFileUtils.isXML(this.data)) {
             extension = "xml"; //$NON-NLS-1$
         }
-        catch (final Exception e) {
-         // Ignoramos, es porque no es XML
-        }
-
-        if (extension == null && this.mimeInfo != null) {
+        else if (this.mimeInfo != null) {
             extension = this.mimeInfo.getExtension();
         }
 
@@ -280,5 +276,4 @@ public final class MimeHelper {
         /** Descripci&oacute;n del tipo de datos. */
         private String description = null;
     }
-
 }

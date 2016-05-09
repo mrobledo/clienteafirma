@@ -21,8 +21,8 @@ import es.gob.afirma.core.misc.AOUtil;
 import es.gob.afirma.core.misc.Base64;
 import es.gob.afirma.core.misc.http.UrlHttpManagerFactory;
 import es.gob.afirma.core.misc.http.UrlHttpMethod;
-import es.gob.afirma.core.misc.protocol.UrlParametersToSign;
-import es.gob.afirma.core.misc.protocol.UrlParametersToSign.Operation;
+import es.gob.afirma.core.misc.protocol.UrlParametersToSignAndSave;
+import es.gob.afirma.core.misc.protocol.UrlParametersToSignAndSave.Operation;
 import es.gob.afirma.core.signers.AOSignConstants;
 import es.gob.afirma.core.signers.AOSigner;
 import es.gob.afirma.core.signers.AOSignerFactory;
@@ -39,7 +39,7 @@ import es.gob.afirma.standalone.AutoFirmaUtil;
 import es.gob.afirma.standalone.DataAnalizerUtil;
 import es.gob.afirma.standalone.crypto.CypherDataManager;
 
-final class ProtocolInvocationLauncherSign {
+final class ProtocolInvocationLauncherSignAndSave {
 
 	private static final char CERT_SIGNATURE_SEPARATOR = '|';
 	private static final String METHOD_OP_PUT = "put"; //$NON-NLS-1$
@@ -50,11 +50,11 @@ final class ProtocolInvocationLauncherSign {
 	private static final Logger LOGGER = Logger.getLogger("es.gob.afirma"); //$NON-NLS-1$
 
 
-	private ProtocolInvocationLauncherSign() {
+	private ProtocolInvocationLauncherSignAndSave() {
 		// No instanciable
 	}
 
-	static String processSign(final UrlParametersToSign options, final boolean bySocket) throws SocketOperationException {
+	static String process(final UrlParametersToSignAndSave options, final boolean bySocket) throws SocketOperationException {
 
 		if (options == null) {
 			LOGGER.severe("Las opciones de firma son nulas"); //$NON-NLS-1$
@@ -88,6 +88,7 @@ final class ProtocolInvocationLauncherSign {
 		}
 
 		// Si no hay datos a firmar se los pedimos al usuario
+		String selectedFilename = null;
 		if (options.getData() == null) {
 
 			final String dialogTilte = Operation.SIGN.equals(options.getOperation()) ?
@@ -96,7 +97,6 @@ final class ProtocolInvocationLauncherSign {
 
 			final File selectedDataFile;
 			try {
-				ServiceInvocationManager.focusApplication();
 				selectedDataFile = AOUIFactory.getLoadFiles(
 					dialogTilte,
 					new JFileChooser().getFileSystemView().getDefaultDirectory().toString(),
@@ -116,6 +116,8 @@ final class ProtocolInvocationLauncherSign {
 				}
 				return getResultCancel();
 			}
+
+			selectedFilename = selectedDataFile.getName();
 
 			try {
 				final byte[] data;
@@ -241,7 +243,6 @@ final class ProtocolInvocationLauncherSign {
 		LOGGER.info("Cargando dialogo de seleccion de certificados..."); //$NON-NLS-1$
 
 		try {
-			ServiceInvocationManager.focusApplication();
 			final AOKeyStoreDialog dialog = new AOKeyStoreDialog(
 				ksm,
 				null,
@@ -402,6 +403,22 @@ final class ProtocolInvocationLauncherSign {
 				);
 		}
 
+		// Damos la opcion de guardar la firma generada
+		try {
+			AOUIFactory.getSaveDataToFile(
+					sign,
+					ProtocolMessages.getString("ProtocolLauncher.31"), //$NON-NLS-1$
+					null,
+					getFilename(options, selectedFilename, signer),
+					null,
+					null,
+					null
+					);
+		}
+		catch (final Exception e) {
+			LOGGER.warning("Error en el guardado de datos. Devolvemos la firma: " + e); //$NON-NLS-1$
+		}
+
 		// Concatenamos el certificado utilizado para firmar y la firma con un separador
 		// para que la pagina pueda recuperar ambos
 		byte[] certEncoded;
@@ -477,7 +494,37 @@ final class ProtocolInvocationLauncherSign {
 		return dataToSend.toString();
 	}
 
-	public static void sendErrorToServer(final String data, final UrlParametersToSign options){
+	/**
+	 * Genera un nombre de fichero.
+	 * @param options Opciones proporcionadas en la operaci&oacute;n.
+	 * @param filename Nombre del fichero firmado ({@code null} si no es conocido).
+	 * @param signer Manejador utilizado para la firma-
+	 * @return Nombre de fichero por defecto.
+	 */
+	private static String getFilename(final UrlParametersToSignAndSave options, final String filename, final AOSigner signer) {
+
+		if (options.getFileName() != null) {
+			return options.getFileName();
+		}
+
+		String name;
+		if (filename != null) {
+			final int dotPos = filename.lastIndexOf('.');
+			if (dotPos > 0) {
+				name = filename.substring(0, dotPos);
+			}
+			else {
+				name = filename;
+			}
+		}
+		else {
+			name = ProtocolMessages.getString("ProtocolLauncher.30"); //$NON-NLS-1$
+		}
+
+		return signer.getSignedName(name, null);
+	}
+
+	public static void sendErrorToServer(final String data, final UrlParametersToSignAndSave options){
 		try {
 			sendData(new StringBuilder().append(data), options);
 		} catch (final IOException e1) {
@@ -485,7 +532,7 @@ final class ProtocolInvocationLauncherSign {
 		}
 	}
 
-	private static void sendData(final StringBuilder data, final UrlParametersToSign options) throws IOException {
+	private static void sendData(final StringBuilder data, final UrlParametersToSignAndSave options) throws IOException {
 
 		final StringBuffer url = new StringBuffer(options.getStorageServletUrl().toString());
 		url.append("?op=").append(METHOD_OP_PUT); //$NON-NLS-1$

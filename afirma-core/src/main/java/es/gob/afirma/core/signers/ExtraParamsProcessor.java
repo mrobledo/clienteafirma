@@ -11,7 +11,6 @@
 package es.gob.afirma.core.signers;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.Locale;
 import java.util.Properties;
@@ -28,6 +27,9 @@ public final class ExtraParamsProcessor {
 
 	/** Clave expansible para pol&iacute;ticas de firma. */
 	private static final String EXPANDIBLE_POLICY_KEY = "expPolicy"; //$NON-NLS-1$
+
+	/** Manejador del log. */
+	private static final Logger LOGGER = Logger.getLogger("es.gob.afirma"); //$NON-NLS-1$
 
 	private ExtraParamsProcessor() {
 		/* Constructor no publico */
@@ -172,6 +174,9 @@ public final class ExtraParamsProcessor {
 						// La firma XAdES conforme a la politica de firma de la AGE debe ser Detached o Enveloped
 						if (!AOSignConstants.SIGN_FORMAT_XADES_DETACHED.equalsIgnoreCase(p.getProperty("format")) && //$NON-NLS-1$
 								!AOSignConstants.SIGN_FORMAT_XADES_ENVELOPED.equalsIgnoreCase(p.getProperty("format"))) { //$NON-NLS-1$
+							if (p.containsKey("format")) { //$NON-NLS-1$
+								LOGGER.warning("La siguiente propiedad se ignora en favor del valor derivado de la politica establecida: format"); //$NON-NLS-1$
+							}
 							p.setProperty("format", AOSignConstants.SIGN_FORMAT_XADES_DETACHED); //$NON-NLS-1$
 						}
 					}
@@ -201,12 +206,7 @@ public final class ExtraParamsProcessor {
 						normalizedFormat = AdESPolicyPropertiesManager.FORMAT_PADES;
 					}
 				}
-				try {
-					AdESPolicyPropertiesManager.setProperties(p, policy, normalizedFormat);
-				}
-				catch (final IOException e) {
-					Logger.getLogger("es.gob.afirma").warning("No se han encontrado podido cargar el fichero de propiedades: " + e); //$NON-NLS-1$ //$NON-NLS-2$
-				}
+				AdESPolicyPropertiesManager.setProperties(p, policy, normalizedFormat);
 			}
 			p.remove(EXPANDIBLE_POLICY_KEY);
 		}

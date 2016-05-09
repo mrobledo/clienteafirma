@@ -43,14 +43,7 @@ final class SignResultPanel extends JPanel {
     private final JLabel resultTextLabel = new JLabel();
 
     SignResultPanel(final SignValidity validity, final KeyListener extKeyListener) {
-        SwingUtilities.invokeLater(
-    		new Runnable() {
-	            @Override
-	            public void run() {
-	                createUI(validity, extKeyListener);
-	            }
-	        }
-		);
+        SwingUtilities.invokeLater(() -> createUI(validity, extKeyListener));
     }
 
     void createUI(final SignValidity validity, final KeyListener extKeyListener) {

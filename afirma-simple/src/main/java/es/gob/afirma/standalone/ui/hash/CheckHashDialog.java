@@ -11,10 +11,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.logging.Logger;
 
@@ -25,6 +25,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
+import javax.swing.SwingWorker;
 
 import es.gob.afirma.core.AOCancelledOperationException;
 import es.gob.afirma.core.misc.AOUtil;
@@ -33,6 +34,7 @@ import es.gob.afirma.core.misc.Platform;
 import es.gob.afirma.core.ui.AOUIFactory;
 import es.gob.afirma.standalone.AutoFirmaUtil;
 import es.gob.afirma.standalone.SimpleAfirmaMessages;
+import es.gob.afirma.standalone.ui.CommonWaitDialog;
 
 /** Di&aacute;logo para la comprobaci&oacute;n de huellas digitales.
  * @author Tom&aacute;s Garc&iacute;a-Mer&aacute;s */
@@ -41,10 +43,15 @@ public final class CheckHashDialog extends JDialog implements KeyListener {
 	/** Inicia el proceso de compobaci&oacute;n de huella digital.
 	 * @param parent Componente padre para la modalidad. */
 	public static void startHashCheck(final Frame parent) {
-		new CheckHashDialog(parent).setVisible(true);
+		final CheckHashDialog chkd = new CheckHashDialog(parent);
+		chkd.setSize(600, 250);
+		chkd.setResizable(false);
+		chkd.setLocationRelativeTo(parent);
+		chkd.setVisible(true);
 	}
 
 	private static final long serialVersionUID = 8075570205961862205L;
+	private static final int SIZE_WAIT = 50000000; //Tamano en bytes
 
 	private final JTextField textFieldHash = new JTextField();
 	void setTextFieldHashText(final String text) {
@@ -65,14 +72,7 @@ public final class CheckHashDialog extends JDialog implements KeyListener {
 	private CheckHashDialog(final Frame parent) {
 		super(parent);
 		setModalityType(ModalityType.APPLICATION_MODAL);
-		SwingUtilities.invokeLater(
-			new Runnable() {
-				@Override
-				public void run() {
-					createUI(parent);
-				}
-			}
-		);
+		SwingUtilities.invokeLater(() -> createUI(parent));
 	}
 
 	void createUI(final Frame parent) {
@@ -282,45 +282,74 @@ public final class CheckHashDialog extends JDialog implements KeyListener {
 		gbc.insets = new Insets(30,10,0,10);
 		gbc.gridwidth = GridBagConstraints.REMAINDER;
 		c.add(panel, gbc);
-		pack();
-		setSize(600, 250);
-		setResizable(false);
-		setLocationRelativeTo(parent);
 
 	}
 
-static boolean checkHash(final String fileNameHash, final String fileNameData) throws IOException {
+	static boolean checkHash(final String fileNameHash, final String fileNameData) {
 		if (fileNameHash == null || fileNameHash.isEmpty() || fileNameData == null || fileNameData.isEmpty()) {
 			throw new IllegalArgumentException();
 		}
-		byte[] hashBytes;
-		try (InputStream fis = new FileInputStream(fileNameHash)) {
-			hashBytes = AOUtil.getDataFromInputStream(fis);
+
+		// Se crea la ventana de espera.
+		final CommonWaitDialog dialog = new CommonWaitDialog(
+			null,
+			SimpleAfirmaMessages.getString("CreateHashFiles.21"), //$NON-NLS-1$
+			SimpleAfirmaMessages.getString("CreateHashFiles.22") //$NON-NLS-1$
+		);
+
+		// Arrancamos el proceso en un hilo aparte
+		final SwingWorker<Boolean, Void> worker = new SwingWorker<Boolean, Void>() {
+
+			@Override
+			protected Boolean doInBackground() throws Exception {
+				byte[] hashBytes;
+				try (InputStream fis = new FileInputStream(fileNameHash)) {
+					hashBytes = AOUtil.getDataFromInputStream(fis);
+				}
+				if (Base64.isBase64(hashBytes)) {
+					hashBytes = Base64.decode(hashBytes, 0, hashBytes.length, false);
+				}
+				try {
+					return Boolean.valueOf(
+						arrayEquals(
+							hashBytes,
+							HashUtil.getFileHash(
+								getHashAlgorithm(hashBytes),
+								fileNameData
+							)
+						)
+					);
+				}
+				catch (final NoSuchAlgorithmException e) {
+					throw new IOException(e);
+				}
+			}
+			@Override
+			protected void done() {
+				super.done();
+				dialog.dispose();
+			}
+		};
+		worker.execute();
+
+
+		if (new File(fileNameData).length() > SIZE_WAIT) {
+			// Se muestra la ventana de espera
+			dialog.setVisible(true);
 		}
-		if (Base64.isBase64(hashBytes)) {
-			hashBytes = Base64.decode(hashBytes, 0, hashBytes.length, false);
-		}
-		final byte[] dataBytes;
-		try (InputStream fis = new FileInputStream(fileNameData)) {
-			dataBytes = AOUtil.getDataFromInputStream(fis);
-		}
+
 		try {
-			return arrayEquals(
-				hashBytes,
-
-				MessageDigest.getInstance(
-					getHashAlgorithm(hashBytes)
-
-
-				).digest(dataBytes)
-			);
+			return worker.get().booleanValue();
 		}
-		catch (final NoSuchAlgorithmException e) {
-			throw new IOException(e);
+		catch (final Exception e) {
+			Logger.getLogger("es.gob.afirma").severe( //$NON-NLS-1$
+				"Error en el proceso en segundo plano de comparacion de huellas: " + e //$NON-NLS-1$
+			);
+			return false;
 		}
 	}
 
-	private static String getHashAlgorithm(final byte[] hash) {
+	static String getHashAlgorithm(final byte[] hash) {
 		if (hash == null || hash.length < 1) {
 			throw new IllegalArgumentException("La huella no puede ser nula ni vacia"); //$NON-NLS-1$
 		}
@@ -334,7 +363,7 @@ static boolean checkHash(final String fileNameHash, final String fileNameData) t
      * @param v Primer array de octetos
      * @param w Segundo array de octetos
      * @return <code>true</code> si los arrays son iguales, <code>false</code> en caso contrario */
-    private static boolean arrayEquals(final byte[] v, final byte[] w) {
+    static boolean arrayEquals(final byte[] v, final byte[] w) {
         return arrayEquals(v, 0, v.length, w, 0, w.length);
     }
 

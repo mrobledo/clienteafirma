@@ -118,7 +118,7 @@ public final class AutoFirmaUtil {
 			).getParentFile();
 		}
 		catch (final URISyntaxException e) {
-			LOGGER.warning("No se pudo localizar el directorio del fichero en ejecucion"); //$NON-NLS-1$
+			LOGGER.warning("No se pudo localizar el directorio del fichero en ejecucion: " + e); //$NON-NLS-1$
 			appDir = null;
 		}
 		return appDir;
@@ -128,11 +128,14 @@ public final class AutoFirmaUtil {
      * de configuraci&oacute;n encontrados. */
     public static void setProxySettings() {
     	if (PreferencesManager.getBoolean(PreferencesManager.PREFERENCE_GENERAL_PROXY_SELECTED, false)) {
-    		final String proxyHost = PreferencesManager.get(PreferencesManager.PREFERENCE_GENERAL_PROXY_HOST, null);
+    		String proxyHost = PreferencesManager.get(PreferencesManager.PREFERENCE_GENERAL_PROXY_HOST, null);
     		final String proxyPort = PreferencesManager.get(PreferencesManager.PREFERENCE_GENERAL_PROXY_PORT, null);
     		final String proxyUsername = PreferencesManager.get(PreferencesManager.PREFERENCE_GENERAL_PROXY_USERNAME, null);
     		final String proxyPassword = PreferencesManager.get(PreferencesManager.PREFERENCE_GENERAL_PROXY_PASSWORD, null);
     		if (proxyHost != null && proxyPort != null) {
+				if (!proxyHost.startsWith("http")) { //$NON-NLS-1$
+					proxyHost = "http://" + proxyHost; //$NON-NLS-1$
+				}
     			System.setProperty("http.proxyHost", proxyHost); //$NON-NLS-1$
     			System.setProperty("http.proxyPort", proxyPort); //$NON-NLS-1$
     			System.setProperty("https.proxyHost", proxyHost); //$NON-NLS-1$
@@ -146,8 +149,10 @@ public final class AutoFirmaUtil {
     					new Authenticator() {
 	    			        @Override
 	    					public PasswordAuthentication getPasswordAuthentication() {
-	    			            return new PasswordAuthentication(proxyUsername,
-	    			            		proxyPassword.toCharArray());
+	    			            return new PasswordAuthentication(
+    			            		proxyUsername,
+    			            		proxyPassword.toCharArray()
+			            		);
 	    			        }
 	    			    }
 					);

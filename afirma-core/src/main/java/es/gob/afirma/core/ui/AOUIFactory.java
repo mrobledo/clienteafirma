@@ -174,7 +174,7 @@ public final class AOUIFactory {
      * @param message Mensaje.
      * @param title Titulo del cuadro de di&aacute;logo.
      * @param messageType Tipo de mensaje.
-     * @param icon Icono del di&aacute;logo. */
+     * @param icon Icono de la ventana de di&aacute;logo. */
     public static void showMessageDialog(final Object parentComponent,
     		                            final Object message,
     		                            final String title,

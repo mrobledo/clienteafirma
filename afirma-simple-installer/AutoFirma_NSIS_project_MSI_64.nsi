@@ -109,11 +109,6 @@ SetCompress auto
 
 Section "Programa" sPrograma
 	
-	;Se cierran los navegadores abiertos
-	${nsProcess::FindProcess} "firefox.exe" $R3
-	StrCmp $R3 0 0 +1
-	${nsProcess::KillProcess} "firefox.exe" $R0
-	
 	; Hacemos esta seccion de solo lectura para que no la desactiven
 	SectionIn RO
 	StrCpy $PATH "AutoFirma"
@@ -226,8 +221,8 @@ Section "Programa" sPrograma
 	File /r "jre64b"
 
 	; Eliminamos los certificados generados en caso de que existan por una instalacion previa
-	IfFileExists "$INSTDIR\AutoFirma\autofirma.cer" 0 +1
-	Delete "$INSTDIR\AutoFirma\autofirma.cer"
+	IfFileExists "$INSTDIR\AutoFirma\AutoFirma_ROOT.cer" 0 +1
+	Delete "$INSTDIR\AutoFirma\AutoFirma_ROOT.cer"
 	IfFileExists "$INSTDIR\AutoFirma\autofirma.pfx" 0 +1
 	Delete "$INSTDIR\AutoFirma\autofirma.pfx"
 	
@@ -239,6 +234,7 @@ Section "Programa" sPrograma
 	${nsProcess::FindProcess} "chrome.exe" $R3
 	StrCmp $R3 0 0 +1
 	${nsProcess::KillProcess} "chrome.exe" $R0
+	Sleep 2000
 	
 	; Configuramos la aplicacion (generacion de certificados) e importacion en Firefox
 	ExecWait '"$INSTDIR\AutoFirma\AutoFirmaConfigurador.exe" /passive'
@@ -246,7 +242,7 @@ Section "Programa" sPrograma
 	Call DeleteCertificateOnInstall
 	
 	; Importamos el certificado en el sistema
-	Push "$INSTDIR\AutoFirma\autofirma.cer"
+	Push "$INSTDIR\AutoFirma\AutoFirma_ROOT.cer"
 	Sleep 2000
 	Call AddCertificateToStore
 	Pop $0
@@ -262,7 +258,7 @@ Section "Programa" sPrograma
 	StrCmp $1 "" done1
 	StrCpy $chromePath "C:\Users\$1\AppData\Local\Google\Chrome\User Data"
 	${If} ${FileExists} "$chromePath\Local State"
-	
+
 	;Se incluye AutoFirma como aplicación de confianza en Google Chrome
 	Push '"afirma":false,' #text to be replaced
 	Push '' #replace with
@@ -468,7 +464,7 @@ Push $R6 ;temp file name
    StrLen $R3 $4
    StrCpy $R4 -1
    StrCpy $R5 -1
- 
+
 loop_read:
  ClearErrors
  FileRead $R1 $R2 ;read line

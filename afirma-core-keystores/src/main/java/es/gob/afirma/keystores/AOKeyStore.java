@@ -10,6 +10,8 @@
 
 package es.gob.afirma.keystores;
 
+import java.util.logging.Logger;
+
 import javax.security.auth.callback.PasswordCallback;
 
 import es.gob.afirma.keystores.callbacks.CachePasswordCallback;
@@ -101,6 +103,14 @@ public enum AOKeyStore {
 		new UIPasswordCallback(KeyStoreMessages.getString("AOKeyStore.8")), //$NON-NLS-1$
 		new UIPasswordCallback(KeyStoreMessages.getString("AOKeyStore.9")) //$NON-NLS-1$
 	),
+    /** Tarjeta del Ministerio de Defensa. */
+	TEMD(
+		"TEMD (Tarjeta del Ministerio de Defensa)", //$NON-NLS-1$
+		10,
+		"PKCS11", //$NON-NLS-1$
+		null, // Sin contrasena para los certificados sueltos
+		new UIPasswordCallback(KeyStoreMessages.getString("AOKeyStore.14")) //$NON-NLS-1$
+	),
     /** Windows / Internet Explorer (CAPI, certificados de otras personas /
      * libreta de direcciones). */
     WINADDRESSBOOK(
@@ -190,10 +200,19 @@ public enum AOKeyStore {
      * @param name Nombre del repositorio que se desea recuperar.
      * @return KeyStore Repositorio de certificados. */
     public static AOKeyStore getKeyStore(final String name) {
+    	if (name == null) {
+    		return null;
+    	}
         for (final AOKeyStore tempKs : AOKeyStore.values()) {
-            if (tempKs.getName().equals(name)) {
+            if (tempKs.getName().equalsIgnoreCase(name.trim())) {
                 return tempKs;
             }
+        }
+        try {
+        	return valueOf(name);
+        }
+        catch(final Exception e) {
+        	Logger.getLogger("es.gob.afirma").warning("Almacen de claves no reconocido: " + name); //$NON-NLS-1$ //$NON-NLS-2$
         }
         return null;
     }

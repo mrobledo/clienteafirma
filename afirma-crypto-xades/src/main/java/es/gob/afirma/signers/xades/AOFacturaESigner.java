@@ -17,6 +17,7 @@ import java.security.cert.Certificate;
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
+import java.util.logging.Logger;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 
@@ -86,38 +87,7 @@ public final class AOFacturaESigner implements AOSigner {
         EXTRA_PARAMS.setProperty(XAdESExtraParams.FACTURAE_SIGN, "true"); //$NON-NLS-1$
     }
 
-    /** Operaci&oacute;n no soportada. */
-    @Override
-	public byte[] cosign(final byte[] data,
-                         final byte[] sign,
-                         final String algorithm,
-                         final PrivateKey key,
-                         final Certificate[] certChain,
-                         final Properties extraParams) throws AOException {
-    	throw new UnsupportedOperationException("No se soporta la cofirma de facturas"); //$NON-NLS-1$
-    }
-
-    /** Operaci&oacute;n no soportada. */
-    @Override
-	public byte[] cosign(final byte[] sign,
-                         final String algorithm,
-                         final PrivateKey key,
-                         final Certificate[] certChain,
-                         final Properties extraParams) throws AOException {
-    	throw new UnsupportedOperationException("No se soporta la cofirma de facturas"); //$NON-NLS-1$
-    }
-
-    /** Operaci&oacute;n no soportada, se lanza una <code>UnsupportedOperationException</code>. */
-    @Override
-	public byte[] countersign(final byte[] sign,
-                              final String algorithm,
-                              final CounterSignTarget targetType,
-                              final Object[] targets,
-                              final PrivateKey key,
-                              final Certificate[] certChain,
-                              final Properties extraParams) throws AOException {
-        throw new UnsupportedOperationException("No se soporta la contrafirma de facturas"); //$NON-NLS-1$
-    }
+    private static final Logger LOGGER = Logger.getLogger("es.gob.afirma"); //$NON-NLS-1$
 
     /** Firma Facturas en formato XAdES Factura-E.
      * @param data Factura electr&oacute;nica.
@@ -143,7 +113,7 @@ public final class AOFacturaESigner implements AOSigner {
      *  <dt><b><i>signatureProductionCountry</i></b></dt>
      *   <dd>Pa&iacute;s en el que se realiza la firma</dd>
      * </dl>
-     * @return Cofirma en formato XAdES
+     * @return Factura electr&oacute;nica firmada.
      * @throws InvalidEFacturaDataException Cuando se proporcionan datos que no son una factura electr&oacute;nica
      * @throws EFacturaAlreadySignedException Cuando se proporciona un factura ya firmada
      * @throws AOException Cuando ocurre cualquier problema durante el proceso
@@ -167,6 +137,39 @@ public final class AOFacturaESigner implements AOSigner {
     		certChain,
     		getFacturaEExtraParams(extraParams)
 		);
+    }
+
+    /** Operaci&oacute;n no soportada. */
+    @Override
+	public byte[] cosign(final byte[] data,
+                         final byte[] sign,
+                         final String algorithm,
+                         final PrivateKey key,
+                         final Certificate[] certChain,
+                         final Properties extraParams) {
+    	throw new UnsupportedOperationException("No se soporta la cofirma de facturas"); //$NON-NLS-1$
+    }
+
+    /** Operaci&oacute;n no soportada. */
+    @Override
+	public byte[] cosign(final byte[] sign,
+                         final String algorithm,
+                         final PrivateKey key,
+                         final Certificate[] certChain,
+                         final Properties extraParams) {
+    	throw new UnsupportedOperationException("No se soporta la cofirma de facturas"); //$NON-NLS-1$
+    }
+
+    /** Operaci&oacute;n no soportada, se lanza una <code>UnsupportedOperationException</code>. */
+    @Override
+	public byte[] countersign(final byte[] sign,
+                              final String algorithm,
+                              final CounterSignTarget targetType,
+                              final Object[] targets,
+                              final PrivateKey key,
+                              final Certificate[] certChain,
+                              final Properties extraParams) {
+        throw new UnsupportedOperationException("No se soporta la contrafirma de facturas"); //$NON-NLS-1$
     }
 
     /** Obtiene los par&aacute;metros adicionales necesarios para generar una firma XAdES compatible con FacturaE,
@@ -225,6 +228,9 @@ public final class AOFacturaESigner implements AOSigner {
             for (final Object k : originalExtraParams.keySet()) {
                 if (ALLOWED_PARAMS.contains(k)) {
                     xParams.put(k, originalExtraParams.get(k));
+                }
+                else {
+                	LOGGER.warning("Se ignorara el siguiente parametro por no estar soportado para la firma de FacturaE: " + k); //$NON-NLS-1$
                 }
             }
         }
@@ -303,7 +309,7 @@ public final class AOFacturaESigner implements AOSigner {
 
     /** {@inheritDoc} */
     @Override
-	public AOSignInfo getSignInfo(final byte[] signData) throws AOException, IOException {
+	public AOSignInfo getSignInfo(final byte[] signData) {
     	final AOSignInfo facturaeSignInfo = new AOSignInfo(AOSignConstants.SIGN_FORMAT_FACTURAE);
     	facturaeSignInfo.setVariant(null);
     	return facturaeSignInfo;

@@ -433,11 +433,11 @@ final class PreferencesPanelKeyStores extends JPanel {
 		PreferencesManager.put(PREFERENCE_KEYSTORE_CLOSE_KEYSTORE_TIMEOUT, getSelectedTimeout());
 		PreferencesManager.put(
 			PREFERENCE_KEYSTORE_DEFAULT_STORE,
-			getDefaultStore().toString()
+			getDefaultStore().name()
 		);
 		PreferencesManager.put(
 			PREFERENCE_KEYSTORE_PRIORITARY_STORE,
-			this.prioritaryKeyStoreComboBox.getSelectedItem().toString()
+			((AOKeyStore) this.prioritaryKeyStoreComboBox.getSelectedItem()).name()
 		);
 	}
 }

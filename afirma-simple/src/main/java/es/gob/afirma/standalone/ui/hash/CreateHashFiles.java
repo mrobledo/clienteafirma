@@ -65,6 +65,7 @@ public final class CreateHashFiles extends JDialog {
 
 	private static final long serialVersionUID = -7224732001218823361L;
 	private static final String PREFERENCE_ALGORITHM = "createHashAlgorithm"; //$NON-NLS-1$
+	private static final int SIZE_WAIT = 50000000; //Tamano en bytes
 
 	private static final String[] HASH_ALGOS = new String[] { "SHA-512", //$NON-NLS-1$
 		"SHA-384", //$NON-NLS-1$
@@ -112,15 +113,7 @@ public final class CreateHashFiles extends JDialog {
 		super(parent);
 		setTitle(SimpleAfirmaMessages.getString("CreateHashFiles.0")); //$NON-NLS-1$
 		setModalityType(ModalityType.APPLICATION_MODAL);
-		setResizable(false);
-		SwingUtilities.invokeLater(
-			new Runnable() {
-				@Override
-				public void run() {
-					createUI(parent);
-				}
-			}
-		);
+		SwingUtilities.invokeLater(() -> createUI(parent));
 	}
 
 	/** Crea todos los elementos necesarios para generar una huella digital de
@@ -148,10 +141,10 @@ public final class CreateHashFiles extends JDialog {
 
 		// Label con el nombre del fichero
 		final JLabel label = new JLabel(SimpleAfirmaMessages.getString("CreateHashFiles.11")); //$NON-NLS-1$
-		this.examineButton.getAccessibleContext().setAccessibleDescription(SimpleAfirmaMessages.getString("MenuDigitalEnvelope.20")); //$NON-NLS-1$
+		this.examineButton.getAccessibleContext().setAccessibleDescription(SimpleAfirmaMessages.getString("CreateHashFiles.10")); //$NON-NLS-1$
 
 		// Boton examinar
-		this.examineButton.setText(SimpleAfirmaMessages.getString("MenuDigitalEnvelope.20")); //$NON-NLS-1$
+		this.examineButton.setText(SimpleAfirmaMessages.getString("CreateHashFiles.10")); //$NON-NLS-1$
 		this.examineButton.setMnemonic('X');
 
 		this.examineButton.addActionListener(
@@ -267,8 +260,6 @@ public final class CreateHashFiles extends JDialog {
 		gbc.gridy++;
 		gbc.gridwidth = GridBagConstraints.REMAINDER;
 		add(panel, gbc);
-		setResizable(false);
-		pack();
 	}
 
 	static void doHashProcess(final Frame parent,
@@ -303,9 +294,11 @@ public final class CreateHashFiles extends JDialog {
 			}
 		};
 		worker.execute();
-
-		// Se muestra la ventana de espera
-		dialog.setVisible(true);
+        
+		if (getSize(new File(dir)) > SIZE_WAIT) {
+			// Se muestra la ventana de espera
+			dialog.setVisible(true);
+		}
 
 		try {
 
@@ -329,7 +322,7 @@ public final class CreateHashFiles extends JDialog {
 			);
 		}
 		catch (final AOCancelledOperationException e) {
-			Logger.getLogger("es.gob.afirma").info("Operacion cancelada"); //$NON-NLS-1$//$NON-NLS-2$
+			// Operacion cancelada
 		}
 		catch (final Exception e) {
 			if (e.getCause() instanceof java.lang.OutOfMemoryError) {
@@ -595,6 +588,19 @@ public final class CreateHashFiles extends JDialog {
 			}
 		}
 		return directoryHash;
+	}
+	
+	static long getSize(File file) {
+	    long size;
+	    if (file.isDirectory()) {
+	        size = 0;
+	        for (File child : file.listFiles()) {
+	            size += getSize(child);
+	        }
+	    } else {
+	        size = file.length();
+	    }
+	    return size;
 	}
 
 

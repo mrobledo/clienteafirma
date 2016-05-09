@@ -41,7 +41,6 @@ import javax.xml.crypto.dsig.spec.XPathFilter2ParameterSpec;
 import javax.xml.crypto.dsig.spec.XPathFilterParameterSpec;
 import javax.xml.crypto.dsig.spec.XPathType;
 import javax.xml.crypto.dsig.spec.XPathType.Filter;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.OutputKeys;
 
 import org.w3c.dom.Document;
@@ -52,6 +51,7 @@ import org.w3c.dom.ls.DOMImplementationLS;
 import org.w3c.dom.ls.LSOutput;
 import org.w3c.dom.ls.LSSerializer;
 
+import es.gob.afirma.core.misc.AOFileUtils;
 import es.gob.afirma.core.misc.AOUtil;
 import es.gob.afirma.core.misc.Base64;
 import es.gob.afirma.core.signers.AOSignConstants;
@@ -374,10 +374,20 @@ public final class Utils {
             if (format.equals(AOSignConstants.SIGN_FORMAT_XADES_ENVELOPED) && mode.equals(AOSignConstants.SIGN_MODE_EXPLICIT)) {
                 throw new UnsupportedOperationException("El formato Enveloped es incompatible con el modo de firma explicito"); //$NON-NLS-1$
             }
-            if (format.equals(AOSignConstants.SIGN_FORMAT_XADES_EXTERNALLY_DETACHED) && uri == null && externallyDetachedHashAlgorithm == null) {
-                throw new UnsupportedOperationException(
-            		"La firma XML Externally Detached necesita un Message Digest precalculado o una URI accesible" //$NON-NLS-1$
-                );
+            if (format.equals(AOSignConstants.SIGN_FORMAT_XADES_EXTERNALLY_DETACHED)) {
+            	if ( uri == null && externallyDetachedHashAlgorithm == null) {
+            		throw new UnsupportedOperationException(
+            				"La firma XML Externally Detached necesita un Message Digest precalculado o una URI accesible" //$NON-NLS-1$
+            				);
+            	}
+            }
+            else {
+            	if (uri != null) {
+            		LOGGER.warning("Se ignorara el parametro 'uri' ya que este solo se utiliza con el formato " + AOSignConstants.SIGN_FORMAT_XADES_EXTERNALLY_DETACHED); //$NON-NLS-1$
+            	}
+            	if (externallyDetachedHashAlgorithm != null) {
+            		LOGGER.warning("Se ignorara el parametro 'precalculatedHashAlgorithm' ya que este solo se utiliza con el formato " + AOSignConstants.SIGN_FORMAT_XADES_EXTERNALLY_DETACHED); //$NON-NLS-1$
+            	}
             }
             if (!format.equals(AOSignConstants.SIGN_FORMAT_XADES_DETACHED) && !format.equals(AOSignConstants.SIGN_FORMAT_XADES_ENVELOPED)
                 && !format.equals(AOSignConstants.SIGN_FORMAT_XADES_ENVELOPING)
@@ -535,14 +545,11 @@ public final class Utils {
         // Ahora escribimos el XML usando XALAN
         writeXMLwithXALAN(writer, node, xmlEncoding);
 
-        try {
-            DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(new ByteArrayInputStream(baos.toByteArray()));
-        }
-        catch (final Exception e) {
+        if (!AOFileUtils.isXML(baos.toByteArray())) {
             LOGGER.severe(
-        		"No se ha podido recargar el XML para insertar los atributos de la cabecera, quizas la codificacion se vea afectada: " + e //$NON-NLS-1$
+        		"No se ha podido recargar el XML para insertar los atributos de la cabecera, quizas la codificacion se vea afectada." //$NON-NLS-1$
     		);
-            return baos.toByteArray();
+        	return baos.toByteArray();
         }
 
         // Y devolvemos el resultado como array de bytes, insertando antes la

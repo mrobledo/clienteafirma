@@ -26,7 +26,6 @@ import java.security.KeyManagementException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
@@ -48,12 +47,13 @@ import es.gob.afirma.core.misc.Base64;
 import es.gob.afirma.core.misc.Platform;
 
 /** Clase para la lectura y env&iacute;o de datos a URL remotas.
- * @author Carlos Gamuci. */
+ * @author Carlos Gamuci.
+ * @author Tom&aacute;s Garc&iacute;a-Mer&aacute;s. */
 public class UrlHttpManagerImpl implements UrlHttpManager {
 
 	private static final Logger LOGGER = Logger.getLogger("es.gob.afirma"); //$NON-NLS-1$
 
-	private static final String JAVA_PARAM_ENABLE_SSL_CHECKS = "enableSslChecks"; //$NON-NLS-1$
+	private static final String JAVA_PARAM_DISABLE_SSL_CHECKS = "disableSslChecks"; //$NON-NLS-1$
 
 	/** Tiempo de espera por defecto para descartar una conexi&oacute;n HTTP. */
 	public static final int DEFAULT_TIMEOUT = -1;
@@ -109,7 +109,7 @@ public class UrlHttpManagerImpl implements UrlHttpManager {
 			return InetAddress.getByName(url.getHost()).isLoopbackAddress();
 		}
 		catch (final Exception e) {
-			// La direccion local siempre es conocida
+			LOGGER.warning("Error comprobando si una URL es el bucle local: " + e); //$NON-NLS-1$
 			return false;
 		}
 	}
@@ -158,9 +158,9 @@ public class UrlHttpManagerImpl implements UrlHttpManager {
 
 		final URL uri = new URL(request != null ? request : url);
 
-		final boolean enableSSLChecks = Boolean.getBoolean(JAVA_PARAM_ENABLE_SSL_CHECKS);
+		final boolean disableSSLChecks = Boolean.getBoolean(JAVA_PARAM_DISABLE_SSL_CHECKS);
 
-		if (!enableSSLChecks && uri.getProtocol().equals(HTTPS)) {
+		if (disableSSLChecks && uri.getProtocol().equals(HTTPS)) {
 			try {
 				disableSslChecks();
 			}
@@ -226,7 +226,7 @@ public class UrlHttpManagerImpl implements UrlHttpManager {
 		final byte[] data = AOUtil.getDataFromInputStream(is);
 		is.close();
 
-		if (!enableSSLChecks && uri.getProtocol().equals(HTTPS)) {
+		if (disableSSLChecks && uri.getProtocol().equals(HTTPS)) {
 			enableSslChecks();
 		}
 
@@ -248,15 +248,13 @@ public class UrlHttpManagerImpl implements UrlHttpManager {
 	 * @throws KeyStoreException Si no se puede cargar el KeyStore SSL.
 	 * @throws IOException Si hay errores en la carga del fichero KeyStore SSL.
 	 * @throws CertificateException Si los certificados del KeyStore SSL son inv&aacute;lidos.
-	 * @throws UnrecoverableKeyException Si una clave del KeyStore SSL es inv&aacute;lida.
-	 * @throws NoSuchProviderException Si ocurre un error al recuperar la instancia del Keystore.*/
+	 * @throws UnrecoverableKeyException Si una clave del KeyStore SSL es inv&aacute;lida. */
 	public static void disableSslChecks() throws KeyManagementException,
 	                                             NoSuchAlgorithmException,
 	                                             KeyStoreException,
 	                                             UnrecoverableKeyException,
 	                                             CertificateException,
-	                                             IOException,
-	                                             NoSuchProviderException {
+	                                             IOException {
 		final SSLContext sc = SSLContext.getInstance(SSL_CONTEXT);
 		sc.init(getKeyManager(), DUMMY_TRUST_MANAGER, new java.security.SecureRandom());
 		HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
@@ -270,23 +268,19 @@ public class UrlHttpManagerImpl implements UrlHttpManager {
 		);
 	}
 
-
-
 	/** Devuelve un KeyManager a utilizar cuando se desea deshabilitar las comprobaciones de certificados en las conexiones SSL.
 	 * @return KeyManager[] Se genera un KeyManager[] utilizando el keystore almacenado en las propiedades del sistema.
 	 * @throws KeyStoreException Si no se puede cargar el KeyStore SSL.
 	 * @throws NoSuchAlgorithmException Si el JRE no soporta alg&uacute;n algoritmo necesario.
 	 * @throws CertificateException Si los certificados del KeyStore SSL son inv&aacute;lidos.
 	 * @throws IOException Si hay errores en la carga del fichero KeyStore SSL.
-	 * @throws UnrecoverableKeyException Si una clave del KeyStore SSL es inv&aacute;lida.
-	 * @throws NoSuchProviderException Si ocurre un error al recuperar la instancia del KeyStore. */
+	 * @throws UnrecoverableKeyException Si una clave del KeyStore SSL es inv&aacute;lida. */
 
 	private static KeyManager[] getKeyManager() throws KeyStoreException,
 	                                                   NoSuchAlgorithmException,
 	                                                   CertificateException,
 	                                                   IOException,
-	                                                   UnrecoverableKeyException,
-	                                                   NoSuchProviderException {
+	                                                   UnrecoverableKeyException {
 		final String keyStore = System.getProperty(KEYSTORE);
 		final String keyStorePassword = System.getProperty(KEYSTORE_PASS);
 		final String keyStoreType = System.getProperty(KEYSTORE_TYPE);

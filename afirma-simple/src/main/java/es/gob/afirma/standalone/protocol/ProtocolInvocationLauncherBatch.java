@@ -47,7 +47,7 @@ final class ProtocolInvocationLauncherBatch {
 	static String processBatch(final UrlParametersForBatch options,
 			                   final boolean bySocket) throws SocketOperationException {
 
-		final AOKeyStore aoks = AOKeyStore.valueOf(options.getDefaultKeyStore());
+		final AOKeyStore aoks = AOKeyStore.getKeyStore(options.getDefaultKeyStore());
 		if (aoks == null) {
 			LOGGER.severe("No hay un KeyStore con el nombre: " + options.getDefaultKeyStore()); //$NON-NLS-1$
 			ProtocolInvocationLauncherErrorManager.showError(ProtocolInvocationLauncherErrorManager.SAF_07);
@@ -95,7 +95,7 @@ final class ProtocolInvocationLauncherBatch {
 			);
 		}
 		catch (final AOCancelledOperationException e) {
-			LOGGER.severe("Operacion cancelada por el usuario" + e); //$NON-NLS-1$
+			LOGGER.severe("Operacion cancelada por el usuario " + e); //$NON-NLS-1$
 			if (!bySocket){
 				throw new SocketOperationException(RESULT_CANCEL);
 			}
