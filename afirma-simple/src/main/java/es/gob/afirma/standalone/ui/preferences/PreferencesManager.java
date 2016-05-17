@@ -213,9 +213,6 @@ public final class PreferencesManager {
 	/** Nivel de certificaci&oacute;n de firma para PAdES. */
 	public static final String PREFERENCE_PADES_CERTIFICATION_LEVEL = "padesCertificationLevel"; //$NON-NLS-1$
 
-	/** Imagen de r&uacute;brica para firma visible. */
-	public static final String PREFERENCE_PADES_RUBRIC_IMAGE = "padesRubricImage"; //$NON-NLS-1$
-
 	//**************** PREFERENCIAS DE SELLOS DE TIEMPO PADES*****************************************************************
 
 	/** Indica si la configuraci&oacute;n de sello de tiempo est&aacute; activada. */

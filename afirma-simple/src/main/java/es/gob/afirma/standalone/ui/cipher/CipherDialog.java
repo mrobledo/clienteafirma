@@ -20,7 +20,6 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
-import javax.swing.SwingUtilities;
 
 import es.gob.afirma.core.AOCancelledOperationException;
 import es.gob.afirma.core.misc.Platform;
@@ -90,14 +89,7 @@ public final class CipherDialog extends JDialog implements KeyListener{
 		super(parent);
 		setTitle(SimpleAfirmaMessages.getString("CipherDialog.0")); //$NON-NLS-1$
 		setModalityType(ModalityType.APPLICATION_MODAL);
-		SwingUtilities.invokeLater(
-			new Runnable() {
-				@Override
-				public void run() {
-					createUI(parent);
-				}
-			}
-		);
+		createUI(parent);
 	}
 
 	void createUI(final Frame parent) {

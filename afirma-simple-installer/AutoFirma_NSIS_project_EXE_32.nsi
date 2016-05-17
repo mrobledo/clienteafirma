@@ -199,6 +199,11 @@ Section "Programa" sPrograma
 	WriteRegStr HKEY_CLASSES_ROOT "*\shell\afirma.sign" "" "Firmar con AutoFirma"
 	WriteRegStr HKEY_CLASSES_ROOT "*\shell\afirma.sign" "Icon" "$INSTDIR\AutoFirma\AutoFirma.exe"
 	WriteRegStr HKEY_CLASSES_ROOT "*\shell\afirma.sign\command" "" "$INSTDIR\AutoFirma\AutoFirma.exe sign -gui -i %1" 
+
+	;Cifrar y firmar
+	WriteRegStr HKEY_CLASSES_ROOT "*\shell\afirma.ciphersign" "" "Cifrar y firmar con AutoFirma"
+	WriteRegStr HKEY_CLASSES_ROOT "*\shell\afirma.ciphersign" "Icon" "$INSTDIR\AutoFirma\AutoFirma.exe"
+	WriteRegStr HKEY_CLASSES_ROOT "*\shell\afirma.ciphersign\command" "" "$INSTDIR\AutoFirma\AutoFirma.exe cipherandsign -gui -i %1" 
 	
 	;Generar huella archivos
  	WriteRegStr HKEY_CLASSES_ROOT "*\shell\afirma.hashFile" "" "Generar huella digital con AutoFirma"
@@ -658,6 +663,7 @@ Section "uninstall"
     DeleteRegKey HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\$PATH" 
 
 	DeleteRegKey HKEY_CLASSES_ROOT "*\shell\afirma.sign"
+	DeleteRegKey HKEY_CLASSES_ROOT "*\shell\afirma.ciphersign"
 	DeleteRegKey HKEY_CLASSES_ROOT "*\shell\afirma.hashFile"
 	DeleteRegKey HKEY_CLASSES_ROOT "Directory\shell\afirma.hashDirectory"
 	DeleteRegKey HKEY_CLASSES_ROOT ".hash\shell\afirma.hash"

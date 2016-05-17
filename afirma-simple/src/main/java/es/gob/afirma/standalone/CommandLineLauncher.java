@@ -143,6 +143,8 @@ final class CommandLineLauncher {
 						final String response = signByCommandLine(command, params);
 						closeApp(STATUS_SUCCESS, pw, response);
 						return;
+					case CIPHERANDSIGN:
+						break;
 					case CREATEHASH:
 						createHashByGui(params);
 						return;
@@ -158,10 +160,10 @@ final class CommandLineLauncher {
 						batchByCommandLine(params);
 						return;
 					case CREATEENVELOPE:
-						createEnvelope(params);
+						createEnvelopeByGui(params);
 						return;
 					case OPENENVELOPE:
-						openEnvelopeByGui(params);
+						openEnvelope(params);
 						return;
 					default:
 						closeApp(
@@ -198,7 +200,7 @@ final class CommandLineLauncher {
 	/** Realizamos la creaci&oacute;n de un sobre digital del fichero seleccionado mostrando los di&aacute;logos necesarios.
 	 * @param Par&aacute;metros de configuraci&oacute;n.
 	 * @throws CommandLineException Cuando falta algun par&aacute;metro necesario o no se puede cargar el almac&eacute;n de claves. */
-	private static void createEnvelope(final CommandLineParameters params) throws CommandLineException {
+	private static void createEnvelopeByGui(final CommandLineParameters params) throws CommandLineException {
 		Logger.getLogger("es.gob.afirma").info("CreateEnvelope");; //$NON-NLS-1$
 		final File inputFile = params.getInputFile();
 		if (inputFile == null) {
@@ -219,7 +221,7 @@ final class CommandLineLauncher {
 	/** Realizamos la apertura del sobre digital seleccionado mostrando los di&aacute;logos necesarios.
 	 * @param Par&aacute;metros de configuraci&oacute;n.
 	 * @throws CommandLineException Cuando falta algun par&aacute;metro necesario o no se puede cargar el almac&eacute;n de claves. */
-	private static void openEnvelopeByGui(final CommandLineParameters params) throws CommandLineException {
+	private static void openEnvelope(final CommandLineParameters params) throws CommandLineException {
 		final File inputFile = params.getInputFile();
 		if (inputFile == null) {
 			throw new CommandLineException(CommandLineMessages.getString("CommandLineLauncher.5")); //$NON-NLS-1$

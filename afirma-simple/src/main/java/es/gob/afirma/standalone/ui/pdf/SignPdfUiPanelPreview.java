@@ -31,7 +31,6 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.font.TextAttribute;
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -81,11 +80,11 @@ import es.gob.afirma.core.AOCancelledOperationException;
 import es.gob.afirma.core.misc.Base64;
 import es.gob.afirma.core.misc.Platform;
 import es.gob.afirma.core.ui.AOUIFactory;
+import es.gob.afirma.standalone.SimpleAfirma;
 import es.gob.afirma.standalone.SimpleAfirmaMessages;
 import es.gob.afirma.standalone.ui.EditorFocusManager;
 import es.gob.afirma.standalone.ui.EditorFocusManagerAction;
 import es.gob.afirma.standalone.ui.pdf.SignPdfUiPanel.SignPdfUiPanelListener;
-import es.gob.afirma.standalone.ui.preferences.PreferencesManager;
 
 final class SignPdfUiPanelPreview extends JPanel implements KeyListener {
 
@@ -101,7 +100,7 @@ final class SignPdfUiPanelPreview extends JPanel implements KeyListener {
 	private static final String SPACE_SEPARATOR = " "; //$NON-NLS-1$
 	private static final String SPLIT_REGEXP= "\\s+"; //$NON-NLS-1$
 	static final String IMAGE_EXT[] = {"jpg", "jpeg", "png", "gif"}; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
-
+	private static final String RUBRIC_NAME = "rubric.jpg"; //$NON-NLS-1$
 	private float scale = 1;
 	private BufferedImage image;
 	private BufferedImage signImage;
@@ -111,8 +110,8 @@ final class SignPdfUiPanelPreview extends JPanel implements KeyListener {
 	void setSignImage(final BufferedImage bi) {
 		this.signImage = bi;
 	}
-	private String signImageDefault;
-	String getSignImageDefault() {
+	private BufferedImage signImageDefault;
+	BufferedImage getSignImageDefault() {
 		return this.signImageDefault;
 	}
 
@@ -216,7 +215,7 @@ final class SignPdfUiPanelPreview extends JPanel implements KeyListener {
 		this.prop = p;
 		this.style = 0;
 		this.image = im;
-		this.signImage = null;
+		loadRubric();
 
 		createUI();
 	}
@@ -395,7 +394,7 @@ final class SignPdfUiPanelPreview extends JPanel implements KeyListener {
 								null,
 								SignPdfUiPanelPreview.this
 							)[0].getAbsolutePath();
-							paintImage(imPath, null);
+							paintImage(imPath);
 							showPreview();
 						}
 						catch(final AOCancelledOperationException ex) {
@@ -416,10 +415,9 @@ final class SignPdfUiPanelPreview extends JPanel implements KeyListener {
 		);
 		this.viewLabel.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
-		this.signImageDefault = PreferencesManager.get(PreferencesManager.PREFERENCE_PADES_RUBRIC_IMAGE, null);
 		if (this.signImageDefault != null) {
 			try{
-				paintImage(null, Base64.decode(this.signImageDefault));
+				paintImage(null);
 			}
 			catch(final AOCancelledOperationException ex) {
 				LOGGER.severe("Operacion cancelada por el usuario: " + ex); //$NON-NLS-1$
@@ -756,7 +754,7 @@ final class SignPdfUiPanelPreview extends JPanel implements KeyListener {
 							"imagePage", //$NON-NLS-1$
 							getProp().getProperty("signaturePage") //$NON-NLS-1$
 						);
-						PreferencesManager.put(PreferencesManager.PREFERENCE_PADES_RUBRIC_IMAGE, getSignImageDefault());
+						saveRubric();
 					}
 					getListener().positionSelected(getProp());
 				}
@@ -827,7 +825,7 @@ final class SignPdfUiPanelPreview extends JPanel implements KeyListener {
             return;
         }
 
-        paintImage(file.getAbsolutePath(), null);
+        paintImage(file.getAbsolutePath());
         showPreview();
         setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
     }
@@ -866,42 +864,39 @@ final class SignPdfUiPanelPreview extends JPanel implements KeyListener {
 		this.image = bi;
 	}
 
-	void paintImage(final String path, final byte[] imageInByte) throws IOException {
+	void paintImage(final String path) throws IOException {
 
 		final BufferedImage bi;
-		if (imageInByte != null) {
-			bi = ImageIO.read(new ByteArrayInputStream(imageInByte));
+		if (path == null) {
+			bi = this.signImageDefault;
 		}
 		else {
 			bi = ImageIO.read(new File(path));
 		}
 
-		final double imageHeight = bi.getHeight();
-        final double imageWidth = bi.getWidth();
-        int newWidth = this.image.getWidth();
-        int newHeight = this.image.getHeight();
-
-        if (imageHeight/this.image.getHeight() > imageWidth/this.image.getWidth()) {
-            newWidth = (int) (this.image.getHeight() * imageWidth / imageHeight);
-        } else {
-            newHeight = (int) (this.image.getWidth() * imageHeight / imageWidth);
-        }
-
-
 		final BufferedImage newImage = new BufferedImage(
 		    this.image.getWidth(), this.image.getHeight(), this.image.getType()
 		);
 
+		final double scale = determineImageScale(bi.getWidth(), bi.getHeight(), this.image.getWidth(), this.image.getHeight());
+
 		final Graphics2D g = newImage.createGraphics();
 		g.drawImage(this.image, 0, 0, null);
-		g.drawImage(bi, 0, 0, newWidth, newHeight, null);
+		g.drawImage(
+			bi.getScaledInstance((int) (bi.getWidth() * scale), (int) (bi.getHeight() * scale), Image.SCALE_SMOOTH),
+			0,
+			0,
+			null
+		);
 		g.dispose();
 		this.signImage = newImage;
-		final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		ImageIO.write(newImage, "jpg", baos);
-		baos.flush();
-		this.signImageDefault = Base64.encode(baos.toByteArray());
-		baos.close();
+		this.signImageDefault = bi;
+	}
+
+	private static double determineImageScale(int sourceWidth, int sourceHeight, int targetWidth, int targetHeight) {
+		final double scalex = (double) targetWidth / sourceWidth;
+		final double scaley = (double) targetHeight / sourceHeight;
+		return Math.min(scalex, scaley);
 	}
 
 	public static String breakLines(final String input, final int maxLineLength, final FontMetrics fm ) {
@@ -1265,4 +1260,22 @@ final class SignPdfUiPanelPreview extends JPanel implements KeyListener {
 	    }
 	}
 
+	void saveRubric() {
+		try {
+			ImageIO.write(this.signImageDefault, "jpg", new File(SimpleAfirma.APPLICATION_HOME + File.separator + RUBRIC_NAME)); //$NON-NLS-1$
+		} catch (final IOException e) {
+			LOGGER.warning("No se ha podido guardar la rubrica por defecto: " + e); //$NON-NLS-1$
+			return;
+		}
+	}
+
+	private void loadRubric() {
+    	try {
+            this.signImageDefault = ImageIO.read(new File(SimpleAfirma.APPLICATION_HOME + File.separator + RUBRIC_NAME));
+        }
+        catch (final Exception e) {
+        	LOGGER.warning("No se ha podido cargar la rubrica por defecto: " + e); //$NON-NLS-1$
+        	this.signImageDefault = null;
+        }
+	}
 }

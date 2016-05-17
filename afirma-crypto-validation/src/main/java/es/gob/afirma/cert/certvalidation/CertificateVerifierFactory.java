@@ -63,34 +63,28 @@ public final class CertificateVerifierFactory {
 			}
 		}
 
-		final String crc = getIssuerIdentifier(cert);
+		String crc = getIssuerIdentifier(cert);
 		LOGGER.info("Identificador del emisor del certificado: " + crc); //$NON-NLS-1$
 
+		if (p.getProperty(crc + ".validation.properties") == null) { //$NON-NLS-1$
+			crc = "default"; //$NON-NLS-1$
+		}
+
 		final String validationProperties = p.getProperty(crc + ".validation.properties"); //$NON-NLS-1$
-		final String validationMethod     = p.getProperty(crc + ".validation.type"); //$NON-NLS-1$
-		if (validationMethod == null) {
-			try {
-				return new CrlCertificateVerifier(cert);
-			}
-			catch(final Exception e) {
-				throw new CertificateVerifierFactoryException(
-					"No se conocen mecanismos de validacion para los certificados de este emisor: " + cert.getIssuerX500Principal(), e //$NON-NLS-1$
-				);
-			}
+		final String validationMethod = p.getProperty(crc + ".validation.type"); //$NON-NLS-1$
+
+		try{
+			final Class<?> certVerifierClass = Class.forName(validationMethod);
+			return (CertificateVerifier) certVerifierClass.getConstructor(
+					String.class, X509Certificate.class).newInstance(validationProperties, cert);
 		}
-		else{
-			try{
-				final Class<?> certVerifierClass = Class.forName(validationMethod); 
-				return (CertificateVerifier) certVerifierClass.getConstructor(
-						String.class, X509Certificate.class).newInstance(validationProperties, cert);
-			}
-			catch (final ClassNotFoundException e) {
-				LOGGER.warning("No se encuentran la clase validadora: " + e.toString()); //$NON-NLS-1$
-			}
-			catch (final Exception e) {
-				LOGGER.warning("No se ha podido instanciar el vereificador del certificado: " + e); //$NON-NLS-1$
-			}
+		catch (final ClassNotFoundException e) {
+			LOGGER.warning("No se encuentran la clase validadora: " + e.toString()); //$NON-NLS-1$
 		}
+		catch (final Exception e) {
+			LOGGER.warning("No se ha podido instanciar el verificador del certificado: " + e); //$NON-NLS-1$
+		}
+
 		throw new IllegalStateException(
 			"No se soporta el medio de validacion: " + validationMethod //$NON-NLS-1$
 		);
