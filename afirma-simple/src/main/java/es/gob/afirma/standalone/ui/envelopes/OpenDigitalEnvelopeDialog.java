@@ -33,7 +33,6 @@ import es.gob.afirma.keystores.AOCertificatesNotFoundException;
 import es.gob.afirma.keystores.AOKeyStoreDialog;
 import es.gob.afirma.keystores.AOKeyStoreManager;
 import es.gob.afirma.standalone.AutoFirmaUtil;
-import es.gob.afirma.standalone.SimpleAfirma;
 import es.gob.afirma.standalone.SimpleAfirmaMessages;
 
 /**
@@ -47,7 +46,7 @@ public class OpenDigitalEnvelopeDialog extends JDialog implements KeyListener{
 	private static final int PREFERRED_WIDTH = 600;
 	private static final int PREFERRED_HEIGHT = 200;
 
-	private final SimpleAfirma saf;
+	private final AOKeyStoreManager ksm;
 
 	private final JTextField selectedFilePath = new JTextField();
 	void setSelectedFilePath(final String path) {
@@ -63,8 +62,10 @@ public class OpenDigitalEnvelopeDialog extends JDialog implements KeyListener{
 	 * @param parent Frame padre del di&aacute;logo.
 	 * @param sa Instancia de SimpleAfirma para utilizar el almac&eacute;n de la aplicaci&oacute;n.
 	 */
-	public static void startOpenDigitalEnvelopeDialog(final Frame parent, final SimpleAfirma sa) {
-		final OpenDigitalEnvelopeDialog ode = new OpenDigitalEnvelopeDialog(parent, sa);
+	public static void startOpenDigitalEnvelopeDialog(final Frame parent,
+													  final AOKeyStoreManager ksm,
+													  final String filePath) {
+		final OpenDigitalEnvelopeDialog ode = new OpenDigitalEnvelopeDialog(parent, ksm, filePath);
 		ode.setSize(PREFERRED_WIDTH, PREFERRED_HEIGHT);
 		ode.setResizable(false);
 		ode.setLocationRelativeTo(parent);
@@ -75,14 +76,20 @@ public class OpenDigitalEnvelopeDialog extends JDialog implements KeyListener{
 	 * @param parent Componente padre del di&aacute;logo.
 	 * @param sa Instancia de SimpleAfirma para utilizar el almac&eacute;n de la aplicaci&oacute;n.
 	 **/
-	public OpenDigitalEnvelopeDialog(final Frame parent, final SimpleAfirma sa) {
+	public OpenDigitalEnvelopeDialog(final Frame parent, final AOKeyStoreManager ksm, final String filePath) {
 		super(parent);
-		this.saf =  sa;
+		this.ksm =  ksm;
+		if (filePath != null) {
+			setSelectedFilePath(filePath);
+		}
 		createUI();
 	}
 
 	public void createUI() {
 
+		LOGGER.warning(
+			"createui: " //$NON-NLS-1$
+		);
 		setTitle(SimpleAfirmaMessages.getString("OpenDigitalEnvelope.0")); //$NON-NLS-1$
 
 		getAccessibleContext().setAccessibleDescription(
@@ -227,8 +234,7 @@ public class OpenDigitalEnvelopeDialog extends JDialog implements KeyListener{
 	}
 
 	void enableOpenbutton() {
-		if (this.saf.isKeyStoreReady()
-				&& !this.selectedFilePath.getText().trim().isEmpty()) {
+		if (!this.selectedFilePath.getText().trim().isEmpty()) {
 			this.openButton.setEnabled(true);
 		}
 		else {
@@ -240,7 +246,7 @@ public class OpenDigitalEnvelopeDialog extends JDialog implements KeyListener{
 	 * Abre el sobre digital seleccionado si es posible.
 	 * @return Devuelve <code>true</code> si se ha podido abrir el sobre correctamente, <code>false</code> en caso contrario.
 	 */
-	boolean open() {
+	public boolean open() {
 		final PrivateKeyEntry pke;
         try {
             pke = getPrivateKeyEntry();
@@ -321,7 +327,7 @@ public class OpenDigitalEnvelopeDialog extends JDialog implements KeyListener{
 	}
 
 	private PrivateKeyEntry getPrivateKeyEntry() throws AOCertificatesNotFoundException, KeyStoreException, NoSuchAlgorithmException, UnrecoverableEntryException {
-		final AOKeyStoreManager ksm = this.saf.getAOKeyStoreManager();
+		final AOKeyStoreManager ksm = this.ksm;
     	final AOKeyStoreDialog dialog = new AOKeyStoreDialog(
 			ksm,
 			this,

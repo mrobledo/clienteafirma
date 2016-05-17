@@ -225,6 +225,16 @@ Section "Programa" sPrograma
 	WriteRegStr HKEY_CLASSES_ROOT ".hashfiles\shell\afirma.hashfiles" "Icon" "$INSTDIR\AutoFirma\AutoFirma.exe"
 	WriteRegStr HKEY_CLASSES_ROOT ".hashfiles\shell\afirma.hashfiles\command" "" "$INSTDIR\AutoFirma\AutoFirma.exe checkdigest -i %1" 
 
+	;Crear sobres digitales
+ 	WriteRegStr HKEY_CLASSES_ROOT "*\shell\afirma.envelop" "" "Generar sobre digital con AutoFirma"
+	WriteRegStr HKEY_CLASSES_ROOT "*\shell\afirma.envelop" "Icon" "$INSTDIR\AutoFirma\AutoFirma.exe"
+	WriteRegStr HKEY_CLASSES_ROOT "*\shell\afirma.envelop\command" "" "$INSTDIR\AutoFirma\AutoFirma.exe createenvelope -i %1" 
+
+	;Abrir sobres digitales
+ 	WriteRegStr HKEY_CLASSES_ROOT ".enveloped\shell\afirma.enveloped" "" "Abrir sobre digital con AutoFirma"
+	WriteRegStr HKEY_CLASSES_ROOT ".enveloped\shell\afirma.enveloped" "Icon" "$INSTDIR\AutoFirma\AutoFirma.exe"
+	WriteRegStr HKEY_CLASSES_ROOT ".enveloped\shell\afirma.enveloped\command" "" "$INSTDIR\AutoFirma\AutoFirma.exe openenvelope -i %1" 
+
 	;Verify
 	; .csig
 	WriteRegStr HKEY_CLASSES_ROOT ".csig" "" "Firma binaria CMS/CAdES"
@@ -653,6 +663,8 @@ Section "uninstall"
 	DeleteRegKey HKEY_CLASSES_ROOT ".hash\shell\afirma.hash"
 	DeleteRegKey HKEY_CLASSES_ROOT ".hashb64\shell\afirma.hasbh64"
 	DeleteRegKey HKEY_CLASSES_ROOT ".hashfiles\shell\afirma.hashfiles"
+	DeleteRegKey HKEY_CLASSES_ROOT "*\shell\afirma.envelop"
+	DeleteRegKey HKEY_CLASSES_ROOT ".enveloped\shell\afirma.enveloped"
 	DeleteRegKey HKEY_CLASSES_ROOT "*\shell\afirma.verify"
 
 	DeleteRegKey HKEY_CLASSES_ROOT ".csig\shell\Verify"

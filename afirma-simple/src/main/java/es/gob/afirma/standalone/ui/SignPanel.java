@@ -608,7 +608,8 @@ public final class SignPanel extends JPanel {
 			SimpleAfirmaMessages.getString("SignPanel.50") //$NON-NLS-1$
 		);
     	new SignPanelSignTask(
-    		this, getCertFilters(),
+    		this,
+    		getCertFilters(),
     		signWaitDialog
 		).execute();
     	signWaitDialog.setVisible(true);

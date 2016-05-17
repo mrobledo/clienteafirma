@@ -31,6 +31,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.font.TextAttribute;
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -110,9 +111,9 @@ final class SignPdfUiPanelPreview extends JPanel implements KeyListener {
 	void setSignImage(final BufferedImage bi) {
 		this.signImage = bi;
 	}
-	private String signImagePath;
-	String getSignImagePath() {
-		return this.signImagePath;
+	private String signImageDefault;
+	String getSignImageDefault() {
+		return this.signImageDefault;
 	}
 
 	private final SignPdfUiPanelListener listener;
@@ -394,7 +395,7 @@ final class SignPdfUiPanelPreview extends JPanel implements KeyListener {
 								null,
 								SignPdfUiPanelPreview.this
 							)[0].getAbsolutePath();
-							paintImage(imPath);
+							paintImage(imPath, null);
 							showPreview();
 						}
 						catch(final AOCancelledOperationException ex) {
@@ -415,10 +416,10 @@ final class SignPdfUiPanelPreview extends JPanel implements KeyListener {
 		);
 		this.viewLabel.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
-		this.signImagePath = PreferencesManager.get(PreferencesManager.PREFERENCE_PADES_RUBRIC_IMAGE, null);
-		if (this.signImagePath != null) {
+		this.signImageDefault = PreferencesManager.get(PreferencesManager.PREFERENCE_PADES_RUBRIC_IMAGE, null);
+		if (this.signImageDefault != null) {
 			try{
-				paintImage(this.signImagePath);
+				paintImage(null, Base64.decode(this.signImageDefault));
 			}
 			catch(final AOCancelledOperationException ex) {
 				LOGGER.severe("Operacion cancelada por el usuario: " + ex); //$NON-NLS-1$
@@ -755,7 +756,7 @@ final class SignPdfUiPanelPreview extends JPanel implements KeyListener {
 							"imagePage", //$NON-NLS-1$
 							getProp().getProperty("signaturePage") //$NON-NLS-1$
 						);
-						PreferencesManager.put(PreferencesManager.PREFERENCE_PADES_RUBRIC_IMAGE, getSignImagePath());
+						PreferencesManager.put(PreferencesManager.PREFERENCE_PADES_RUBRIC_IMAGE, getSignImageDefault());
 					}
 					getListener().positionSelected(getProp());
 				}
@@ -826,7 +827,7 @@ final class SignPdfUiPanelPreview extends JPanel implements KeyListener {
             return;
         }
 
-        paintImage(file.getAbsolutePath());
+        paintImage(file.getAbsolutePath(), null);
         showPreview();
         setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
     }
@@ -865,9 +866,27 @@ final class SignPdfUiPanelPreview extends JPanel implements KeyListener {
 		this.image = bi;
 	}
 
-	void paintImage(final String path) throws IOException {
+	void paintImage(final String path, final byte[] imageInByte) throws IOException {
 
-		final BufferedImage bi = ImageIO.read(new File(path));
+		final BufferedImage bi;
+		if (imageInByte != null) {
+			bi = ImageIO.read(new ByteArrayInputStream(imageInByte));
+		}
+		else {
+			bi = ImageIO.read(new File(path));
+		}
+
+		final double imageHeight = bi.getHeight();
+        final double imageWidth = bi.getWidth();
+        int newWidth = this.image.getWidth();
+        int newHeight = this.image.getHeight();
+
+        if (imageHeight/this.image.getHeight() > imageWidth/this.image.getWidth()) {
+            newWidth = (int) (this.image.getHeight() * imageWidth / imageHeight);
+        } else {
+            newHeight = (int) (this.image.getWidth() * imageHeight / imageWidth);
+        }
+
 
 		final BufferedImage newImage = new BufferedImage(
 		    this.image.getWidth(), this.image.getHeight(), this.image.getType()
@@ -875,10 +894,14 @@ final class SignPdfUiPanelPreview extends JPanel implements KeyListener {
 
 		final Graphics2D g = newImage.createGraphics();
 		g.drawImage(this.image, 0, 0, null);
-		g.drawImage(bi.getScaledInstance(this.image.getWidth(), this.image.getHeight(), Image.SCALE_SMOOTH), 0, 0, null);
+		g.drawImage(bi, 0, 0, newWidth, newHeight, null);
 		g.dispose();
 		this.signImage = newImage;
-		this.signImagePath = path;
+		final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		ImageIO.write(newImage, "jpg", baos);
+		baos.flush();
+		this.signImageDefault = Base64.encode(baos.toByteArray());
+		baos.close();
 	}
 
 	public static String breakLines(final String input, final int maxLineLength, final FontMetrics fm ) {

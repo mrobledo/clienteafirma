@@ -184,6 +184,16 @@ Section "Programa" sPrograma
 	WriteRegStr HKEY_CLASSES_ROOT ".hashfiles\shell\afirma.hashfiles" "Icon" "$INSTDIR\AutoFirma\AutoFirma.exe"
 	WriteRegStr HKEY_CLASSES_ROOT ".hashfiles\shell\afirma.hashfiles\command" "" "$INSTDIR\AutoFirma\AutoFirma.exe checkdigest -i %1" 
 
+	;Crear sobres digitales
+ 	WriteRegStr HKEY_CLASSES_ROOT "*\shell\afirma.envelop" "" "Generar sobre digital con AutoFirma"
+	WriteRegStr HKEY_CLASSES_ROOT "*\shell\afirma.envelop" "Icon" "$INSTDIR\AutoFirma\AutoFirma.exe"
+	WriteRegStr HKEY_CLASSES_ROOT "*\shell\afirma.envelop\command" "" "$INSTDIR\AutoFirma\AutoFirma.exe createenvelope -i %1" 
+
+	;Abrir sobres digitales
+ 	WriteRegStr HKEY_CLASSES_ROOT ".enveloped\shell\afirma.enveloped" "" "Abrir sobre digital con AutoFirma"
+	WriteRegStr HKEY_CLASSES_ROOT ".enveloped\shell\afirma.enveloped" "Icon" "$INSTDIR\AutoFirma\AutoFirma.exe"
+	WriteRegStr HKEY_CLASSES_ROOT ".enveloped\shell\afirma.enveloped\command" "" "$INSTDIR\AutoFirma\AutoFirma.exe openenvelope -i %1" 
+
 	;WriteRegStr HKEY_CLASSES_ROOT "*\shell\afirma.sign\command" "" "$INSTDIR\AutoFirma\AutoFirma.exe %1" 
 	
 	;Verify

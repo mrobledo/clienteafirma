@@ -37,20 +37,20 @@ public class DigitalEnvelopePresentation extends JDialog implements KeyListener{
 	private final JButton cancelButton = new JButton(SimpleAfirmaMessages.getString("DigitalEnvelopePresentation.4")); //$NON-NLS-1$
 
 	private final JPanel panelCentral = new JPanel();
-	JPanel getPanelCentral() {
+	public JPanel getPanelCentral() {
 		return this.panelCentral;
 	}
 
 	private final JPanel panel = new JPanel();
-	JPanel getPanel() {
+	public JPanel getPanel() {
 		return this.panel;
 	}
 
 	private JPanel filePanel = new JPanel();
-	JPanel getFilePanel() {
+	public JPanel getFilePanel() {
 		return this.filePanel;
 	}
-	void setFilePanel(final JPanel p) {
+	public void setFilePanel(final JPanel p) {
 		this.filePanel = p;
 	}
 
@@ -79,6 +79,7 @@ public class DigitalEnvelopePresentation extends JDialog implements KeyListener{
 		de.setSize(PREFERRED_WIDTH, PREFERRED_HEIGHT);
 		de.setResizable(false);
 		de.setLocationRelativeTo(parent);
+		de.setModalityType(ModalityType.APPLICATION_MODAL);
 		de.setVisible(true);
 	}
 
@@ -132,7 +133,7 @@ public class DigitalEnvelopePresentation extends JDialog implements KeyListener{
  				public void actionPerformed(final ActionEvent ae) {
  					remove(getPanelCentral());
  					remove(getPanel());
- 					setFilePanel(new DigitalEnvelopeSelectFile(DigitalEnvelopePresentation.this));
+ 					setFilePanel(new DigitalEnvelopeSelectFile(DigitalEnvelopePresentation.this, null));
  					add(getFilePanel());
  				}
  			}

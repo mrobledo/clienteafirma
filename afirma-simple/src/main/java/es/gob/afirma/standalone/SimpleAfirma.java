@@ -590,11 +590,11 @@ public final class SimpleAfirma implements PropertyChangeListener, WindowListene
     			System.exit(0);
     		}
     		else {
-    			CommandLineLauncher.main(args);
+    			CommandLineLauncher.processCommandLine(args);
     		}
     	}
     	catch (final HeadlessException he) {
-    		CommandLineLauncher.main(args);
+    		CommandLineLauncher.processCommandLine(args);
     	}
     	catch (final Exception e) {
     		LOGGER.log(Level.SEVERE, "Error global en la aplicacion: " + e, e); //$NON-NLS-1$

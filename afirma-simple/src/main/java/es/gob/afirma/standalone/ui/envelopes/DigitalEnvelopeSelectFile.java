@@ -3,7 +3,6 @@ package es.gob.afirma.standalone.ui.envelopes;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.FlowLayout;
-import java.awt.Frame;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -58,7 +57,6 @@ public class DigitalEnvelopeSelectFile extends JPanel {
 
 	private final JButton nextButton = new JButton(SimpleAfirmaMessages.getString("DigitalEnvelopePresentation.3")); //$NON-NLS-1$
 	private final JButton cancelButton = new JButton(SimpleAfirmaMessages.getString("DigitalEnvelopePresentation.4")); //$NON-NLS-1$
-	private final JButton backButton = new JButton(SimpleAfirmaMessages.getString("DigitalEnvelopePresentation.5") ); //$NON-NLS-1$
 	private final JButton examineButton = new JButton(SimpleAfirmaMessages.getString("DigitalEnvelopePresentation.9")); //$NON-NLS-1$
 
 	JButton getNextButton() {
@@ -84,8 +82,11 @@ public class DigitalEnvelopeSelectFile extends JPanel {
 	 * Crea el panel para seleccionar el fichero a ensobrar, el tipo de sobre y el algoritmo a utilizar.
 	 * @param dl
 	 */
-	DigitalEnvelopeSelectFile(final DigitalEnvelopePresentation dl) {
+	public DigitalEnvelopeSelectFile(final DigitalEnvelopePresentation dl, final String path) {
 		this.dialog = dl;
+		if (path != null) {
+			setSelectedFile(path);
+		}
 		createUI();
 	}
 
@@ -213,9 +214,11 @@ public class DigitalEnvelopeSelectFile extends JPanel {
 			}
 		}
 		);
-		this.nextButton.setEnabled(false);
 		this.nextButton.setFocusable(false);
 		this.nextButton.addKeyListener(this.dialog);
+		if (getSelectedFile().isEmpty()) {
+			this.nextButton.setEnabled(false);
+		}
 
 		// Boton cancelar
 		this.cancelButton.setMnemonic('C');
@@ -234,33 +237,14 @@ public class DigitalEnvelopeSelectFile extends JPanel {
 		);
 		this.cancelButton.addKeyListener(this.dialog);
 
-		// Boton de volver
-		this.backButton.setMnemonic('A');
-		this.backButton.getAccessibleContext().setAccessibleDescription(
- 			SimpleAfirmaMessages.getString("DigitalEnvelopePresentation.8") //$NON-NLS-1$
-		);
-		this.backButton.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(final ActionEvent e) {
-				DigitalEnvelopePresentation.startDigitalEnvelopePresentation(
-					(Frame)  getDialog().getParent()
-				);
-				getDialog().setVisible(false);
-				getDialog().dispose();
-			}
-		});
-		this.backButton.addKeyListener(this.dialog);
-
 		this.panel.setLayout(new FlowLayout(FlowLayout.RIGHT));
 
 		// En Mac OS X el orden de los botones es distinto
 		if (Platform.OS.MACOSX.equals(Platform.getOS())) {
 			this.panel.add(this.cancelButton);
-			this.panel.add(this.backButton);
 			this.panel.add(this.nextButton);
 		}
 		else {
-			this.panel.add(this.backButton);
 			this.panel.add(this.nextButton);
 			this.panel.add(this.cancelButton);
 		}

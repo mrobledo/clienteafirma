@@ -99,6 +99,6 @@ public final class MenuDigitalEnvelope extends JMenu {
 	 * Abre los sobres digitales que esten ya creados.
 	 */
 	void openDigitalEnvelope() {
-		OpenDigitalEnvelopeDialog.startOpenDigitalEnvelopeDialog(this.parent, this.saf);
+		OpenDigitalEnvelopeDialog.startOpenDigitalEnvelopeDialog(this.parent, this.saf.getAOKeyStoreManager(), null);
 	}
 }

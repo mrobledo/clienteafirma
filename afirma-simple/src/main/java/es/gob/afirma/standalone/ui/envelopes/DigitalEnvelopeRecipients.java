@@ -255,7 +255,7 @@ public class DigitalEnvelopeRecipients extends JPanel {
 				getDialog().remove(getPanelCentral());
 				getDialog().remove(getPanel());
 				getDialog().remove(getDialog().getRecipientsPanel());
-				getDialog().setFilePanel(new DigitalEnvelopeSelectFile(getDialog()));
+				getDialog().setFilePanel(new DigitalEnvelopeSelectFile(getDialog(), getFilePath()));
 				getDialog().add(getDialog().getFilePanel());
 			}
 		});

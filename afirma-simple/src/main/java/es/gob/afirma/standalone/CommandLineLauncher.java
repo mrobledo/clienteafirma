@@ -10,6 +10,7 @@
 
 package es.gob.afirma.standalone;
 
+import java.awt.Dialog.ModalityType;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.Console;
@@ -49,6 +50,9 @@ import es.gob.afirma.signers.cades.AOCAdESSigner;
 import es.gob.afirma.signers.pades.AOPDFSigner;
 import es.gob.afirma.signers.xades.AOFacturaESigner;
 import es.gob.afirma.signers.xades.AOXAdESSigner;
+import es.gob.afirma.standalone.ui.envelopes.DigitalEnvelopePresentation;
+import es.gob.afirma.standalone.ui.envelopes.DigitalEnvelopeSelectFile;
+import es.gob.afirma.standalone.ui.envelopes.OpenDigitalEnvelopeDialog;
 import es.gob.afirma.standalone.ui.hash.HashHelper;
 
 /** Clase para la gesti&oacute;n de los par&aacute;metros proporcionados desde l&iacute;nea de comandos.
@@ -153,6 +157,12 @@ final class CommandLineLauncher {
 					case BATCHSIGN:
 						batchByCommandLine(params);
 						return;
+					case CREATEENVELOPE:
+						createEnvelope(params);
+						return;
+					case OPENENVELOPE:
+						openEnvelopeByGui(params);
+						return;
 					default:
 						closeApp(
 							STATUS_ERROR,
@@ -182,6 +192,50 @@ final class CommandLineLauncher {
 				return;
 			}
 
+		}
+	}
+
+	/** Realizamos la creaci&oacute;n de un sobre digital del fichero seleccionado mostrando los di&aacute;logos necesarios.
+	 * @param Par&aacute;metros de configuraci&oacute;n.
+	 * @throws CommandLineException Cuando falta algun par&aacute;metro necesario o no se puede cargar el almac&eacute;n de claves. */
+	private static void createEnvelope(final CommandLineParameters params) throws CommandLineException {
+		Logger.getLogger("es.gob.afirma").info("CreateEnvelope");; //$NON-NLS-1$
+		final File inputFile = params.getInputFile();
+		if (inputFile == null) {
+			throw new CommandLineException(CommandLineMessages.getString("CommandLineLauncher.5")); //$NON-NLS-1$
+		}
+		final DigitalEnvelopePresentation de = new DigitalEnvelopePresentation(null);
+		de.setSize(650, 550);
+		de.setResizable(false);
+		de.setLocationRelativeTo(null);
+		de.remove(de.getPanelCentral());
+		de.remove(de.getPanel());
+		de.setFilePanel(new DigitalEnvelopeSelectFile(de, AutoFirmaUtil.sfn2lfn(inputFile).getAbsolutePath()));
+		de.setModalityType(ModalityType.APPLICATION_MODAL);
+		de.setVisible(true);
+		de.add(de.getFilePanel());
+	}
+
+	/** Realizamos la apertura del sobre digital seleccionado mostrando los di&aacute;logos necesarios.
+	 * @param Par&aacute;metros de configuraci&oacute;n.
+	 * @throws CommandLineException Cuando falta algun par&aacute;metro necesario o no se puede cargar el almac&eacute;n de claves. */
+	private static void openEnvelopeByGui(final CommandLineParameters params) throws CommandLineException {
+		final File inputFile = params.getInputFile();
+		if (inputFile == null) {
+			throw new CommandLineException(CommandLineMessages.getString("CommandLineLauncher.5")); //$NON-NLS-1$
+		}
+		try {
+			final OpenDigitalEnvelopeDialog oed = new OpenDigitalEnvelopeDialog(
+				null,
+				getKsm(null, null),
+				AutoFirmaUtil.sfn2lfn(inputFile).getAbsolutePath()
+			);
+			oed.open();
+		}
+		catch (final Exception e) {
+			throw new CommandLineException(
+				CommandLineMessages.getString("CommandLineLauncher.6") + e.getMessage() //$NON-NLS-1$
+			);
 		}
 	}
 
@@ -738,9 +792,5 @@ final class CommandLineLauncher {
 			}
 		}
 		System.exit(status);
-	}
-
-	public static void main(final String[] args) {
-		processCommandLine( args );
 	}
 }
