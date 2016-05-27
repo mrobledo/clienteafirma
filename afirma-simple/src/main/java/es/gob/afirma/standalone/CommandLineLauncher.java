@@ -11,6 +11,7 @@
 package es.gob.afirma.standalone;
 
 import java.awt.Dialog.ModalityType;
+import java.awt.Image;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.Console;
@@ -27,9 +28,12 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableEntryException;
 import java.security.cert.CertificateEncodingException;
+import java.security.cert.X509Certificate;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.imageio.ImageIO;
 
 import es.gob.afirma.core.AOException;
 import es.gob.afirma.core.misc.AOUtil;
@@ -50,6 +54,7 @@ import es.gob.afirma.signers.cades.AOCAdESSigner;
 import es.gob.afirma.signers.pades.AOPDFSigner;
 import es.gob.afirma.signers.xades.AOFacturaESigner;
 import es.gob.afirma.signers.xades.AOXAdESSigner;
+import es.gob.afirma.standalone.ui.CertValidationUi;
 import es.gob.afirma.standalone.ui.envelopes.DigitalEnvelopePresentation;
 import es.gob.afirma.standalone.ui.envelopes.DigitalEnvelopeSelectFile;
 import es.gob.afirma.standalone.ui.envelopes.OpenDigitalEnvelopeDialog;
@@ -129,6 +134,9 @@ final class CommandLineLauncher {
 						final String aliases = listAliasesByCommandLine(params);
 						closeApp(STATUS_SUCCESS, pw, aliases);
 						return;
+					case VERIFY:
+						 verifyByGui(params);
+						 return;
 					case SIGN:
 						if (params.isGui()) {
 							signByGui(params);
@@ -201,7 +209,6 @@ final class CommandLineLauncher {
 	 * @param Par&aacute;metros de configuraci&oacute;n.
 	 * @throws CommandLineException Cuando falta algun par&aacute;metro necesario o no se puede cargar el almac&eacute;n de claves. */
 	private static void createEnvelopeByGui(final CommandLineParameters params) throws CommandLineException {
-		Logger.getLogger("es.gob.afirma").info("CreateEnvelope");; //$NON-NLS-1$
 		final File inputFile = params.getInputFile();
 		if (inputFile == null) {
 			throw new CommandLineException(CommandLineMessages.getString("CommandLineLauncher.5")); //$NON-NLS-1$
@@ -267,6 +274,51 @@ final class CommandLineLauncher {
 		}
 		HashHelper.checkHashUI(params.getInputFile().getAbsolutePath());
 	}
+
+	/** Mostramos el panel de validaci&oacute;n de certificados y firmas.
+ 	 * @param params Par&aacute;metros de configuraci&oacute;n.
+ 	 * @throws CommandLineException Cuando falta algun par&aacute;metro necesario. */
+ 	private static void verifyByGui(final CommandLineParameters params) throws CommandLineException {
+
+ 		final File inputFile = params.getInputFile();
+ 		if (inputFile == null) {
+ 			throw new CommandLineException(CommandLineMessages.getString("CommandLineLauncher.5"));  //$NON-NLS-1$
+ 		}
+
+ 		// Comprobamos si lo que nos piden validar es un certificado...
+ 		X509Certificate cert;
+ 		try (
+ 			InputStream bis = new BufferedInputStream(
+ 				new FileInputStream(inputFile)
+ 			);
+ 		) {
+ 			cert = DataAnalizerUtil.isCertificate(AOUtil.getDataFromInputStream(bis));
+ 		}
+ 		catch (final Exception e) {
+ 			cert = null;
+ 		}
+
+ 		// Si no es un certificado asumimos que es una firma
+ 		if (cert == null) {
+ 			new VisorFirma(true, null).initialize(false, inputFile);
+ 		}
+
+ 		// Y si es certificado lo validamos como tal
+ 		else {
+ 			Image icon = null;
+ 			try {
+ 				icon = ImageIO.read(
+ 					CommandLineLauncher.class.getResource(
+ 						"/resources/certificate_16.png"  //$NON-NLS-1$
+ 					)
+ 				);
+ 			}
+ 			catch (final IOException e) {
+ 				// Se ignora
+ 			}
+ 			CertValidationUi.validateCert(cert, null, null, icon);
+ 		}
+ 	}
 
 	/** Mostramos el panel de firmas. Se usara la configuraci&oacute;n de firma establecida
 	 * en la interfaz de AutoFirma.

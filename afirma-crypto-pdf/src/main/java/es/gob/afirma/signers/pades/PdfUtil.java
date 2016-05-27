@@ -109,7 +109,7 @@ public final class PdfUtil {
 		return calendar;
 	}
 
-	static PdfReader getPdfReader(final byte[] inPDF,
+	public static PdfReader getPdfReader(final byte[] inPDF,
 			                      final Properties extraParams,
 			                      final boolean headless) throws BadPdfPasswordException,
 			                                                     InvalidPdfException,

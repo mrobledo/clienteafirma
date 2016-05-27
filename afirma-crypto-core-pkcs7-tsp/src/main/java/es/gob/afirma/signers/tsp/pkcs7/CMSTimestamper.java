@@ -23,7 +23,6 @@ import java.net.URLConnection;
 import java.security.KeyStore;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -250,15 +249,13 @@ public final class CMSTimestamper {
     	if (this.tsaURL.getScheme().equals("socket")) { //$NON-NLS-1$
 			return getTSAResponseSocket(request);
     	}
-    	else if (this.tsaURL.getScheme().equals("http")) { //$NON-NLS-1$
+    	if (this.tsaURL.getScheme().equals("http")) { //$NON-NLS-1$
     		return getTSAResponseHttp(request);
     	}
-    	else if (this.tsaURL.getScheme().equals("https")) { //$NON-NLS-1$
+    	if (this.tsaURL.getScheme().equals("https")) { //$NON-NLS-1$
     		return getTSAResponseHttps(request);
     	}
-    	else {
-			throw new UnsupportedOperationException("Protocolo de conexion con TSA no soportado: " + this.tsaURL.getScheme()); //$NON-NLS-1$
-		}
+    	throw new UnsupportedOperationException("Protocolo de conexion con TSA no soportado: " + this.tsaURL.getScheme()); //$NON-NLS-1$
     }
 
     private byte[] getTSAResponseSocket(final byte[] request) throws IOException {
@@ -364,7 +361,6 @@ public final class CMSTimestamper {
     /** Configura la conexi&oacute;n con los datos necesarios para realizarse sobre HTTPS.
      * @param conn Conexi&oacute;n SSL.
      * @throws IOException Cuando el entorno no permite la configuraci&oacute;n. */
-    @SuppressWarnings("deprecation")
 	private void configureHttpsConnection(final URLConnection conn) throws IOException {
 
     	if (conn == null) {
@@ -372,6 +368,8 @@ public final class CMSTimestamper {
     	}
 
     	if (!this.verifyHostname) {
+
+    		LOGGER.warning("No se comprobaran los nombres de host en la conexion SSL del sello de tiempo"); //$NON-NLS-1$
 
     		// Podrian encontrarse varios tipos de conexion HTTPS
 
@@ -386,43 +384,9 @@ public final class CMSTimestamper {
 				);
 	    	}
 	    	else {
-	    		Class<?> sunHttpsURLConnectionClass;
-	    		try {
-	    			sunHttpsURLConnectionClass = Class.forName("com.sun.net.ssl.HttpsURLConnection"); //$NON-NLS-1$
-	    		}
-	    		catch (final Exception e) {
-	    			sunHttpsURLConnectionClass = null;
-	    		}
-
-	    		if (sunHttpsURLConnectionClass != null && sunHttpsURLConnectionClass.isInstance(conn)) {
-
-	    			try {
-	    				// Este caso es problematico porque se deshabilita globalmente (metodo estatico) la comprobacion de
-	    				// nombre de host, y no solo para la conexion en curso.
-	    				// No obstante, la JVM no deberia darnos nunca este tipo de conexiones, porque estan ya deprecadas
-	    				// y obsoletas.
-	    				final Method setDefaultHostnameVerifierMethod = sunHttpsURLConnectionClass.getDeclaredMethod("setDefaultHostnameVerifier"); //$NON-NLS-1$
-	    				setDefaultHostnameVerifierMethod.invoke(
-	    						null,
-	    						new com.sun.net.ssl.HostnameVerifier() {
-	    							@Override
-	    							public boolean verify(final String arg0, final String arg1) {
-	    								return true;
-	    							}
-	    						}
-						);
-	    			}
-	    			catch (final Exception e) {
-	    				LOGGER.warning(
-	    						"Ocurrio un error al intentar instanciar una conexion de tipo 'com.sun.net.ssl.HttpsURLConnection' para sobreescribir la conexion el host, se continuara la operacion" //$NON-NLS-1$
-	    						);
-	    			}
-	    		}
-	    		else {
-	    			LOGGER.warning(
-	    				"No se ha podido deshabilitar la comprobacion de nombre de host, tipo desconocido de conexion: " + conn.getClass().getName() //$NON-NLS-1$
-	    			);
-	    		}
+	    		LOGGER.warning(
+    				"No se ha podido deshabilitar la comprobacion de nombre de host, tipo desconocido de conexion: " + conn.getClass().getName() //$NON-NLS-1$
+    			);
 	    	}
     	}
 
@@ -469,10 +433,10 @@ public final class CMSTimestamper {
     		trustManagers = new TrustManager[] {
     			new X509TrustManager() {
 					@Override
-					public void checkClientTrusted(final X509Certificate[] arg0, final String arg1) throws CertificateException { /* No hacemos nada. */ }
+					public void checkClientTrusted(final X509Certificate[] arg0, final String arg1) { /* No hacemos nada. */ }
 
 					@Override
-					public void checkServerTrusted(final X509Certificate[] arg0, final String arg1) throws CertificateException { /* No hacemos nada. */ }
+					public void checkServerTrusted(final X509Certificate[] arg0, final String arg1) { /* No hacemos nada. */ }
 
 					@Override
 					public X509Certificate[] getAcceptedIssuers() {

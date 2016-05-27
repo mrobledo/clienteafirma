@@ -253,7 +253,7 @@ public final class VisorPanel extends JPanel implements KeyListener {
      * @param sign Firma que se desea comprobar.
      * @return {@code true} si la firma es v&acute;lida, {@code false} en caso contrario.
      * @throws IOException Si ocurren problemas relacionados con la lectura de la firma. */
-    private static SignValidity validateSign(final byte[] sign) throws IOException {
+    public static SignValidity validateSign(final byte[] sign) throws IOException {
         if (DataAnalizerUtil.isSignedPDF(sign)) {
         	return ValidatePdfSignature.validate(sign);
         }

@@ -138,7 +138,6 @@ public final class AutoFirmaUtil {
 			return file;
 		}
 	}
-	
     /** Establece la configuraci&oacute;n para el servidot <i>Proxy</i> seg&uacute;n los valores
      * de configuraci&oacute;n encontrados. */
     public static void setProxySettings() {

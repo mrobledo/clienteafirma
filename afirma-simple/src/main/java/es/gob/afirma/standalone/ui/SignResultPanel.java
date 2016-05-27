@@ -171,7 +171,7 @@ final class SignResultPanel extends JPanel {
         this.descTextLabel.setEditable(false);
         this.descTextLabel.setOpaque(false);
 
-        this.resultTextLabel.setFont(this.getFont().deriveFont(Font.PLAIN, 26));
+        this.resultTextLabel.setFont(getFont().deriveFont(Font.PLAIN, 26));
         this.resultTextLabel.setLabelFor(this.descTextLabel);
 
         // Establecemos la configuracion de color
@@ -180,7 +180,7 @@ final class SignResultPanel extends JPanel {
             this.resultTextLabel.setForeground(new Color(3399));
         }
 
-        this.setLayout(new GridBagLayout());
+        setLayout(new GridBagLayout());
 
         final GridBagConstraints c = new GridBagConstraints();
         c.fill = GridBagConstraints.BOTH;

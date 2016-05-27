@@ -11,6 +11,7 @@
 package es.gob.afirma.signers.cades;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
@@ -106,13 +107,14 @@ public final class AOCAdESSigner implements AOSigner {
 
         final Properties extraParams = xParams != null ? xParams : new Properties();
 
-        // Algoritmo usado cuando se proporciona la huella digital precalculada
-        final String precalculatedDigestAlgorithmName = extraParams.getProperty(CAdESExtraParams.PRECALCULATED_HASH_ALGORITHM);
-
         // Forzado del SigningCertificateV2
         final boolean signingCertificateV2;
         if (AOSignConstants.isSHA2SignatureAlgorithm(algorithm)) {
         	signingCertificateV2 = true;
+        	if (extraParams.containsKey(CAdESExtraParams.SIGNING_CERTIFICATE_V2)) {
+        		LOGGER.warning("Se ignorara la propiedad '" + CAdESExtraParams.SIGNING_CERTIFICATE_V2 + //$NON-NLS-1$
+        				"' porque las firmas SHA2 siempre usan SigningCertificateV2"); //$NON-NLS-1$
+        	}
         }
         else if (extraParams.containsKey(CAdESExtraParams.SIGNING_CERTIFICATE_V2)) {
        		signingCertificateV2 = Boolean.parseBoolean(extraParams.getProperty(CAdESExtraParams.SIGNING_CERTIFICATE_V2));
@@ -121,14 +123,27 @@ public final class AOCAdESSigner implements AOSigner {
         	signingCertificateV2 = !"SHA1".equals(AOSignConstants.getDigestAlgorithmName(algorithm));	 //$NON-NLS-1$
         }
 
+        // Algoritmo usado cuando se proporciona la huella digital precalculada
+        final String precalculatedDigestAlgorithmName = extraParams.getProperty(CAdESExtraParams.PRECALCULATED_HASH_ALGORITHM);
         final String mode = extraParams.getProperty(CAdESExtraParams.MODE, AOSignConstants.DEFAULT_SIGN_MODE);
+
+        if (precalculatedDigestAlgorithmName != null && extraParams.containsKey(CAdESExtraParams.MODE)) {
+        	LOGGER.warning("Se ignorara el parametro '" + CAdESExtraParams.MODE + //$NON-NLS-1$
+        			"' por haberse proporcionado tambien el parametro '" + CAdESExtraParams.PRECALCULATED_HASH_ALGORITHM + //$NON-NLS-1$
+        			"'. La firma sera explicita."); //$NON-NLS-1$
+        }
+
+        boolean omitContent = false;
+        if (AOSignConstants.SIGN_MODE_EXPLICIT.equalsIgnoreCase(mode) || precalculatedDigestAlgorithmName != null) {
+            omitContent = true;
+        }
 
         final String contentTypeOid = extraParams.getProperty(CAdESExtraParams.CONTENT_TYPE_OID);
         final String contentDescription = extraParams.getProperty(CAdESExtraParams.CONTENT_DESCRIPTION);
 
         final boolean doNotIncludePolicyOnSigningCertificate = Boolean.parseBoolean(
     		extraParams.getProperty(
-				CAdESExtraParams.DO_NOT_INCLUDE_POLICY_ON_SIGNING_CERTIFICATE, "false" //$NON-NLS-1$
+				CAdESExtraParams.DO_NOT_INCLUDE_POLICY_ON_SIGNING_CERTIFICATE, Boolean.FALSE.toString()
 			)
 		);
 
@@ -151,11 +166,6 @@ public final class AOCAdESSigner implements AOSigner {
 			}
         }
 
-        boolean omitContent = false;
-        if (mode.equals(AOSignConstants.SIGN_MODE_EXPLICIT) || precalculatedDigestAlgorithmName != null) {
-            omitContent = true;
-        }
-
         String altContentTypeOid = MimeHelper.DEFAULT_CONTENT_OID_DATA;
         String altContentDescription = MimeHelper.DEFAULT_CONTENT_DESCRIPTION;
 
@@ -163,11 +173,11 @@ public final class AOCAdESSigner implements AOSigner {
 
         try {
 
-			if (data != null) {
+			if (data != null && (contentTypeOid == null || contentDescription == null)) {
 				try {
 					final MimeHelper mimeHelper = new MimeHelper(data);
-					altContentDescription = mimeHelper.getDescription();
 					altContentTypeOid = MimeHelper.transformMimeTypeToOid(mimeHelper.getMimeType());
+					altContentDescription = mimeHelper.getDescription();
 				}
 				catch (final Exception e) {
 					Logger.getLogger("es.gob.afirma").warning( //$NON-NLS-1$
@@ -188,8 +198,8 @@ public final class AOCAdESSigner implements AOSigner {
                    Boolean.parseBoolean(extraParams.getProperty(CAdESExtraParams.INCLUDE_ONLY_SIGNNING_CERTIFICATE, Boolean.FALSE.toString())) ? new X509Certificate[] { (X509Certificate) certChain[0] } : certChain,
                    dataDigest,
                    digestAlgorithmName,
-                   Boolean.parseBoolean(extraParams.getProperty(CAdESExtraParams.INCLUDE_SIGNING_TIME_ATTRIBUTE, "false")), //$NON-NLS-1$
-                   Boolean.parseBoolean(extraParams.getProperty(CAdESExtraParams.PADES_MODE, "false")), //$NON-NLS-1$
+                   Boolean.parseBoolean(extraParams.getProperty(CAdESExtraParams.INCLUDE_SIGNING_TIME_ATTRIBUTE, Boolean.FALSE.toString())),
+                   Boolean.parseBoolean(extraParams.getProperty(CAdESExtraParams.PADES_MODE, Boolean.FALSE.toString())),
                    contentTypeOid != null ? contentTypeOid : altContentTypeOid,
                    contentDescription != null ? contentDescription : altContentDescription,
                    CommitmentTypeIndicationsHelper.getCommitmentTypeIndications(extraParams),
@@ -277,7 +287,7 @@ public final class AOCAdESSigner implements AOSigner {
     	new SCChecker().checkSpongyCastle();
 
         try {
-			return ((AOCoSigner)Class.forName("es.gob.afirma.signers.multi.cades.AOCAdESCoSigner").newInstance()).cosign( //$NON-NLS-1$
+			return ((AOCoSigner)Class.forName("es.gob.afirma.signers.multi.cades.AOCAdESCoSigner").getConstructor().newInstance()).cosign( //$NON-NLS-1$
 				data,
 				sign,
 				algorithm,
@@ -290,10 +300,22 @@ public final class AOCAdESSigner implements AOSigner {
         	throw new AOException("No se ha podido instanciar la clase de cofirmas CAdES: " + e, e); //$NON-NLS-1$
 		}
         catch (final IllegalAccessException e) {
-        	throw new AOException("No se ha podido instanciar la clase de cofirmas CAdES: " + e, e); //$NON-NLS-1$
+        	throw new AOException("No se ha podido instanciar la clase de cofirmas CAdES por acceso ilegal: " + e, e); //$NON-NLS-1$
 		}
         catch (final ClassNotFoundException e) {
         	throw new AOException("No se ha encontrado la clase de cofirmas CAdES: " + e, e); //$NON-NLS-1$
+		}
+        catch (final IllegalArgumentException e) {
+        	throw new AOException("No se ha podido instanciar la clase de cofirmas CAdES: " + e, e); //$NON-NLS-1$
+		}
+        catch (final InvocationTargetException e) {
+        	throw new AOException("No se ha podido instanciar la clase de cofirmas CAdES por error en la invocacion al constructor: " + e, e); //$NON-NLS-1$
+		}
+        catch (final NoSuchMethodException e) {
+        	throw new AOException("No se ha podido instanciar la clase de cofirmas CAdES por falta de un constructor por defecto sin parametros: " + e, e); //$NON-NLS-1$
+		}
+        catch (final SecurityException e) {
+        	throw new AOException("No se ha podido instanciar la clase de cofirmas CAdES por falta de permisos: " + e, e); //$NON-NLS-1$
 		}
 
     }
@@ -343,7 +365,7 @@ public final class AOCAdESSigner implements AOSigner {
     	new SCChecker().checkSpongyCastle();
 
         try {
-			return ((AOCoSigner)Class.forName("es.gob.afirma.signers.multi.cades.AOCAdESCoSigner").newInstance()).cosign( //$NON-NLS-1$
+			return ((AOCoSigner)Class.forName("es.gob.afirma.signers.multi.cades.AOCAdESCoSigner").getConstructor().newInstance()).cosign( //$NON-NLS-1$
 				sign, algorithm, key, certChain, extraParams
 			);
 		}
@@ -358,6 +380,18 @@ public final class AOCAdESSigner implements AOSigner {
 		}
         catch (final ClassNotFoundException e) {
         	throw new AOException("No se ha encontrado el cofirmador: " + e, e); //$NON-NLS-1$
+		}
+        catch (final IllegalArgumentException e) {
+        	throw new AOException("No se ha podido instanciar el cofirmador: " + e, e); //$NON-NLS-1$
+		}
+        catch (final InvocationTargetException e) {
+        	throw new AOException("No se ha podido instanciar el cofirmador: " + e, e); //$NON-NLS-1$
+		}
+        catch (final NoSuchMethodException e) {
+        	throw new AOException("No se ha podido instanciar el cofirmador por falta de un constructor por defecto sin parametros: " + e, e); //$NON-NLS-1$
+		}
+        catch (final SecurityException e) {
+        	throw new AOException("No se ha podido instanciar el cofirmador por motivos de seguridad: " + e, e); //$NON-NLS-1$
 		}
     }
 
@@ -400,7 +434,7 @@ public final class AOCAdESSigner implements AOSigner {
     	new SCChecker().checkSpongyCastle();
 
         try {
-			return ((AOCounterSigner)Class.forName("es.gob.afirma.signers.multi.cades.AOCAdESCounterSigner").newInstance()).countersign( //$NON-NLS-1$
+			return ((AOCounterSigner)Class.forName("es.gob.afirma.signers.multi.cades.AOCAdESCounterSigner").getConstructor().newInstance()).countersign( //$NON-NLS-1$
 				sign, algorithm, targetType, targets, key, certChain, extraParams
 			);
 		}
@@ -415,6 +449,18 @@ public final class AOCAdESSigner implements AOSigner {
 		}
         catch (final ClassNotFoundException e) {
 			throw new AOException("No se ha encontrado el contrafirmador: " + e, e); //$NON-NLS-1$
+		}
+        catch (final IllegalArgumentException e) {
+        	throw new AOException("No se ha podido instanciar el contrafirmador: " + e, e); //$NON-NLS-1$
+		}
+        catch (final InvocationTargetException e) {
+        	throw new AOException("No se ha podido instanciar el contrafirmador: " + e, e); //$NON-NLS-1$
+		}
+        catch (final NoSuchMethodException e) {
+        	throw new AOException("No se ha podido instanciar el contrafirmador por falta de un constructor por defecto sin parametros: " + e, e); //$NON-NLS-1$
+		}
+        catch (final SecurityException e) {
+        	throw new AOException("No se ha podido instanciar el contrafirmador por motivos de seguridad: " + e, e); //$NON-NLS-1$
 		}
 
     }
@@ -523,10 +569,9 @@ public final class AOCAdESSigner implements AOSigner {
      *         Cuando la firma introducida no es un objeto de firma
      *         reconocido por este manejador.
      * @throws AOInvalidFormatException Si los datos proporcionados no se corresponden con una firma CAdES
-     * @throws IOException Cuando se produce alg&uacute;n error en la lectura de la datos.
      * @throws IllegalArgumentException Si La firma introducida es nula. */
     @Override
-	public AOSignInfo getSignInfo(final byte[] signData) throws AOInvalidFormatException, IOException {
+	public AOSignInfo getSignInfo(final byte[] signData) throws AOInvalidFormatException {
         if (signData == null) {
             throw new IllegalArgumentException("No se han introducido datos para analizar"); //$NON-NLS-1$
         }

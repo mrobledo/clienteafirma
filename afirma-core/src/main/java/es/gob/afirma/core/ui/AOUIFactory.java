@@ -170,9 +170,9 @@ public final class AOUIFactory {
     }
 
     /** JOptionPane.showMessageDialog().
-     * @param parentComponent Componente padre (se descarta si no es del tipo <code>java.awt.Component</code> en la implementaci&oacute;n Swing.
+     * @param parentComponent Componente padre (se descarta si no es del tipo <code>java.awt.Component</code> en la implementaci&oacute;n Swing
      * @param message Mensaje.
-     * @param title Titulo del cuadro de di&aacute;logo.
+     * @param title T&iacute;tulo del cuadro de di&aacute;logo.
      * @param messageType Tipo de mensaje.
      * @param icon Icono de la ventana de di&aacute;logo. */
     public static void showMessageDialog(final Object parentComponent,

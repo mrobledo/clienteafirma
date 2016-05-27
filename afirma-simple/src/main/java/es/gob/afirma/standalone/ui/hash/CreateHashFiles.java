@@ -293,7 +293,7 @@ public final class CreateHashFiles extends JDialog {
 			}
 		};
 		worker.execute();
-        
+
 		if (getSize(new File(dir)) > SIZE_WAIT) {
 			// Se muestra la ventana de espera
 			dialog.setVisible(true);
@@ -588,7 +588,7 @@ public final class CreateHashFiles extends JDialog {
 		}
 		return directoryHash;
 	}
-	
+
 	static long getSize(File file) {
 	    long size;
 	    if (file.isDirectory()) {

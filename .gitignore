@@ -12,3 +12,8 @@ target/
 .settings
 .classpath
 .metadata
+.exe
+.jar
+.wxs
+.wixobj
+.wixpdb
