@@ -49,10 +49,11 @@ import es.gob.afirma.signers.cms.AOCMSSigner;
 /** Validador de firmas binarias.
  * @author Carlos Gamuci
  * @author Tom&aacute;s Garc&iacute;a-Mer&aacute;s */
-public final class ValidateBinarySignature {
+public final class ValidateBinarySignature implements SignValider{
 
-	private ValidateBinarySignature() {
-		// No permitimos la instanciacion
+	@Override
+	public SignValidity validate(final byte[] sign) throws IOException {
+		return validate(sign, null);
 	}
 
     /** Valida una firma binaria (CMS/CAdES). Si se especifican los datos que se firmaron

@@ -1,7 +1,5 @@
 package es.gob.afirma.cert.signvalidation;
 
-import java.io.IOException;
-
 public class SignValiderFactory {
 
 	/* Listado de los validadores de firma soportados y los identificadores de formato de firma asociados. */

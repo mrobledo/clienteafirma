@@ -28,22 +28,19 @@ import es.gob.afirma.cert.signvalidation.SignValidity.VALIDITY_ERROR;
 
 /** Validador de firmas PDF.
  * @author Tom&aacute;s Garc&iacute;a-Mer&aacute;s */
-public final class ValidatePdfSignature {
+public final class ValidatePdfSignature implements SignValider{
 
 	private static final Logger LOGGER = Logger.getLogger("es.gob.afirma"); //$NON-NLS-1$
 
 	private static final PdfName PDFNAME_ETSI_RFC3161 = new PdfName("ETSI.RFC3161"); //$NON-NLS-1$
 	private static final PdfName PDFNAME_DOCTIMESTAMP = new PdfName("DocTimeStamp"); //$NON-NLS-1$
 
-	private ValidatePdfSignature() {
-		// No instanciable
-	}
-
 	/** Valida una firma PDF (PKCS#7/PAdES).
      * @param sign PDF firmado.
      * @return Validez de la firma.
      * @throws IOException Si ocurren problemas relacionados con la lectura de la firma. */
-	public static SignValidity validate(final byte[] sign) throws IOException {
+	@Override
+	public SignValidity validate(final byte[] sign) throws IOException {
 		final PdfReader reader = new PdfReader(sign);
 		final AcroFields af = reader.getAcroFields();
 		final List<String> sigNames = af.getSignatureNames();

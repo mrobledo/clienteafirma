@@ -14,11 +14,10 @@ import java.util.logging.Logger;
 
 import javax.swing.JOptionPane;
 
-import xmlwise.Plist;
-import xmlwise.XmlParseException;
+import es.gob.afirma.cert.signvalidation.SignValider;
+import es.gob.afirma.cert.signvalidation.SignValiderFactory;
 import es.gob.afirma.cert.signvalidation.SignValidity;
 import es.gob.afirma.cert.signvalidation.SignValidity.SIGN_DETAIL_TYPE;
-import es.gob.afirma.cert.signvalidation.ValidateXMLSignature;
 import es.gob.afirma.core.AOInvalidFormatException;
 import es.gob.afirma.core.misc.AOUtil;
 import es.gob.afirma.core.misc.Base64;
@@ -29,6 +28,8 @@ import es.gob.afirma.core.util.tree.AOTreeModel;
 import es.gob.afirma.core.util.tree.AOTreeNode;
 import es.gob.afirma.signers.xades.AOXAdESSigner;
 import es.gob.afirma.standalone.SimpleAfirmaMessages;
+import xmlwise.Plist;
+import xmlwise.XmlParseException;
 
 /** Carga las preferencias de la aplicaci&oacute;n desde un fichero PList. */
 final class PreferencesPlistHandler {
@@ -73,7 +74,13 @@ final class PreferencesPlistHandler {
 		}
 		final byte[] configData = DataDownloader.downloadData(url);
 		if (!ALLOW_UNSIGNED_PREFERENCES) {
-			final SignValidity sv = ValidateXMLSignature.validate(configData);
+			final SignValider valider= SignValiderFactory.getSignValider(configData);
+			if (valider == null) {
+				throw new InvalidPreferencesFileException(
+					"La firma del fichero de preferencias no es valida" //$NON-NLS-1$
+				);
+			}
+			final SignValidity sv = valider.validate(configData);
 			if (!sv.getValidity().equals(SIGN_DETAIL_TYPE.OK)) {
 				throw new InvalidPreferencesFileException(
 					"La firma del fichero de preferencias no es valida" //$NON-NLS-1$
@@ -123,7 +130,15 @@ final class PreferencesPlistHandler {
 		}
 
 
-		final SignValidity sv = ValidateXMLSignature.validate(configData);
+		SignValidity sv = new SignValidity(SIGN_DETAIL_TYPE.UNKNOWN, null);
+		try {
+			sv = SignValiderFactory.getSignValider(configData).validate(configData);
+		}
+		catch (final Exception e) {
+			LOGGER.severe(
+				"Error comprobando la firma del fichero: " + e //$NON-NLS-1$
+			);
+		}
 		final String signMessage;
 		if (!sv.getValidity().equals(SIGN_DETAIL_TYPE.OK)) {
 			switch(sv.getError()) {

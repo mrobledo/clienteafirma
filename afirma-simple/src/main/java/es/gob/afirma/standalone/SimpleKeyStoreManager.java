@@ -41,7 +41,7 @@ public final class SimpleKeyStoreManager {
      * @param parent Componente padre para la modalidad.
      * @return <code>KeyStore</code> apropiado.
      * @throws AOKeyStoreManagerException Si ocurre cualquier problema durante la obtenci&oacute;n del <code>KeyStore</code>. */
-    static AOKeyStoreManager getKeyStore(final boolean dnie, final Component parent) throws AOKeyStoreManagerException {
+    public static AOKeyStoreManager getKeyStore(final boolean dnie, final Component parent) throws AOKeyStoreManagerException {
 
         if (dnie) {
             try {

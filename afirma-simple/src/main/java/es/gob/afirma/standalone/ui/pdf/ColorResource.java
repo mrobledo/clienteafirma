@@ -10,7 +10,7 @@ import javax.imageio.ImageIO;
 
 import es.gob.afirma.core.misc.Base64;
 
-enum ColorResource {
+public enum ColorResource {
 
 	BLACK(
 		SignPdfUiMessages.getString("ColorResource.0"), //$NON-NLS-1$
@@ -87,11 +87,11 @@ enum ColorResource {
 		return this.image;
 	}
 
-	Color getColor() {
+	public Color getColor() {
 		return this.color;
 	}
 
-	static ColorResource[] getAllColorResources() {
+	public static ColorResource[] getAllColorResources() {
 		return new ColorResource[] {
 			BLACK,
 			WHITE,
@@ -103,7 +103,7 @@ enum ColorResource {
 		};
 	}
 
-	String getPdfColorKey() {
+	public String getPdfColorKey() {
 		return this.pdfKey;
 	}
 }

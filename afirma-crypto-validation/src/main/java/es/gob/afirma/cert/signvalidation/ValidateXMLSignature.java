@@ -42,20 +42,17 @@ import es.gob.afirma.signers.xml.CustomUriDereferencer;
 import es.gob.afirma.signers.xml.Utils;
 
 /** Validador de firmas XML. Basado en la documentaci&oacute;n y los ejemplo de la JSR 105. */
-public final class ValidateXMLSignature {
+public final class ValidateXMLSignature implements SignValider{
 
 	static final Logger LOGGER = Logger.getLogger("es.gob.afirma"); //$NON-NLS-1$
-
-	private ValidateXMLSignature() {
-		// No permitimos la instanciacion
-	}
 
 	private static final SignValidity KO = new SignValidity(SIGN_DETAIL_TYPE.KO, null);
 
     /** Valida una firma XML.
      * @param sign Firma a validar
      * @return Validez de la firma. */
-    public static SignValidity validate(final byte[] sign) {
+    @Override
+	public SignValidity validate(final byte[] sign) {
 
         final DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
         dbf.setNamespaceAware(true);
