@@ -10,12 +10,14 @@ import java.security.UnrecoverableEntryException;
 import java.security.cert.X509Certificate;
 import java.util.List;
 import java.util.Properties;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.swing.JOptionPane;
 import javax.swing.SwingWorker;
 
 import es.gob.afirma.core.AOCancelledOperationException;
+import es.gob.afirma.core.AOFormatFileException;
 import es.gob.afirma.core.misc.Platform;
 import es.gob.afirma.core.signers.AOSigner;
 import es.gob.afirma.core.ui.AOUIFactory;
@@ -159,6 +161,16 @@ final class SignPanelSignTask extends SwingWorker<Void, Void> {
         catch(final AOCancelledOperationException e) {
             return;
         }
+        catch(final AOFormatFileException e) {
+        	LOGGER.warning("La firma o el documento no son aptos para firmar: " + e); //$NON-NLS-1$
+        	AOUIFactory.showErrorMessage(
+                this.signPanel,
+                SimpleAfirmaMessages.getString("SignPanel.102"), //$NON-NLS-1$
+                SimpleAfirmaMessages.getString("SimpleAfirma.7"), //$NON-NLS-1$
+                JOptionPane.ERROR_MESSAGE
+            );
+            return;
+        }
         catch(final PdfIsCertifiedException e) {
         	LOGGER.warning("PDF no firmado por estar certificado: " + e); //$NON-NLS-1$
         	AOUIFactory.showErrorMessage(
@@ -190,7 +202,7 @@ final class SignPanelSignTask extends SwingWorker<Void, Void> {
             return;
         }
         catch(final Exception e) {
-            LOGGER.severe("Error durante el proceso de firma: " + e); //$NON-NLS-1$
+            LOGGER.log(Level.SEVERE, "Error durante el proceso de firma: " + e, e); //$NON-NLS-1$
             AOUIFactory.showErrorMessage(
                 this.signPanel,
                 SimpleAfirmaMessages.getString("SignPanel.65"), //$NON-NLS-1$

@@ -49,6 +49,18 @@
 
 		<dependency>
 			<groupId>es.gob.afirma</groupId>
+			<artifactId>afirma-keystores-single</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		
+		<dependency>
+			<groupId>es.gob.afirma</groupId>
+			<artifactId>afirma-keystores-capiaddressbook</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		
+		<dependency>
+			<groupId>es.gob.afirma</groupId>
 			<artifactId>afirma-keystores-filters</artifactId>
 			<version>${project.version}</version>
 		</dependency>
@@ -178,7 +190,13 @@
 			<artifactId>pkix</artifactId>
 			<version>1.54.0.0</version>
 		</dependency>
-				
+
+		<dependency>
+			<groupId>es.gob</groupId>
+			<artifactId>jmulticard-ui</artifactId>
+			<version>1.4</version>
+		</dependency>
+		
 		<dependency>
 			<groupId>es.gob</groupId>
 			<artifactId>jmulticard-jse</artifactId>
@@ -207,13 +225,27 @@
 		<dependency>
   			<groupId>org.apache.pdfbox</groupId>
   			<artifactId>pdfbox</artifactId>
-  			<version>1.8.10</version>
+  			<version>1.8.11</version>
+  			<exclusions>
+  				<exclusion>
+            		<groupId>org.bouncycastle</groupId>
+            		<artifactId>bcmail-jdk15</artifactId>
+            	</exclusion>
+            	<exclusion>
+            		<groupId>org.bouncycastle</groupId>
+            		<artifactId>bcprov-jdk15</artifactId>
+  				</exclusion>
+  				<exclusion>
+  					<groupId>com.ibm.icu</groupId>
+            		<artifactId>icu4j</artifactId>
+  				</exclusion>
+        	</exclusions>
 		</dependency>
 		
 		<dependency>
-			<groupId>de.rosstauscher.proxy_vole</groupId>
-			<artifactId>proxy_vole</artifactId>
-			<version>1.0.1-SNAPSHOT</version>
+			<groupId>com.github.markusbernhardt</groupId>
+			<artifactId>proxy-vole</artifactId>
+			<version>1.0.1</version>
 		</dependency>
 		
 	</dependencies>
