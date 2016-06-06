@@ -3,6 +3,7 @@ package es.gob.afirma.keyone;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
+import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -33,7 +34,7 @@ import es.gob.afirma.signers.pades.PdfUtil.SignatureField;
 import es.gob.afirma.standalone.ui.pdf.ColorResource;
 import es.gob.afirma.standalone.ui.pdf.SignPdfUiPanelPreview;
 
-public class XMLLookParser {
+public final class XMLLookParser {
 
 	static final Logger LOGGER = Logger.getLogger("es.gob.afirma"); //$NON-NLS-1$
 	private final String xml;
@@ -194,7 +195,7 @@ public class XMLLookParser {
 					}
 				}
 				if (im != null) {
-					paintImage(im, width, height, posX, posY);
+					//paintImage(im, width, height, posX, posY);
 					saveImageProperties();
 				}
 			}
@@ -252,7 +253,7 @@ public class XMLLookParser {
 					if (this.image == null) {
 						saveImageProperties();
 					}
-					paintImage(im, width, height, posX, posY);
+					//paintImage(im, width, height, posX, posY);
 				}
 			}
 			if (foreItem != null && foreItem.getNodeName().equals("text")) { //$NON-NLS-1$
@@ -436,6 +437,10 @@ public class XMLLookParser {
 		);
 
 		final Graphics2D g = newImage.createGraphics();
+
+        g.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
+		g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_LCD_HRGB);
+
 		if (this.image != null) {
 			g.drawImage(this.image, 0, 0, null);
 		}
@@ -473,10 +478,26 @@ public class XMLLookParser {
 	}
 
 	private void saveImageProperties() {
-		this.prop.setProperty("imagePositionOnPageLowerLeftX" , Integer.toBinaryString(this.field.getSignaturePositionOnPageLowerLeftX())); //$NON-NLS-1$
-		this.prop.setProperty("imagePositionOnPageLowerLeftY" , Integer.toBinaryString(this.field.getSignaturePositionOnPageLowerLeftY())); //$NON-NLS-1$
-		this.prop.setProperty("imagePositionOnPageUpperRightX" , Integer.toBinaryString(this.field.getSignaturePositionOnPageUpperRightX())); //$NON-NLS-1$
-		this.prop.setProperty("imagePositionOnPageUpperRightY" , Integer.toBinaryString(this.field.getSignaturePositionOnPageUpperRightY())); //$NON-NLS-1$
+		this.prop.setProperty(
+			"imagePositionOnPageLowerLeftX" , //$NON-NLS-1$
+			this.field != null ? Integer.toString(this.field.getSignaturePositionOnPageLowerLeftX())
+				: this.prop.getProperty("signaturePositionOnPageLowerLeftX") //$NON-NLS-1$
+		);
+
+		this.prop.setProperty(
+			"imagePositionOnPageLowerLeftY" , //$NON-NLS-1$
+			this.field != null ? Integer.toString(this.field.getSignaturePositionOnPageLowerLeftY())
+				: this.prop.getProperty("signaturePositionOnPageLowerLeftY") //$NON-NLS-1$
+		);
+		this.prop.setProperty(
+			"imagePositionOnPageUpperRightX" , //$NON-NLS-1$
+			this.field != null ? Integer.toString(this.field.getSignaturePositionOnPageUpperRightX())
+				: this.prop.getProperty("signaturePositionOnPageUpperRightX") //$NON-NLS-1$
+			);
+		this.prop.setProperty("imagePositionOnPageUpperRightY" , //$NON-NLS-1$
+			this.field != null ? Integer.toString(this.field.getSignaturePositionOnPageUpperRightY())
+				: this.prop.getProperty("signaturePositionOnPageUpperRightY") //$NON-NLS-1$
+		);
 	}
 
 	private static String getImageInBase64(final BufferedImage image) throws IOException {
