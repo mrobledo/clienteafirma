@@ -27,9 +27,9 @@ import es.gob.afirma.signers.cades.AOCAdESSigner;
  */
 public class TestCosign {
 
-	private static final String PKCS12_KEYSTORE = "PFActivoFirSHA1.pfx"; //$NON-NLS-1$
+	private static final String PKCS12_KEYSTORE = "ANCERTCCP_FIRMA.p12"; //$NON-NLS-1$
 
-	private static final String PASSWORD = "12341234"; //$NON-NLS-1$
+	private static final String PASSWORD = "1111"; //$NON-NLS-1$
 
 	private static final String IMPLICIT_SHA1_SIGN_FILE = "firma_implicita.csig"; //$NON-NLS-1$
 	private static final String EXPLICIT_SHA1_SIGN_FILE = "firma_explicita.csig"; //$NON-NLS-1$
@@ -89,13 +89,20 @@ public class TestCosign {
 	/** Prueba de cofirma implicita de una firma impl&iacute;cita CAdES-T sin indicar los datos de firma.
 	 * @throws Exception Cuando se produce un error. */
 	@Test
-	public void prueba_cofirmar_firma_implicita_T_sin_indicar_datos() throws Exception {
+	public void prueba_cofirmar_cades_T() throws Exception {
 
 		final InputStream is = getClass().getClassLoader().getResourceAsStream(
 			IMPLICIT_SHA1_CADES_T_FILE
 		);
 		final byte[] sign = AOUtil.getDataFromInputStream(is);
 		is.close();
+
+		final InputStream is2 = getClass().getClassLoader().getResourceAsStream(
+				"FicheroOriginal_cades_t_csig.pdf" //$NON-NLS-1$
+			);
+			final byte[] originalData = AOUtil.getDataFromInputStream(is2);
+			is2.close();
+
 
 		final Properties config = new Properties();
 		config.setProperty("mode", AOSignConstants.SIGN_MODE_IMPLICIT); //$NON-NLS-1$
@@ -105,25 +112,36 @@ public class TestCosign {
 			ks.aliases().nextElement(),
 			new KeyStore.PasswordProtection(PASSWORD.toCharArray())
 		);
+
+		byte[] signature;
 		try {
-			signer.cosign(
-				sign,
-				AOSignConstants.SIGN_ALGORITHM_SHA1WITHRSA,
+			signature = signer.cosign(
+					originalData,
+					sign,
+				AOSignConstants.SIGN_ALGORITHM_SHA512WITHRSA,
 				pke.getPrivateKey(),
 				pke.getCertificateChain(),
 				config
 			);
 		}
 		catch(final AOFormatFileException e) {
+			Assert.fail("Se ha indicado que la firma no puede ser cofirmada"); //$NON-NLS-1$
 			return;
 		}
-		Assert.fail("Deberia haber encontrado sellos y fallar"); //$NON-NLS-1$
+
+		final File tempFile = File.createTempFile("CosignCades", ".csig"); //$NON-NLS-1$ //$NON-NLS-2$
+		final FileOutputStream fos = new FileOutputStream(tempFile);
+		fos.write(signature);
+		fos.close();
+
+		System.out.println("Prueba de cofirma sobre firma CAdES-T"); //$NON-NLS-1$
+		System.out.println("El resultado se almacena en: " + tempFile.getAbsolutePath()); //$NON-NLS-1$
 	}
 
 	/** Prueba de cofirma implicita de una firma impl&iacute;cita CAdES-T sin indicar los datos de firma.
 	 * @throws Exception Cuando se produce un error. */
 	@Test
-	public void prueba_cofirmar_firma_implicita_A_indicando_datos() throws Exception {
+	public void prueba_cofirmar_cades_A_() throws Exception {
 
 		final InputStream is = getClass().getClassLoader().getResourceAsStream(
 			IMPLICIT_SHA1_CADES_A_FILE
@@ -150,6 +168,7 @@ public class TestCosign {
 			);
 		}
 		catch(final AOFormatFileException e) {
+			System.out.println("Se ha indicado correctamente que la firma no puede ser cofirmada: " + e); //$NON-NLS-1$
 			return;
 		}
 		Assert.fail("Deberia haber encontrado sellos y fallar"); //$NON-NLS-1$
@@ -370,8 +389,6 @@ public class TestCosign {
 
 		Assert.fail("La firma tuvo que haber lanzado una excepcion de tipo AOException"); //$NON-NLS-1$
 	}
-
-
 
 	/** Cierra el flujo de lectura del almac&eacute;n de certificados.
 	 * @throws IOException Cuando ocurre alg&uacute;n problema al cerrar el flujo de datos. */

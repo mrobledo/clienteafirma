@@ -22,11 +22,11 @@ import es.gob.afirma.signers.cades.AOCAdESSigner;
  * @author Carlos Gamuci. */
 public class TestCountersign {
 
-	private static final String PKCS12_KEYSTORE = "PFActivoFirSHA256.pfx"; //$NON-NLS-1$
-	private static final String PASSWORD = "12341234"; //$NON-NLS-1$
+	private static final String PKCS12_KEYSTORE = "ANCERTCCP_FIRMA.p12"; //$NON-NLS-1$
+	private static final String PASSWORD = "1111"; //$NON-NLS-1$
 	private static final String IMPLICIT_SHA1_COUNTERSIGN_FILE = "contrafirma_implicita.csig"; //$NON-NLS-1$
 	private static final String EXPLICIT_SHA1_COUNTERSIGN_FILE = "contrafirma_explicita.csig"; //$NON-NLS-1$
-	private static final String IMPLICIT_SHA1_CADES_A_FILE = "cadesA.csig"; //$NON-NLS-1$
+	private static final String EXPLICIT_SHA1_CADES_A_FILE = "cadesA.csig"; //$NON-NLS-1$
 	private static final String IMPLICIT_SHA1_CADES_T_FILE = "CAdES-T.asn1"; //$NON-NLS-1$
 
 	private static InputStream ksIs;
@@ -39,6 +39,7 @@ public class TestCountersign {
 		ksIs = getClass().getClassLoader().getResourceAsStream(PKCS12_KEYSTORE);
 		ks = KeyStore.getInstance("PKCS12"); //$NON-NLS-1$
 		ks.load(ksIs, PASSWORD.toCharArray());
+		ksIs.close();
 	}
 
 	/**
@@ -178,12 +179,21 @@ public class TestCountersign {
 		fos.close();
 	}
 
+	/** Main para pruebas sin JUnit.
+	 * @param args No se usa.
+	 * @throws Exception En cualquier error. */
+	public static void main(final String[] args) throws Exception {
+		final TestCountersign cs = new TestCountersign();
+		cs.cargaAlmacen();
+		cs.prueba_contrafirma_cades_T();
+	}
+
 	/** Prueba de contrafirma de los nodos hoja de una firma CAdES-A.
 	 * @throws Exception Cuando se produce un error. */
 	@Test
 	public void prueba_contrafirma_cades_A() throws Exception {
 
-		final InputStream is = getClass().getClassLoader().getResourceAsStream(IMPLICIT_SHA1_CADES_A_FILE);
+		final InputStream is = getClass().getClassLoader().getResourceAsStream(EXPLICIT_SHA1_CADES_A_FILE);
 		final byte[] sign = AOUtil.getDataFromInputStream(is);
 		is.close();
 

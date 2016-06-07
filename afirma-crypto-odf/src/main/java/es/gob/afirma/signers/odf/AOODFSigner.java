@@ -270,8 +270,8 @@ public final class AOODFSigner implements AOSigner {
         				null,
         				null,
         				md.digest(
-    						OdfXmlUtil.canonicalizeXml(
-    							dbf.newDocumentBuilder().parse(
+        					OdfXmlUtil.canonicalizeXml(
+        							dbf.newDocumentBuilder().parse(
 										new ByteArrayInputStream(manifestData)
 								).getDocumentElement(),
     							CANONICAL_XML_ALGORITHM

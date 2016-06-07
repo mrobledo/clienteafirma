@@ -1,12 +1,17 @@
 package es.gob.afirma.standalone;
 
+import java.awt.GraphicsEnvironment;
+import java.awt.HeadlessException;
 import java.awt.Image;
 import java.awt.Toolkit;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.Authenticator;
 import java.net.PasswordAuthentication;
 import java.net.URISyntaxException;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import es.gob.afirma.core.misc.AOUtil;
@@ -124,6 +129,44 @@ public final class AutoFirmaUtil {
 		return appDir;
 	}
 
+	/** Recupera el DPI de la pantalla principal.
+	 * @return DPI.
+	 */
+	public static int getDPI() {
+		final String[] cmd = {"wmic", "desktopmonitor", "get", "PixelsPerXLogicalInch"}; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+		final ProcessBuilder builder = new ProcessBuilder(cmd);
+		try {
+			final Process process = builder.start();
+			process.waitFor();
+			final BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+			String line;
+			int dpi = 0;
+			while ((line = bufferedReader.readLine()) != null) {
+				try {
+					dpi = Integer.parseInt(line.trim());
+					break;
+				}
+				catch (final Exception e) {
+					continue;
+				}
+            }
+            bufferedReader.close();
+            return dpi;
+		}
+		catch (final Exception e) {
+			LOGGER.log(	Level.SEVERE, "Error obteniendo DPI: " + e); //$NON-NLS-1$
+			return 0;
+		}
+	}
+	
+	/** Recupera el n&uacute;mero de pantallas que tiene habilitadas el usuario.
+	 * @return N&uacute;mero de pantallas.
+	 * @throws HeadlessException
+	 */
+	public static int getDisplaysNumber() throws HeadlessException {
+		return GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices().length;
+	}
+	
 	/** Devuelve el fichero en su forma can&oacute;nica.
 	 * @param file Fichero del cual obtener su forma can&oacute;nica.
 	 * @return Fichero en su forma can&oacute;nica o el fichero de entrada si hay error.*/
@@ -138,6 +181,7 @@ public final class AutoFirmaUtil {
 			return file;
 		}
 	}
+	
     /** Establece la configuraci&oacute;n para el servidot <i>Proxy</i> seg&uacute;n los valores
      * de configuraci&oacute;n encontrados. */
     public static void setProxySettings() {

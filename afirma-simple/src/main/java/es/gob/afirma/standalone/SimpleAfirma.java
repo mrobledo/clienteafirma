@@ -477,9 +477,9 @@ public final class SimpleAfirma implements PropertyChangeListener, WindowListene
      * @param args Par&aacute;metros en l&iacute;nea de comandos */
     public static void main(final String[] args) {
 
-       LookAndFeelManager.applyLookAndFeel();
+    	LookAndFeelManager.applyLookAndFeel();
 
-		AutoFirmaUtil.setProxySettings();
+       	AutoFirmaUtil.setProxySettings();
 
 		// Google Analytics
 		if (
@@ -639,7 +639,6 @@ public final class SimpleAfirma implements PropertyChangeListener, WindowListene
         }
     }
 
-
     /** Pregunta al usuario si desea cerrar la aplicaci&oacute;n.
      * @return <code>true</code> si el usuario responde que s&iacute;, <code>false</code> en caso contrario */
     public boolean askForClosing() {
@@ -752,6 +751,7 @@ public final class SimpleAfirma implements PropertyChangeListener, WindowListene
 	private static void printSystemInfo() {
 
     	// Logs de informacion basica
+       	LOGGER.info("Resolucion DPI de pantalla: " + AutoFirmaUtil.getDPI()); //$NON-NLS-1$
 		LOGGER.info("Sistema operativo: " + System.getProperty("os.name")); //$NON-NLS-1$ //$NON-NLS-2$
 		LOGGER.info("Version del SO: " + System.getProperty("os.version")); //$NON-NLS-1$ //$NON-NLS-2$
 		LOGGER.info("Version de Java: " + System.getProperty("java.version")); //$NON-NLS-1$ //$NON-NLS-2$

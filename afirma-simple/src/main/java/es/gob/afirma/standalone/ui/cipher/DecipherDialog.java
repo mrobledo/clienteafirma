@@ -12,17 +12,26 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.security.InvalidKeyException;
+import java.security.Key;
+import java.util.logging.Logger;
 
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
-import javax.swing.SwingUtilities;
 
 import es.gob.afirma.core.AOCancelledOperationException;
+import es.gob.afirma.core.ciphers.CipherConstants;
+import es.gob.afirma.core.misc.AOUtil;
 import es.gob.afirma.core.misc.Platform;
 import es.gob.afirma.core.ui.AOUIFactory;
 import es.gob.afirma.standalone.AutoFirmaUtil;
@@ -33,11 +42,14 @@ import es.gob.afirma.standalone.ui.preferences.PreferencesManager;
  * @author  Mariano Mart&iacute;nez. */
 public final class DecipherDialog extends JDialog implements KeyListener{
 
-	private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = -7827734202788561895L;
+
+	static final Logger LOGGER = Logger.getLogger("es.gob.afirma"); //$NON-NLS-1$
 
 	private static final String[] DECIPHER_ALGOS = new String[] {
-			"Algoritmo 1", //$NON-NLS-1$
-			"Algoritmo 2", //$NON-NLS-1$
+		CipherConstants.AOCipherAlgorithm.PBEWITHSHA1ANDDESEDE.getName(),
+        CipherConstants.AOCipherAlgorithm.PBEWITHSHA1ANDRC2_40.getName(),
+        CipherConstants.AOCipherAlgorithm.PBEWITHMD5ANDDES.getName()
 	};
 
 	private final JComboBox<String> decipherAlgorithms = new JComboBox<>(DECIPHER_ALGOS);
@@ -66,11 +78,8 @@ public final class DecipherDialog extends JDialog implements KeyListener{
 		this.password = text;
 	}
 
-	String getPassword() {
-		if (this.password != null && this.password.length > 0) {
-			return String.valueOf(this.password);
-		}
-		return null;
+	char[] getPassword() {
+		return this.password;
 	}
 
 	void setTextFieldDataText(final String text) {
@@ -83,7 +92,11 @@ public final class DecipherDialog extends JDialog implements KeyListener{
 	/** Inicia el proceso de cifrado del fichero.
 	 * @param parent Componente padre para la modalidad. */
 	public static void startDecipher(final Frame parent) {
-		new DecipherDialog(parent).setVisible(true);
+		final DecipherDialog dd = new DecipherDialog(parent);
+		dd.setSize(600, 320);
+		dd.setResizable(false);
+		dd.setLocationRelativeTo(parent);
+		dd.setVisible(true);
 	}
 
 	/** Crea un di&aacute;logo para el cifrado de ficheros.
@@ -92,14 +105,7 @@ public final class DecipherDialog extends JDialog implements KeyListener{
 		super(parent);
 		setTitle("DecipherDialog.0"); //$NON-NLS-1$
 		setModalityType(ModalityType.APPLICATION_MODAL);
-		SwingUtilities.invokeLater(
-			new Runnable() {
-				@Override
-				public void run() {
-					createUI(parent);
-				}
-			}
-		);
+		createUI(parent);
 	}
 
 	void createUI(final Frame parent) {
@@ -166,8 +172,8 @@ public final class DecipherDialog extends JDialog implements KeyListener{
 								SimpleAfirmaMessages.getString("DecipherDialog.6"), //$NON-NLS-1$
 								null,
 								null,
-								null,
-								SimpleAfirmaMessages.getString("DecipherDialog.11"), //$NON-NLS-1$
+								new String[] {SimpleAfirmaMessages.getString("DecipherDialog.19")}, //$NON-NLS-1$
+								SimpleAfirmaMessages.getString("DecipherDialog.19"), //$NON-NLS-1$
 								false,
 								false,
 								AutoFirmaUtil.getDefaultDialogsIcon(),
@@ -176,8 +182,8 @@ public final class DecipherDialog extends JDialog implements KeyListener{
 						);
 						final String decipherFile = getTextFieldDataText();
 						setPassword(getPasswordField().getPassword());
-						final String pass = getPassword();
-						if (!(decipherFile == null) && !decipherFile.isEmpty() && pass != null && !pass.isEmpty()) {
+						final String pass = String.valueOf(getPassword());
+						if (!(decipherFile == null) && !decipherFile.trim().isEmpty() && pass != null && !pass.trim().isEmpty()) {
 							getDecipherButton().setEnabled(true);
 							getDecipherButton().requestFocus();
 						}
@@ -203,8 +209,8 @@ public final class DecipherDialog extends JDialog implements KeyListener{
 			public void actionPerformed(final ActionEvent e) {
 				final String decipherFile = getTextFieldDataText();
 				setPassword(getPasswordField().getPassword());
-				final String pass = getPassword();
-				if (!(decipherFile == null) && !decipherFile.isEmpty() && pass != null && !pass.isEmpty()) {
+				final String pass = String.valueOf(getPassword());
+				if (!(decipherFile == null) && !decipherFile.trim().isEmpty() && pass != null && !pass.trim().isEmpty()) {
 					getDecipherButton().setEnabled(true);
 					getDecipherButton().requestFocus();
 				}
@@ -219,9 +225,12 @@ public final class DecipherDialog extends JDialog implements KeyListener{
 				@Override
 				public void actionPerformed(final ActionEvent e) {
 					setPassword(getPasswordField().getPassword());
-					final String pass = getPassword();
-					if (pass != null && !pass.isEmpty()){
-					//logica de cifrado
+					final String pass = String.valueOf(getPassword());
+					if (pass != null && !pass.trim().isEmpty()){
+						if (decipher()) {
+							DecipherDialog.this.setVisible(false);
+							DecipherDialog.this.dispose();
+						}
 					}
 				}
 			}
@@ -287,14 +296,115 @@ public final class DecipherDialog extends JDialog implements KeyListener{
 		gbc.gridwidth = GridBagConstraints.REMAINDER;
 		c.add(panel, gbc);
 		pack();
-        setSize(600, 320);
-		setResizable(false);
-		setLocationRelativeTo(parent);
-
 	}
 
-	public static void main(final String[] args) {
-		DecipherDialog.startDecipher(null);
+	private boolean decipher() {
+		if (getTextFieldDataText() == null) {
+			LOGGER.warning("No se ha indicado un fichero de datos"); //$NON-NLS-1$
+			AOUIFactory.showMessageDialog(
+				this,
+				SimpleAfirmaMessages.getString("DecipherDialog.13"), //$NON-NLS-1$
+                SimpleAfirmaMessages.getString("DecipherDialog.14"), //$NON-NLS-1$
+				JOptionPane.WARNING_MESSAGE
+			);
+			return false;
+		}
+		final char[] pass = getPassword();
+		if (pass == null || new String(pass).trim().equals("")){ //$NON-NLS-1$
+			AOUIFactory.showErrorMessage(
+				this,
+				SimpleAfirmaMessages.getString("DecipherDialog.15"), //$NON-NLS-1$
+                SimpleAfirmaMessages.getString("DecipherDialog.12"), //$NON-NLS-1$
+				JOptionPane.ERROR_MESSAGE
+			);
+			return false;
+		}
+		final byte[] fileContent;
+        try ( final InputStream fis = new FileInputStream(new File(getTextFieldDataText())); ) {
+            fileContent = AOUtil.getDataFromInputStream(fis);
+        }
+        catch (final Exception ex) {
+        	LOGGER.warning("Error durante la lectura del fichero de datos: " + ex); //$NON-NLS-1$
+            AOUIFactory.showErrorMessage(
+            	this,
+            	SimpleAfirmaMessages.getString("CipherDialog.15"), //$NON-NLS-1$
+                SimpleAfirmaMessages.getString("CipherDialog.13"), //$NON-NLS-1$
+                JOptionPane.ERROR_MESSAGE
+            );
+            return false;
+        }
+
+        final CipherConfig cipherConfig = new CipherConfig(getSelectedDecipherAlgorithm());
+		final byte[] result;
+		try {
+			final Key tmpKey = cipherConfig.getCipher().decodePassphrase(pass, cipherConfig.getConfig(), null);
+			result = cipherConfig.getCipher().decipher(fileContent, cipherConfig.getConfig(), tmpKey);
+		}
+		catch (final InvalidKeyException e) {
+			LOGGER.severe("Contrasena no valida: " + e); //$NON-NLS-1$
+			AOUIFactory.showErrorMessage(
+				this,
+				SimpleAfirmaMessages.getString("DecipherDialog.20"), //$NON-NLS-1$
+                SimpleAfirmaMessages.getString("DecipherDialog.12"), //$NON-NLS-1$
+                JOptionPane.ERROR_MESSAGE
+			);
+			return false;
+		}
+		catch (final Exception ex) {
+			LOGGER.severe("Error al descifrar: " + ex); //$NON-NLS-1$
+			AOUIFactory.showErrorMessage(
+				this,
+				SimpleAfirmaMessages.getString("CipherDialog.17"), //$NON-NLS-1$
+                SimpleAfirmaMessages.getString("CipherDialog.13"), //$NON-NLS-1$
+				JOptionPane.ERROR_MESSAGE
+			);
+
+			return false;
+		}
+
+		if (result == null) {
+			AOUIFactory.showMessageDialog(
+				this,
+				SimpleAfirmaMessages.getString("CipherDialog.18"), //$NON-NLS-1$
+                SimpleAfirmaMessages.getString("CipherDialog.13"), //$NON-NLS-1$
+				JOptionPane.ERROR_MESSAGE
+			);
+			return false;
+		}
+
+		// Almacenamos el fichero de salida de la operacion
+		try {
+            // Almacenamos el fichero de salida de la operacion
+            final File savedFile =
+            		AOUIFactory.getSaveDataToFile(
+                        result,
+            			SimpleAfirmaMessages.getString("CipherDialog.20"), //$NON-NLS-1$
+            			null,
+            			new File(getTextFieldDataText()).getName().split(".cifrado")[0], //$NON-NLS-1$
+                        null,
+                        null,
+                        this
+            );
+            if (savedFile == null) {
+                return false;
+            }
+    	}
+        catch(final IOException e) {
+            LOGGER.severe(
+                "No se ha podido guardar el resultado del descifrado: " + e //$NON-NLS-1$
+            );
+            AOUIFactory.showErrorMessage(
+                  this,
+                  SimpleAfirmaMessages.getString("DecipherDialog.21"), //$NON-NLS-1$
+                  SimpleAfirmaMessages.getString("DecipherDialog.12"), //$NON-NLS-1$
+                  JOptionPane.ERROR_MESSAGE
+            );
+            return false;
+        }
+        catch(final AOCancelledOperationException e) {
+        	return false;
+        }
+		return true;
 	}
 
 	@Override
@@ -313,7 +423,7 @@ public final class DecipherDialog extends JDialog implements KeyListener{
 		else {
 			final String decipherFile = getTextFieldDataText();
 			setPassword(getPasswordField().getPassword());
-			final String pass = getPassword();
+			final String pass = String.valueOf(getPassword());
 			if (!(decipherFile == null) && !decipherFile.isEmpty() && pass != null && !pass.isEmpty()) {
 				getDecipherButton().setEnabled(true);
 			}

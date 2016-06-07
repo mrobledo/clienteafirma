@@ -49,6 +49,12 @@
 
 		<dependency>
 			<groupId>es.gob.afirma</groupId>
+			<artifactId>afirma-crypto-cipher</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		
+		<dependency>
+			<groupId>es.gob.afirma</groupId>
 			<artifactId>afirma-keystores-single</artifactId>
 			<version>${project.version}</version>
 		</dependency>

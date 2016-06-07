@@ -12,16 +12,26 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.security.InvalidKeyException;
+import java.security.Key;
+import java.util.logging.Logger;
 
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 
 import es.gob.afirma.core.AOCancelledOperationException;
+import es.gob.afirma.core.ciphers.CipherConstants;
+import es.gob.afirma.core.misc.AOUtil;
 import es.gob.afirma.core.misc.Platform;
 import es.gob.afirma.core.ui.AOUIFactory;
 import es.gob.afirma.standalone.AutoFirmaUtil;
@@ -33,11 +43,12 @@ import es.gob.afirma.standalone.ui.preferences.PreferencesManager;
 public final class CipherDialog extends JDialog implements KeyListener{
 
 	private static final long serialVersionUID = -9133887916481572642L;
+	static final Logger LOGGER = Logger.getLogger("es.gob.afirma"); //$NON-NLS-1$
 
 	private static final String[] CIPHER_ALGOS = new String[] {
-			"Algoritmo 1", //$NON-NLS-1$
-			"Algoritmo 2", //$NON-NLS-1$
-			"Algoritmo 3", //$NON-NLS-1$
+		CipherConstants.AOCipherAlgorithm.PBEWITHSHA1ANDDESEDE.getName(),
+        CipherConstants.AOCipherAlgorithm.PBEWITHSHA1ANDRC2_40.getName(),
+        CipherConstants.AOCipherAlgorithm.PBEWITHMD5ANDDES.getName()
 	};
 
 	private final JComboBox<String> cipherAlgorithms = new JComboBox<>(CIPHER_ALGOS);
@@ -53,9 +64,12 @@ public final class CipherDialog extends JDialog implements KeyListener{
 		return this.cipherButton;
 	}
 
+	/** Clave de cifrado */
+    private Key cipherKey;
+
 	private final JTextField textFieldData = new JTextField();
 
-	private final JPasswordField passwordField = new JPasswordField(10);
+	private final JPasswordField passwordField = new JPasswordField(14);
 	private char[] password;
 
 	JPasswordField getPasswordField() {
@@ -66,8 +80,8 @@ public final class CipherDialog extends JDialog implements KeyListener{
 		this.password = text;
 	}
 
-	String getPassword() {
-			return String.valueOf(this.password);
+	char[] getPassword() {
+		return this.password;
 	}
 
 	void setTextFieldDataText(final String text) {
@@ -80,7 +94,11 @@ public final class CipherDialog extends JDialog implements KeyListener{
 	/** Inicia el proceso de cifrado del fichero.
 	 * @param parent Componente padre para la modalidad. */
 	public static void startCipher(final Frame parent) {
-		new CipherDialog(parent).setVisible(true);
+		final CipherDialog cd = new CipherDialog(parent);
+		cd.setSize(600, 320);
+		cd.setResizable(false);
+		cd.setLocationRelativeTo(parent);
+		cd.setVisible(true);
 	}
 
 	/** Crea un di&aacute;logo para el cifrado de ficheros.
@@ -167,8 +185,8 @@ public final class CipherDialog extends JDialog implements KeyListener{
 						);
 						final String cipherFile = getTextFieldDataText();
 						setPassword(getPasswordField().getPassword());
-						final String pass = getPassword();
-						if (!(cipherFile == null) && !cipherFile.isEmpty() && pass != null && !pass.isEmpty()) {
+						final String pass = String.valueOf(getPassword());
+						if (!(cipherFile == null) && !cipherFile.trim().isEmpty() && pass != null && !pass.trim().isEmpty()) {
 							getCipherButton().setEnabled(true);
 							getCipherButton().requestFocus();
 						}
@@ -194,8 +212,8 @@ public final class CipherDialog extends JDialog implements KeyListener{
 			public void actionPerformed(final ActionEvent e) {
 				final String cipherFile = getTextFieldDataText();
 				setPassword(getPasswordField().getPassword());
-				final String pass = getPassword();
-				if (!(cipherFile == null) && !cipherFile.isEmpty() && pass != null && !pass.isEmpty()) {
+				final String pass = String.valueOf(getPassword());
+				if (!(cipherFile == null) && !cipherFile.trim().isEmpty() && pass != null && !pass.trim().isEmpty()) {
 					getCipherButton().setEnabled(true);
 					getCipherButton().requestFocus();
 				}
@@ -210,9 +228,12 @@ public final class CipherDialog extends JDialog implements KeyListener{
 				@Override
 				public void actionPerformed(final ActionEvent e) {
 					setPassword(getPasswordField().getPassword());
-					final String pass = getPassword();
-					if (pass != null && !pass.isEmpty()){
-					//logica de cifrado
+					final String pass = String.valueOf(getPassword());
+					if (pass != null && !pass.trim().isEmpty()){
+						if (cipherFile()) {
+							CipherDialog.this.setVisible(false);
+							CipherDialog.this.dispose();
+						}
 					}
 				}
 			}
@@ -278,13 +299,6 @@ public final class CipherDialog extends JDialog implements KeyListener{
 		gbc.gridwidth = GridBagConstraints.REMAINDER;
 		c.add(panel, gbc);
 		pack();
-        setSize(600, 320);
-		setResizable(false);
-		setLocationRelativeTo(parent);
-	}
-
-	public static void main(final String[] args) {
-		CipherDialog.startCipher(null);
 	}
 
 	@Override
@@ -303,11 +317,135 @@ public final class CipherDialog extends JDialog implements KeyListener{
 		else{
 			final String cipherFile = getTextFieldDataText();
 			setPassword(getPasswordField().getPassword());
-			final String pass = getPassword();
+			final String pass = String.valueOf(getPassword());
 			if (!(cipherFile == null) && !cipherFile.isEmpty() && pass != null && !pass.isEmpty()) {
 				getCipherButton().setEnabled(true);
 			}
 		}
 	}
 
+	boolean cipherFile() {
+		if (getTextFieldDataText() == null) {
+            LOGGER.warning("No se ha indicado un fichero de datos"); //$NON-NLS-1$
+            AOUIFactory.showMessageDialog(
+        		this,
+                SimpleAfirmaMessages.getString("CipherDialog.12"), //$NON-NLS-1$
+                SimpleAfirmaMessages.getString("CipherDialog.0"), //$NON-NLS-1$
+                JOptionPane.WARNING_MESSAGE
+            );
+            return false;
+    	}
+		final CipherConfig cipherConfig = new CipherConfig(getSelectedCipherAlgorithm());
+        // Generamos la clave necesaria para el cifrado
+        try {
+            this.cipherKey = cipherConfig.getCipher().decodePassphrase(
+        		getPassword(),
+        		cipherConfig.getConfig(),
+        		null
+    		);
+        }
+        catch (final Exception ex) {
+            LOGGER.severe("Error durante el proceso de generacion de claves: " + ex); //$NON-NLS-1$
+            AOUIFactory.showErrorMessage(
+            	this,
+            	SimpleAfirmaMessages.getString("CipherDialog.14"), //$NON-NLS-1$
+                SimpleAfirmaMessages.getString("CipherDialog.13"), //$NON-NLS-1$
+                JOptionPane.ERROR_MESSAGE
+            );
+            return false;
+        }
+
+        // Leemos el fichero de datos
+        final byte[] fileContent;
+        try ( final InputStream fis = new FileInputStream(new File(getTextFieldDataText())); ) {
+            fileContent = AOUtil.getDataFromInputStream(fis);
+        }
+        catch (final Exception ex) {
+            LOGGER.warning("Error al leer el fichero: " + ex); //$NON-NLS-1$
+            AOUIFactory.showErrorMessage(
+            	this,
+            	SimpleAfirmaMessages.getString("CipherDialog.15"), //$NON-NLS-1$
+                SimpleAfirmaMessages.getString("CipherDialog.13"), //$NON-NLS-1$
+                JOptionPane.ERROR_MESSAGE
+            );
+            return false;
+        }
+        catch(final OutOfMemoryError e) {
+        	AOUIFactory.showErrorMessage(
+    			this,
+    			SimpleAfirmaMessages.getString("CipherDialog.16"), //$NON-NLS-1$
+                SimpleAfirmaMessages.getString("CipherDialog.13"), //$NON-NLS-1$
+                JOptionPane.ERROR_MESSAGE
+            );
+        	return false;
+        }
+
+        final byte[] result;
+        try {
+            result = cipherConfig.getCipher().cipher(fileContent, cipherConfig.getConfig(), this.cipherKey);
+        }
+        catch (final InvalidKeyException ex) {
+            LOGGER.severe("No se cumplen con los requisitos de contrasena del algoritmo: " + ex); //$NON-NLS-1$
+            AOUIFactory.showErrorMessage(
+            	this,
+            	SimpleAfirmaMessages.getString("CipherDialog.17"), //$NON-NLS-1$
+                SimpleAfirmaMessages.getString("CipherDialog.13"), //$NON-NLS-1$
+                JOptionPane.ERROR_MESSAGE
+            );
+            return false;
+        }
+        catch (final Exception ex) {
+            LOGGER.warning("Error al cifrar: " + ex); //$NON-NLS-1$
+            AOUIFactory.showErrorMessage(
+            	this,
+            	SimpleAfirmaMessages.getString("CipherDialog.18"), //$NON-NLS-1$
+                SimpleAfirmaMessages.getString("CipherDialog.13"), //$NON-NLS-1$
+                JOptionPane.ERROR_MESSAGE
+            );
+            return false;
+        }
+
+        if (result == null) {
+        	AOUIFactory.showErrorMessage(
+        		this,
+        		SimpleAfirmaMessages.getString("CipherDialog.19"), //$NON-NLS-1$
+                SimpleAfirmaMessages.getString("CipherDialog.13"), //$NON-NLS-1$
+                JOptionPane.ERROR_MESSAGE
+        	);
+        }
+        else {
+        	try {
+	            // Almacenamos el fichero de salida de la operacion
+	            final File savedFile =
+	            		AOUIFactory.getSaveDataToFile(
+	                        result,
+	            			SimpleAfirmaMessages.getString("CipherDialog.20"), //$NON-NLS-1$
+	            			null,
+	            			AutoFirmaUtil.sfn2lfn(new File(getTextFieldDataText())).getName() + ".cifrado", //$NON-NLS-1$
+	                        null,
+	                        null,
+	                        this
+	            );
+	            if (savedFile == null) {
+	                return false;
+	            }
+        	}
+            catch(final IOException e) {
+                LOGGER.severe(
+                    "No se ha podido guardar el resultado del cifrado: " + e //$NON-NLS-1$
+                );
+                AOUIFactory.showErrorMessage(
+                      this,
+                      SimpleAfirmaMessages.getString("CipherDialog.21"), //$NON-NLS-1$
+                      SimpleAfirmaMessages.getString("CipherDialog.20"), //$NON-NLS-1$
+                      JOptionPane.ERROR_MESSAGE
+                );
+                return false;
+            }
+            catch(final AOCancelledOperationException e) {
+            	return false;
+            }
+        }
+        return true;
+	}
 }

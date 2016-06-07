@@ -15,6 +15,7 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Image;
 import java.awt.Insets;
+import java.awt.RenderingHints;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.dnd.DnDConstants;
@@ -90,7 +91,7 @@ public final class SignPdfUiPanelPreview extends JPanel implements KeyListener {
 
 	private static final long serialVersionUID = 1848879900511003335L;
 	static final Logger LOGGER = Logger.getLogger("es.gob.afirma"); //$NON-NLS-1$
-	private static final int PREFERRED_WIDTH = 600;
+	private static final int PREFERRED_WIDTH = 475;
 	private static final int PREFERRED_HEIGHT = 140;
 	private static final int MAX_TEXT_SIZE = 50;
 	private static final int MIN_TEXT_SIZE = 1;
@@ -928,6 +929,7 @@ public final class SignPdfUiPanelPreview extends JPanel implements KeyListener {
 	        this.image.getType()
         );
 	    final Graphics2D g = bi.createGraphics();
+		g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 	    if (this.signImage != null) {
 		    g.drawImage(this.signImage, 0, 0, null);
 	    }
