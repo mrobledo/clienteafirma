@@ -40,6 +40,8 @@ final class PreferencesPanelCades extends JPanel {
 
 	private static final String SIGN_FORMAT_CADES = "CAdES"; //$NON-NLS-1$
 
+	private boolean unprotected = true;
+
 	private static final AdESPolicy POLICY_CADES_PADES_AGE_1_9 = new AdESPolicy(
 		"2.16.724.1.3.1.1.2.1.9", //$NON-NLS-1$
 		"G7roucf600+f03r/o0bAOQ6WAs0=", //$NON-NLS-1$
@@ -47,17 +49,18 @@ final class PreferencesPanelCades extends JPanel {
 		"https://sede.060.gob.es/politica_de_firma_anexo_1.pdf" //$NON-NLS-1$
 	);
 
+	private final JPanel panelPolicies = new JPanel();
 	private PolicyPanel cadesPolicyPanel;
+    private final JButton configureTimeStampOptionsButton = new JButton(SimpleAfirmaMessages.getString("PreferencesPanel.119")); //$NON-NLS-1$
 
-	private final JCheckBox cadesImplicit = new JCheckBox(
-		SimpleAfirmaMessages.getString("PreferencesPanel.1"), //$NON-NLS-1$
-		Boolean.parseBoolean(PreferencesManager.get(PREFERENCE_CADES_IMPLICIT, "true")) //$NON-NLS-1$
-	);
+
+	private final JCheckBox cadesImplicit = new JCheckBox(SimpleAfirmaMessages.getString("PreferencesPanel.1")); //$NON-NLS-1$
 
 	PreferencesPanelCades(final KeyListener keyListener,
 						  final ModificationListener modificationListener,
 						  final boolean unprotected) {
 
+		this.unprotected = unprotected;
 		createUI(keyListener, modificationListener, unprotected);
 	}
 
@@ -72,24 +75,13 @@ final class PreferencesPanelCades extends JPanel {
         c.weightx = 1.0;
         c.gridy = 0;
 
-        final List<PolicyPanel.PolicyItem> cadesPolicies = new ArrayList<>();
-        cadesPolicies.add(
-    		new PolicyItem(
-				SimpleAfirmaMessages.getString("PreferencesPanel.73"), //$NON-NLS-1$
-				POLICY_CADES_PADES_AGE_1_9
-			)
-		);
+        loadPreferences();
 
-        this.cadesPolicyPanel = new PolicyPanel(
-    		SIGN_FORMAT_CADES,
-    		cadesPolicies,
-    		getCadesPreferedPolicy(),
-    		null,
-    		unprotected
-        );
         this.cadesPolicyPanel.setModificationListener(modificationListener);
         this.cadesPolicyPanel.setKeyListener(keyListener);
-        add(this.cadesPolicyPanel, c);
+        this.panelPolicies.setLayout(new GridBagLayout());
+        this.panelPolicies.add(this.cadesPolicyPanel, c);
+        add(this.panelPolicies, c);
 
 	    final FlowLayout fLayout = new FlowLayout(FlowLayout.LEADING);
 	    final JPanel signatureMode = new JPanel(fLayout);
@@ -115,13 +107,11 @@ final class PreferencesPanelCades extends JPanel {
 			)
 		);
 
-	    final JButton configureTimeStampOptionsButton = new JButton(SimpleAfirmaMessages.getString("PreferencesPanel.119")); //$NON-NLS-1$
-	    configureTimeStampOptionsButton.setEnabled(PreferencesManager.getBoolean(PREFERENCE_CADES_TIMESTAMP_CONFIGURE, false));
-		configureTimeStampOptionsButton.setMnemonic('F');
-		configureTimeStampOptionsButton.getAccessibleContext().setAccessibleDescription(
+		this.configureTimeStampOptionsButton.setMnemonic('F');
+		this.configureTimeStampOptionsButton.getAccessibleContext().setAccessibleDescription(
 				SimpleAfirmaMessages.getString("PreferencesPanel.120") //$NON-NLS-1$
 		);
-		configureTimeStampOptionsButton.addActionListener(
+		this.configureTimeStampOptionsButton.addActionListener(
 			new ActionListener() {
 				@Override
 				public void actionPerformed(final ActionEvent e) {
@@ -131,17 +121,17 @@ final class PreferencesPanelCades extends JPanel {
 				}
 			}
 		);
-		configureTimeStampOptionsButton.addKeyListener(keyListener);
-		configureTimeStampOptionsButton.setEnabled(unprotected);
+		this.configureTimeStampOptionsButton.addKeyListener(keyListener);
+		this.configureTimeStampOptionsButton.setEnabled(unprotected);
 
 		final JLabel timeStampLabel = new JLabel(
 				SimpleAfirmaMessages.getString("PreferencesPanel.118") //$NON-NLS-1$
 		);
 		timeStampLabel.addKeyListener(keyListener);
-		timeStampLabel.setLabelFor(configureTimeStampOptionsButton);
+		timeStampLabel.setLabelFor(this.configureTimeStampOptionsButton);
 
 	    timeStampPanel.add(timeStampLabel);
-	    timeStampPanel.add(configureTimeStampOptionsButton);
+	    timeStampPanel.add(this.configureTimeStampOptionsButton);
 
 	    c.gridy++;
 	    add(signatureMode, c);
@@ -190,6 +180,36 @@ final class PreferencesPanelCades extends JPanel {
 			PreferencesManager.remove(PREFERENCE_CADES_POLICY_QUALIFIER);
 		}
 		this.cadesPolicyPanel.saveCurrentPolicy();
+	}
+
+	void loadPreferences() {
+		this.cadesImplicit.setSelected(Boolean.parseBoolean(PreferencesManager.get(PREFERENCE_CADES_IMPLICIT, "true"))); //$NON-NLS-1$)
+	    this.configureTimeStampOptionsButton.setEnabled(PreferencesManager.getBoolean(PREFERENCE_CADES_TIMESTAMP_CONFIGURE, false));
+
+        final List<PolicyPanel.PolicyItem> cadesPolicies = new ArrayList<>();
+        cadesPolicies.add(
+    		new PolicyItem(
+				SimpleAfirmaMessages.getString("PreferencesPanel.73"), //$NON-NLS-1$
+				POLICY_CADES_PADES_AGE_1_9
+			)
+		);
+
+        this.panelPolicies.removeAll();
+        this.cadesPolicyPanel = new PolicyPanel(
+    		SIGN_FORMAT_CADES,
+    		cadesPolicies,
+    		getCadesPreferedPolicy(),
+    		null,
+    		this.unprotected
+        );
+
+        final GridBagConstraints c = new GridBagConstraints();
+        c.fill = GridBagConstraints.BOTH;
+        c.weightx = 1.0;
+        c.gridy = 0;
+        this.panelPolicies.add(this.cadesPolicyPanel, c);
+        revalidate();
+        repaint();
 	}
 
 	/** Obtiene la configuraci&oacute;n de politica de firma CAdES establecida actualmente.

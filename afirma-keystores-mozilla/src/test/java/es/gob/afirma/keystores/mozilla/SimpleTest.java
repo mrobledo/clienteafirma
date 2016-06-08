@@ -1,6 +1,8 @@
 package es.gob.afirma.keystores.mozilla;
 
 import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.security.KeyStore;
 import java.security.Provider;
 import java.security.Security;
@@ -26,7 +28,8 @@ public final class SimpleTest {
      * @throws Exception En cualquier error. */
     public static void main(final String[] args) throws Exception {
     	System.out.println(MozillaKeyStoreUtilities.getMozillaUserProfileDirectory());
-		SimpleTest.testDirectNssUsage();
+		//SimpleTest.testDirectNssUsage();
+    	new SimpleTest().testKeyStoreManagerCreation();
     }
 
     /** Prueba de la obtenci&oacute;n de almac&eacute;n y alias con Mozilla NSS.
@@ -83,7 +86,11 @@ public final class SimpleTest {
     	System.out.println(AOUtil.hexify(sig.sign(), false));
     }
 
-    private static void testDirectNssUsage() throws Exception {
+    /** Prueba de uso directo de NSS.
+     * @throws Exception En cualquier error. */
+    @SuppressWarnings("static-method")
+	@Test
+    public void testDirectNssUsage() throws Exception {
     	final KeyStore keyStore = KeyStore.getInstance(
 			"PKCS11", //$NON-NLS-1$
 			loadNSS(
@@ -98,7 +105,15 @@ public final class SimpleTest {
     	}
     }
 
-	static Provider loadNSS(final String nssDirectory, final String mozProfileDir) throws AOException {
+	static Provider loadNSS(final String nssDirectory, final String mozProfileDir) throws AOException,
+																					      InstantiationException,
+																					      IllegalAccessException,
+																					      IllegalArgumentException,
+																					      InvocationTargetException,
+																					      NoSuchMethodException,
+																					      SecurityException,
+																					      ClassNotFoundException {
+
 		final String p11NSSConfigFile = MozillaKeyStoreUtilities.createPKCS11NSSConfigFile(
 			mozProfileDir,
 			nssDirectory
@@ -108,7 +123,9 @@ public final class SimpleTest {
 
 		Provider p = null;
 		try {
-			p = new sun.security.pkcs11.SunPKCS11(new ByteArrayInputStream(p11NSSConfigFile.getBytes()));
+			p = (Provider) Class.forName("sun.security.pkcs11.SunPKCS11") //$NON-NLS-1$
+					.getConstructor(InputStream.class)
+					.newInstance(new ByteArrayInputStream(p11NSSConfigFile.getBytes()));
 		}
 		catch (final Exception e) {
 			// No se ha podido cargar el proveedor sin precargar las dependencias
@@ -122,12 +139,16 @@ public final class SimpleTest {
 			}
 
 			try {
-				p = new sun.security.pkcs11.SunPKCS11(new ByteArrayInputStream(p11NSSConfigFile.getBytes()));
+				p = (Provider) Class.forName("sun.security.pkcs11.SunPKCS11") //$NON-NLS-1$
+					.getConstructor(InputStream.class)
+						.newInstance(new ByteArrayInputStream(p11NSSConfigFile.getBytes()));
 			}
 			catch (final Exception e2) {
 				// Un ultimo intento de cargar el proveedor valiendonos de que es posible que
 				// las bibliotecas necesarias se hayan cargado tras el ultimo intento
-				p = new sun.security.pkcs11.SunPKCS11(new ByteArrayInputStream(p11NSSConfigFile.getBytes()));
+				p = (Provider) Class.forName("sun.security.pkcs11.SunPKCS11") //$NON-NLS-1$
+					.getConstructor(InputStream.class)
+						.newInstance(new ByteArrayInputStream(p11NSSConfigFile.getBytes()));
 			}
 		}
 

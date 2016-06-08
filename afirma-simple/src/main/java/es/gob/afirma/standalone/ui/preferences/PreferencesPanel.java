@@ -51,14 +51,14 @@ final class PreferencesPanel extends JPanel implements KeyListener, DisposableIn
 	private PreferencesPanelFacturaE preferencesPanelFacturaE;
 	private PreferencesPanelXades preferencesPanelXades;
 	private PreferencesPanelValideCerts preferencesPanelValideCerts;
-	
+
 	private final JTabbedPane tabbedPane = new JTabbedPane();
 
 	void createUI(final int selectedTabIndex) {
 
 		final boolean unprotected = PreferencesManager.getBoolean(PreferencesManager.PREFERENCE_GENERAL_UNPROTECTED, true);
 
-		this.preferencesPanelGeneral = new PreferencesPanelGeneral(this, this.modificationListener, this, unprotected);
+		this.preferencesPanelGeneral = new PreferencesPanelGeneral(this, this.modificationListener, this, this, unprotected);
 		this.preferencesPanelCades = new PreferencesPanelCades(this, this.modificationListener, unprotected);
 		this.preferencesPanelPades = new PreferencesPanelPades(this, this.modificationListener, unprotected);
 		this.preferencesPanelKeyStores = new PreferencesPanelKeyStores(this, this.modificationListener, unprotected);
@@ -134,16 +134,16 @@ final class PreferencesPanel extends JPanel implements KeyListener, DisposableIn
 			SimpleAfirmaMessages.getString("PreferencesPanel.138") //$NON-NLS-1$
 		);
 		this.tabbedPane.setMnemonicAt(count, KeyEvent.VK_I);
-		
+
 		//TODO: Descomentar una vez se entregue
 		count = this.tabbedPane.getTabCount();
 		this.tabbedPane.addTab(
-			SimpleAfirmaMessages.getString("PreferencesPanel.139"), //$NON-NLS-1$
+			SimpleAfirmaMessages.getString("PreferencesPanel.142"), //$NON-NLS-1$
 			null,
 			this.preferencesPanelValideCerts,
-			SimpleAfirmaMessages.getString("PreferencesPanel.140") //$NON-NLS-1$
+			SimpleAfirmaMessages.getString("PreferencesPanel.143") //$NON-NLS-1$
 		);
-		this.tabbedPane.setMnemonicAt(count, KeyEvent.VK_V);
+		this.tabbedPane.setMnemonicAt(count, KeyEvent.VK_S);
 
 		this.tabbedPane.setSelectedIndex(selectedTabIndex);
 
@@ -207,6 +207,38 @@ final class PreferencesPanel extends JPanel implements KeyListener, DisposableIn
 	    return true;
 
 	}
+
+    void loadPreferences() {
+    	//****************************************************************************
+    			//**** PREFERENCIAS ALMACENES ************************************************
+    			//****************************************************************************
+    			this.preferencesPanelKeyStores.loadPreferences();
+
+    			//****************************************************************************
+    			//**** PREFERENCIAS FACTURAE ************************************************
+    			//****************************************************************************
+    			this.preferencesPanelFacturaE.loadPreferences();
+
+    			//****************************************************************************
+    			//**** PREFERENCIAS GENERALES ************************************************
+    			//****************************************************************************
+    			this.preferencesPanelGeneral.loadPreferences();
+
+    			//****************************************************************************
+    			//**** PREFERENCIAS CADES ****************************************************
+    			//****************************************************************************
+    			this.preferencesPanelCades.loadPreferences();
+
+    			//****************************************************************************
+    			//**** PREFERENCIAS PADES ****************************************************
+    			//****************************************************************************
+    			this.preferencesPanelPades.loadPreferences();
+
+    			//****************************************************************************
+    			//**** PREFERENCIAS XADES ****************************************************
+    			//****************************************************************************
+    			this.preferencesPanelXades.loadPreferences();
+    }
 
 	/** Comprueba que los datos configurados sean v&aacute;lidos.
 	 * @return {@code true} cuando los datos son v&aacute;lidos, {@code false} en caso

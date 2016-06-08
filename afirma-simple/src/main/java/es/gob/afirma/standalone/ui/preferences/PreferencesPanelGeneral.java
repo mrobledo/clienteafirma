@@ -50,6 +50,11 @@ final class PreferencesPanelGeneral extends JPanel {
 
 	static final Logger LOGGER = Logger.getLogger("es.gob.afirma"); //$NON-NLS-1$
 
+	private final PreferencesPanel preferencesPanel;
+	PreferencesPanel getPrefPanel() {
+		return this.preferencesPanel;
+	}
+
 	private final JComboBox<String> signarureAlgorithms = new JComboBox<>();
 
 	private static final String XADES = AOSignConstants.SIGN_FORMAT_XADES;
@@ -66,30 +71,18 @@ final class PreferencesPanelGeneral extends JPanel {
 	private final JComboBox<String> binFilesCombo = new JComboBox<>(new String[] { CADES, XADES });
 	private final JComboBox<String> odfFilesCombo = new JComboBox<>(new String[] { ODF, CADES, XADES });
 
-	private final JCheckBox showIconInit = new JCheckBox(
-		SimpleAfirmaMessages.getString("PreferencesPanel.113"), //$NON-NLS-1$
-		PreferencesManager.getBoolean(PREFERENCE_GENERAL_SHOW_ICON_INIT, false)
-	);
+	private final JCheckBox showIconInit = new JCheckBox(SimpleAfirmaMessages.getString("PreferencesPanel.113")); //$NON-NLS-1$
 
 	private final JCheckBox avoidAskForClose = new JCheckBox(
 		SimpleAfirmaMessages.getString("PreferencesPanel.36"), //$NON-NLS-1$
 		PreferencesManager.getBoolean(PREFERENCE_GENERAL_OMIT_ASKONCLOSE, false)
 	);
 
-	private final JCheckBox hideDniStartScreen = new JCheckBox(
-		SimpleAfirmaMessages.getString("PreferencesPanel.81"), //$NON-NLS-1$
-		PreferencesManager.getBoolean(PREFERENCE_GENERAL_HIDE_DNIE_START_SCREEN, false)
-	);
+	private final JCheckBox hideDniStartScreen = new JCheckBox(SimpleAfirmaMessages.getString("PreferencesPanel.81")); //$NON-NLS-1$
 
-	private final JCheckBox checkForUpdates = new JCheckBox(
-		SimpleAfirmaMessages.getString("PreferencesPanel.87"), //$NON-NLS-1$
-		PreferencesManager.getBoolean(PREFERENCE_GENERAL_UPDATECHECK, true)
-	);
+	private final JCheckBox checkForUpdates = new JCheckBox(SimpleAfirmaMessages.getString("PreferencesPanel.87")); //$NON-NLS-1$
 
-	private final JCheckBox sendAnalytics = new JCheckBox(
-		SimpleAfirmaMessages.getString("PreferencesPanel.89"), //$NON-NLS-1$
-		PreferencesManager.getBoolean(PREFERENCE_GENERAL_USEANALYTICS, true)
-	);
+	private final JCheckBox sendAnalytics = new JCheckBox(SimpleAfirmaMessages.getString("PreferencesPanel.89")); //$NON-NLS-1$
 
 	private final DisposableInterface disposableInterface;
 	DisposableInterface getDisposableInterface() {
@@ -99,8 +92,10 @@ final class PreferencesPanelGeneral extends JPanel {
 	PreferencesPanelGeneral(final KeyListener keyListener,
 			                final ItemListener modificationListener,
 			                final DisposableInterface di,
+			                final PreferencesPanel prefPanel,
 			                final boolean unprotected) {
-		this.disposableInterface= di;
+		this.disposableInterface = di;
+		this.preferencesPanel = prefPanel;
 
 		createUI(keyListener, modificationListener, unprotected);
 	}
@@ -124,6 +119,24 @@ final class PreferencesPanelGeneral extends JPanel {
 
 		//Seleccion tryIcon
 		checkIconInit();
+	}
+
+	void loadPreferences() {
+		// Opciones varias
+		this.signarureAlgorithms.setSelectedItem(PreferencesManager.get(PREFERENCE_GENERAL_SIGNATURE_ALGORITHM, "SHA1withRSA")); //$NON-NLS-1$
+		this.showIconInit.setSelected(PreferencesManager.getBoolean(PREFERENCE_GENERAL_SHOW_ICON_INIT, false));
+		this.avoidAskForClose.setSelected(PreferencesManager.getBoolean(PREFERENCE_GENERAL_OMIT_ASKONCLOSE, false));
+		this.hideDniStartScreen.setSelected(PreferencesManager.getBoolean(PREFERENCE_GENERAL_HIDE_DNIE_START_SCREEN, false));
+		this.checkForUpdates.setSelected(PreferencesManager.getBoolean(PREFERENCE_GENERAL_UPDATECHECK, true));
+		this.sendAnalytics.setSelected(PreferencesManager.getBoolean(PREFERENCE_GENERAL_USEANALYTICS, true));
+
+		// Formatos por defecto
+		this.pdfFilesCombo.setSelectedItem(PreferencesManager.get(PREFERENCE_GENERAL_DEFAULT_FORMAT_PDF, PADES));
+		this.ooxmlFilesCombo.setSelectedItem(PreferencesManager.get(PREFERENCE_GENERAL_DEFAULT_FORMAT_OOXML, OOXML));
+		this.facturaeFilesCombo.setSelectedItem(PreferencesManager.get(PREFERENCE_GENERAL_DEFAULT_FORMAT_FACTURAE, FACTURAE));
+		this.odfFilesCombo.setSelectedItem(PreferencesManager.get(PREFERENCE_GENERAL_DEFAULT_FORMAT_ODF, ODF));
+		this.xmlFilesCombo.setSelectedItem(PreferencesManager.get(PREFERENCE_GENERAL_DEFAULT_FORMAT_XML, XADES));
+		this.binFilesCombo.setSelectedItem(PreferencesManager.get(PREFERENCE_GENERAL_DEFAULT_FORMAT_BIN, CADES));
 	}
 
 	void createUI(final KeyListener keyListener,
@@ -154,6 +167,7 @@ final class PreferencesPanelGeneral extends JPanel {
 		signConstraint.gridy = 0;
 		signConstraint.insets = new Insets(0, 0, 0, 0);
 
+		loadPreferences();
 		final JButton importConfigFromFileButton = new JButton(
 			SimpleAfirmaMessages.getString("PreferencesPanel.107") //$NON-NLS-1$
 		);
@@ -241,6 +255,7 @@ final class PreferencesPanelGeneral extends JPanel {
 					) == JOptionPane.YES_OPTION) {
 						try {
 							PreferencesManager.clearAll();
+							getPrefPanel().loadPreferences();
 						}
 						catch (final BackingStoreException e) {
 							LOGGER.severe("Error eliminando las preferencias de la aplicacion: " + e); //$NON-NLS-1$
@@ -363,9 +378,6 @@ final class PreferencesPanelGeneral extends JPanel {
 				}
 			)
 		);
-		this.signarureAlgorithms.setSelectedItem(
-			PreferencesManager.get(PREFERENCE_GENERAL_SIGNATURE_ALGORITHM, "SHA1withRSA") //$NON-NLS-1$
-		);
 		this.signarureAlgorithms.setEnabled(unprotected);
 		signatureAgorithmPanel.add(this.signarureAlgorithms);
 
@@ -448,9 +460,6 @@ final class PreferencesPanelGeneral extends JPanel {
 		// PDF
 		final JLabel pdfFilesLabel = new JLabel(SimpleAfirmaMessages.getString("PreferencesPanel.74")); //$NON-NLS-1$
 		pdfFilesLabel.setLabelFor(this.pdfFilesCombo);
-		this.pdfFilesCombo.setSelectedItem(
-			PreferencesManager.get(PREFERENCE_GENERAL_DEFAULT_FORMAT_PDF, PADES)
-		);
 		this.pdfFilesCombo.addItemListener(modificationListener);
 		this.pdfFilesCombo.addKeyListener(keyListener);
 		this.pdfFilesCombo.setEnabled(unprotected);
@@ -465,9 +474,6 @@ final class PreferencesPanelGeneral extends JPanel {
 		// OOXML
 		final JLabel ooxmlFilesLabel = new JLabel(SimpleAfirmaMessages.getString("PreferencesPanel.75")); //$NON-NLS-1$
 		ooxmlFilesLabel.setLabelFor(this.ooxmlFilesCombo);
-		this.ooxmlFilesCombo.setSelectedItem(
-			PreferencesManager.get(PREFERENCE_GENERAL_DEFAULT_FORMAT_OOXML, OOXML)
-		);
 		this.ooxmlFilesCombo.addItemListener(modificationListener);
 		this.ooxmlFilesCombo.addKeyListener(keyListener);
 		this.ooxmlFilesCombo.setEnabled(unprotected);
@@ -482,9 +488,6 @@ final class PreferencesPanelGeneral extends JPanel {
 		// FACTURAE
 		final JLabel facturaeFilesLabel = new JLabel(SimpleAfirmaMessages.getString("PreferencesPanel.76")); //$NON-NLS-1$
 		facturaeFilesLabel.setLabelFor(this.facturaeFilesCombo);
-		this.facturaeFilesCombo.setSelectedItem(
-			PreferencesManager.get(PREFERENCE_GENERAL_DEFAULT_FORMAT_FACTURAE, FACTURAE)
-		);
 		this.facturaeFilesCombo.addItemListener(modificationListener);
 		this.facturaeFilesCombo.addKeyListener(keyListener);
 		this.facturaeFilesCombo.setEnabled(unprotected);
@@ -499,9 +502,6 @@ final class PreferencesPanelGeneral extends JPanel {
 		// XML
 		final JLabel xmlFilesLabel = new JLabel(SimpleAfirmaMessages.getString("PreferencesPanel.77")); //$NON-NLS-1$
 		xmlFilesLabel.setLabelFor(this.xmlFilesCombo);
-		this.xmlFilesCombo.setSelectedItem(
-			PreferencesManager.get(PREFERENCE_GENERAL_DEFAULT_FORMAT_XML, XADES)
-		);
 		this.xmlFilesCombo.addItemListener(modificationListener);
 		this.xmlFilesCombo.addKeyListener(keyListener);
 		this.xmlFilesCombo.setEnabled(unprotected);
@@ -516,9 +516,6 @@ final class PreferencesPanelGeneral extends JPanel {
 		// ODF
 		final JLabel odfFilesLabel = new JLabel(SimpleAfirmaMessages.getString("PreferencesPanel.83")); //$NON-NLS-1$
 		odfFilesLabel.setLabelFor(this.odfFilesCombo);
-		this.odfFilesCombo.setSelectedItem(
-			PreferencesManager.get(PREFERENCE_GENERAL_DEFAULT_FORMAT_ODF, ODF)
-		);
 		this.odfFilesCombo.addItemListener(modificationListener);
 		this.odfFilesCombo.addKeyListener(keyListener);
 		this.odfFilesCombo.setEnabled(unprotected);
@@ -533,9 +530,6 @@ final class PreferencesPanelGeneral extends JPanel {
 		// BIN
 		final JLabel binFilesLabel = new JLabel(SimpleAfirmaMessages.getString("PreferencesPanel.78")); //$NON-NLS-1$
 		binFilesLabel.setLabelFor(this.binFilesCombo);
-		this.binFilesCombo.setSelectedItem(
-			PreferencesManager.get(PREFERENCE_GENERAL_DEFAULT_FORMAT_BIN, CADES)
-		);
 		this.binFilesCombo.addItemListener(modificationListener);
 		this.binFilesCombo.addKeyListener(keyListener);
 		this.binFilesCombo.setEnabled(unprotected);

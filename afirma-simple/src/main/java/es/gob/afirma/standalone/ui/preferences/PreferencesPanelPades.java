@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.logging.Logger;
 
 import javax.swing.BorderFactory;
+import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -46,6 +47,7 @@ final class PreferencesPanelPades extends JPanel {
 
 	private static final long serialVersionUID = 4299378019540627483L;
 
+	private final JPanel panelPolicies = new JPanel();
 	private PolicyPanel padesPolicyPanel;
 
 	private static final AdESPolicy POLICY_CADES_PADES_AGE_1_9 = new AdESPolicy(
@@ -60,22 +62,13 @@ final class PreferencesPanelPades extends JPanel {
 		return this.padesBasicFormat;
 	}
 
-	private final JTextField padesSignReason = new JTextField(
-		PreferencesManager.get(PREFERENCE_PADES_SIGN_REASON, "") //$NON-NLS-1$
-	);
+	private boolean unprotected = true;
 
-	private final JTextField padesSignProductionCity = new JTextField(
-		PreferencesManager.get(PREFERENCE_PADES_SIGN_PRODUCTION_CITY, "") //$NON-NLS-1$
-	);
-
-	private final JTextField padesSignerContact = new JTextField(
-		PreferencesManager.get(PREFERENCE_PADES_SIGNER_CONTACT, "") //$NON-NLS-1$
-	);
-
-	private final JCheckBox visiblePdfSignature = new JCheckBox(
-		SimpleAfirmaMessages.getString("PreferencesPanel.79"), //$NON-NLS-1$
-		Boolean.parseBoolean(PreferencesManager.get(PREFERENCE_PADES_VISIBLE, "false")) //$NON-NLS-1$
-	);
+	private final JTextField padesSignReason = new JTextField();
+	private final JTextField padesSignProductionCity = new JTextField();
+	private final JTextField padesSignerContact = new JTextField();
+	private final JCheckBox visiblePdfSignature = new JCheckBox(SimpleAfirmaMessages.getString("PreferencesPanel.79")); //$NON-NLS-1$
+    final JButton configureTimeStampOptionsButton = new JButton(SimpleAfirmaMessages.getString("PreferencesPanel.119")); //$NON-NLS-1$
 
 	private final JComboBox<CertificationLevelResources> certificationLevel = new JComboBox<>(
 		CertificationLevelResources.getAllCertificationLevelResources()
@@ -93,6 +86,7 @@ final class PreferencesPanelPades extends JPanel {
 						  final ModificationListener modificationListener,
 						  final boolean unprotected) {
 
+		this.unprotected = unprotected;
 		createUI(keyListener, modificationListener, unprotected);
 	}
 
@@ -107,25 +101,13 @@ final class PreferencesPanelPades extends JPanel {
         gbc.weightx = 1.0;
         gbc.gridy = 0;
 
-        final List<PolicyPanel.PolicyItem> padesPolicies = new ArrayList<>();
-        padesPolicies.add(
-    		new PolicyItem(
-        		SimpleAfirmaMessages.getString("PreferencesPanel.73"), //$NON-NLS-1$
-        		POLICY_CADES_PADES_AGE_1_9
-    		)
-		);
+        loadPreferences();
 
-        this.padesPolicyPanel = new PolicyPanel(
-    		SIGN_FORMAT_PADES,
-    		padesPolicies,
-    		getPadesPreferedPolicy(),
-    		this.padesBasicFormat,
-    		unprotected
-		);
-        this.padesBasicFormat.setEnabled(unprotected);
         this.padesPolicyPanel.setModificationListener(modificationListener);
         this.padesPolicyPanel.setKeyListener(keyListener);
-        add(this.padesPolicyPanel, gbc);
+        this.panelPolicies.setLayout(new GridBagLayout());
+        this.panelPolicies.add(this.padesPolicyPanel, gbc);
+        add(this.panelPolicies, gbc);
 
 	    final JPanel metadataPanel = new JPanel();
         metadataPanel.setBorder(BorderFactory.createTitledBorder(
@@ -219,19 +201,11 @@ final class PreferencesPanelPades extends JPanel {
 		);
 
 		this.padesBasicFormat.setModel(padesFormatModel);
-		final String selectedValue = PreferencesManager.get(
-			PREFERENCE_PADES_FORMAT,
-			AOSignConstants.PADES_SUBFILTER_BASIC
-		);
-		for (int i = 0; i < padesFormatModel.getSize(); i++) {
-			if (padesFormatModel.getElementAt(i).equals(selectedValue)) {
-				this.padesBasicFormat.setSelectedIndex(i);
-				break;
-			}
-		}
 		this.padesBasicFormat.setEnabled(unprotected);
 		this.padesBasicFormat.addItemListener(modificationListener);
 		this.padesBasicFormat.addKeyListener(keyListener);
+        this.padesBasicFormat.setEnabled(unprotected);
+
 
 		cf.anchor = GridBagConstraints.LINE_START;
 		panelFirm.add(fileFormatLabel, cf);
@@ -243,8 +217,6 @@ final class PreferencesPanelPades extends JPanel {
 		final GridBagConstraints fc = new GridBagConstraints();
 		fc.weightx = 1.0;
 		fc.anchor = GridBagConstraints.LINE_START;
-
-
 
 	    final JPanel certificationPanel = new JPanel();
 	    certificationPanel.setLayout(new GridBagLayout());
@@ -277,16 +249,6 @@ final class PreferencesPanelPades extends JPanel {
 				}
 			}
 		);
-		this.certificationLevel.setSelectedItem(
-				CertificationLevelResources.getName(
-					Integer.parseInt(
-						PreferencesManager.get(
-								PreferencesManager.PREFERENCE_PADES_CERTIFICATION_LEVEL,
-								Integer.toString(CertificationLevelResources.ORDINARY.getIndex())
-						)
-				)
-			)
-		);
 
 		certificationPanel.add(certificationLevelLabel, cl);
 		cl.gridy++;
@@ -300,13 +262,11 @@ final class PreferencesPanelPades extends JPanel {
 			)
 		);
 
-	    final JButton configureTimeStampOptionsButton = new JButton(SimpleAfirmaMessages.getString("PreferencesPanel.119")); //$NON-NLS-1$
-	    configureTimeStampOptionsButton.setEnabled(PreferencesManager.getBoolean(PREFERENCE_PADES_TIMESTAMP_CONFIGURE, false));
-		configureTimeStampOptionsButton.setMnemonic('F');
-		configureTimeStampOptionsButton.getAccessibleContext().setAccessibleDescription(
+		this.configureTimeStampOptionsButton.setMnemonic('F');
+		this.configureTimeStampOptionsButton.getAccessibleContext().setAccessibleDescription(
 				SimpleAfirmaMessages.getString("PreferencesPanel.120") //$NON-NLS-1$
 		);
-		configureTimeStampOptionsButton.addActionListener(
+		this.configureTimeStampOptionsButton.addActionListener(
 			new ActionListener() {
 				@Override
 				public void actionPerformed(final ActionEvent e) {
@@ -316,17 +276,17 @@ final class PreferencesPanelPades extends JPanel {
 				}
 			}
 		);
-		configureTimeStampOptionsButton.addKeyListener(keyListener);
-		configureTimeStampOptionsButton.setEnabled(unprotected);
+		this.configureTimeStampOptionsButton.addKeyListener(keyListener);
+		this.configureTimeStampOptionsButton.setEnabled(unprotected);
 
 		final JLabel timeStampLabel = new JLabel(
 				SimpleAfirmaMessages.getString("PreferencesPanel.122") //$NON-NLS-1$
 		);
 		timeStampLabel.addKeyListener(keyListener);
-		timeStampLabel.setLabelFor(configureTimeStampOptionsButton);
+		timeStampLabel.setLabelFor(this.configureTimeStampOptionsButton);
 
 	    timeStampPanel.add(timeStampLabel);
-	    timeStampPanel.add(configureTimeStampOptionsButton);
+	    timeStampPanel.add(this.configureTimeStampOptionsButton);
 
 		padesPreferencesPanel.add(panelFirm, fc);
 		padesPreferencesPanel.add(createVisiblePdfPanel(keyListener, modificationListener), fc);
@@ -428,6 +388,60 @@ final class PreferencesPanelPades extends JPanel {
 			PreferencesManager.remove(PREFERENCE_PADES_POLICY_QUALIFIER);
 		}
 		this.padesPolicyPanel.saveCurrentPolicy();
+	}
+
+	void loadPreferences() {
+		this.padesSignReason.setText(PreferencesManager.get(PREFERENCE_PADES_SIGN_REASON, "")); //$NON-NLS-1$
+		this.padesSignProductionCity.setText(PreferencesManager.get(PREFERENCE_PADES_SIGN_PRODUCTION_CITY, "")); //$NON-NLS-1$
+		this.padesSignerContact.setText(PreferencesManager.get(PREFERENCE_PADES_SIGNER_CONTACT, "")); //$NON-NLS-1$
+		this.visiblePdfSignature.setSelected(Boolean.parseBoolean(PreferencesManager.get(PREFERENCE_PADES_VISIBLE, "false"))); //$NON-NLS-1$
+		this.certificationLevel.setSelectedItem(
+			CertificationLevelResources.getName(
+				Integer.parseInt(
+					PreferencesManager.get(
+						PreferencesManager.PREFERENCE_PADES_CERTIFICATION_LEVEL,
+						Integer.toString(CertificationLevelResources.ORDINARY.getIndex())
+					)
+				)
+			)
+		);
+	    this.configureTimeStampOptionsButton.setEnabled(PreferencesManager.getBoolean(PREFERENCE_PADES_TIMESTAMP_CONFIGURE, false));
+
+        final ComboBoxModel<Object> padesFormatModel = this.padesBasicFormat.getModel();
+        final String selectedValue = PreferencesManager.get(
+			PREFERENCE_PADES_FORMAT,
+			AOSignConstants.PADES_SUBFILTER_BASIC
+		);
+		for (int i = 0; i < padesFormatModel.getSize(); i++) {
+			if (padesFormatModel.getElementAt(i).equals(selectedValue)) {
+				this.padesBasicFormat.setSelectedIndex(i);
+				break;
+			}
+		}
+
+		final List<PolicyPanel.PolicyItem> padesPolicies = new ArrayList<>();
+        padesPolicies.add(
+    		new PolicyItem(
+        		SimpleAfirmaMessages.getString("PreferencesPanel.73"), //$NON-NLS-1$
+        		POLICY_CADES_PADES_AGE_1_9
+    		)
+		);
+        this.panelPolicies.removeAll();
+        this.padesPolicyPanel = new PolicyPanel(
+    		SIGN_FORMAT_PADES,
+    		padesPolicies,
+    		getPadesPreferedPolicy(),
+    		this.padesBasicFormat,
+    		this.unprotected
+		);
+
+        final GridBagConstraints c = new GridBagConstraints();
+        c.fill = GridBagConstraints.BOTH;
+        c.weightx = 1.0;
+        c.gridy = 0;
+        this.panelPolicies.add(this.padesPolicyPanel, c);
+        revalidate();
+        repaint();
 	}
 
 	/** Obtiene la configuraci&oacute;n de pol&iacute;tica de firma PAdES establecida actualmente.

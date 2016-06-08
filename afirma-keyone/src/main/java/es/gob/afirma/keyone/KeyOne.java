@@ -29,9 +29,12 @@ import es.gob.afirma.core.signers.AOSignConstants;
 import es.gob.afirma.core.signers.AOSigner;
 import es.gob.afirma.core.signers.AOSignerFactory;
 import es.gob.afirma.keystores.AOCertificatesNotFoundException;
+import es.gob.afirma.keystores.AOKeyStore;
 import es.gob.afirma.keystores.AOKeyStoreDialog;
 import es.gob.afirma.keystores.AOKeyStoreManager;
 import es.gob.afirma.keystores.AOKeyStoreManagerException;
+import es.gob.afirma.keystores.AOKeyStoreManagerFactory;
+import es.gob.afirma.keystores.SmartCardException;
 import es.gob.afirma.keystores.filters.CertificateFilter;
 import es.gob.afirma.keystores.filters.PolicyIdFilter;
 import es.gob.afirma.signers.pades.BadPdfPasswordException;
@@ -42,7 +45,7 @@ import es.gob.afirma.signers.pades.PdfUtil.SignatureField;
 import es.gob.afirma.standalone.SimpleKeyStoreManager;
 import es.gob.afirma.standalone.ui.preferences.PreferencesManager;
 
-public class KeyOne {
+public final class KeyOne {
 
 	private static final String SEPARATOR = ","; //$NON-NLS-1$
 	private static final Logger LOGGER = Logger.getLogger("es.gob.afirma"); //$NON-NLS-1$
@@ -60,7 +63,7 @@ public class KeyOne {
         	return sb.toString();
         }
         catch (final Exception e) {
-        	LOGGER.warning("Error recuperando los nombres de campos de firma del PDF: " + e); //$NON-NLS-1$
+        	LOGGER.severe("Error recuperando los nombres de campos de firma del PDF: " + e); //$NON-NLS-1$
         	throw new PdfException("Error recuperando los nombres de campos de firma del pdf: " + e, e); //$NON-NLS-1$
         }
 	}
@@ -78,7 +81,7 @@ public class KeyOne {
         	os.close();
         }
         catch(final Exception e) {
-        	LOGGER.warning("Error anadiendo pagina en blanco al PDF: " + e); //$NON-NLS-1$
+        	LOGGER.severe("Error anadiendo pagina en blanco al PDF: " + e); //$NON-NLS-1$
         	throw new PdfException("Error a&ntilde;adiendo pagina en blanco al documento PDF: " + e, e); //$NON-NLS-1$
         }
 	}
@@ -110,6 +113,7 @@ public class KeyOne {
         	data = AOUtil.getDataFromInputStream(fis);
 		}
 		catch (final Exception e) {
+			LOGGER.severe("Error leyendo fichero de entrada: " + e); //$NON-NLS-1$
 			throw new PdfException("Error leyendo fichero de entrada: " + e, e); //$NON-NLS-1$
 		}
 		SignatureField field = null;
@@ -161,7 +165,6 @@ public class KeyOne {
 
         new XMLLookParser(xml, field, p, pke).parse();
 
-        LOGGER.info("prop: " + p); //$NON-NLS-1$
         final byte[] signResult;
         try {
             signResult = signer.sign(
@@ -179,15 +182,15 @@ public class KeyOne {
         	throw new AOCancelledOperationException("Cancelado por el usuario: " + e, e); //$NON-NLS-1$
         }
         catch(final PdfIsCertifiedException e) {
-        	LOGGER.warning("PDF no firmado por estar certificado: " + e); //$NON-NLS-1$
+        	LOGGER.severe("PDF no firmado por estar certificado: " + e); //$NON-NLS-1$
         	throw new PdfIsCertifiedException();
         }
         catch(final BadPdfPasswordException e) {
-        	LOGGER.warning("PDF protegido con contrasena mal proporcionada: " + e); //$NON-NLS-1$
+        	LOGGER.severe("PDF protegido con contrasena mal proporcionada: " + e); //$NON-NLS-1$
         	throw new BadPdfPasswordException(e);
         }
         catch(final PdfHasUnregisteredSignaturesException e) {
-        	LOGGER.warning("PDF con firmas no registradas: " + e); //$NON-NLS-1$
+        	LOGGER.severe("PDF con firmas no registradas: " + e); //$NON-NLS-1$
         	throw new PdfHasUnregisteredSignaturesException();
         }
         catch(final OutOfMemoryError ooe) {
@@ -207,16 +210,16 @@ public class KeyOne {
 			return SignValiderFactory.getSignValider(sign).validate(sign).getValidity().equals(SIGN_DETAIL_TYPE.OK);
 		}
 		catch(final Exception e) {
-			LOGGER.warning("Error validando la firma del PDF: " + e); //$NON-NLS-1$
+			LOGGER.severe("Error validando la firma del PDF: " + e); //$NON-NLS-1$
 			throw new PdfException("Error validando la firma del PDF: " + e, e); //$NON-NLS-1$
 		}
 	}
 
 	private static PrivateKeyEntry getPrivateKeyEntry(final List<? extends CertificateFilter> filters) throws UnrecoverableEntryException,
-																AOKeyStoreManagerException,
-																AOCertificatesNotFoundException,
-																KeyStoreException,
-																NoSuchAlgorithmException
+																											  AOKeyStoreManagerException,
+																											  AOCertificatesNotFoundException,
+																											  KeyStoreException,
+																											  NoSuchAlgorithmException
 	{
 		final AOKeyStoreManager ksm = SimpleKeyStoreManager.getKeyStore(false, null);
 		final AOKeyStoreDialog dialog = new AOKeyStoreDialog(
@@ -228,29 +231,52 @@ public class KeyOne {
 				filters, 				// Filtros
 				false             // mandatoryCertificate
 			);
-	    	dialog.show();
-	    	ksm.setParentComponent(null);
-	    	return ksm.getKeyEntry(
-				dialog.getSelectedAlias()
-			);
+    	dialog.show();
+    	ksm.setParentComponent(null);
+    	return ksm.getKeyEntry(
+			dialog.getSelectedAlias()
+		);
 	}
 
+	private static String cnTarjeta() throws SmartCardException{
+		AOKeyStoreManager ksm = null;
+		try {
+			ksm = AOKeyStoreManagerFactory.getAOKeyStoreManager(
+			    AOKeyStore.TEMD, // Store
+			    null, // Lib
+			    "TEMD (Tarjeta del Ministerio de Defensa)", // Description //$NON-NLS-1$
+				null, // PasswordCallback
+				null // Parent
+			);
+		}
+		catch (final Exception e) {
+			LOGGER.severe("Error recuperando el almacen de tarjetas del Ministerio de Defensa: " + e); //$NON-NLS-1$
+			throw new SmartCardException("Error recuperando el almacen de tarjetas del Ministerio de Defens: " + e, e); //$NON-NLS-1$
+		}
+		final String[] aliases = ksm.getAliases();
+		if (aliases.length != 1) {
+			LOGGER.severe("Hay mas de una tarjeta de defensa insertada"); //$NON-NLS-1$
+			throw new SmartCardException("Hay mas de una tarjeta de defensa insertada"); //$NON-NLS-1$
+		}
+		return AOUtil.getCN(ksm.getCertificate(aliases[0]));
+	}
 
 	public static void main(final String[] args) {
 		//System.out.println("verify: " + verifySignature("C:\\Users\\A621916\\Desktop\\Pruebas\\defensa\\aparienciaPrueba.xml_signed.xsig")); //$NON-NLS-1$ //$NON-NLS-2$
-		try {
-			pdfSign(
-				"C:\\Users\\A621916\\Desktop\\Pruebas\\empty_signature_field.pdf", //$NON-NLS-1$
-				"C:\\Users\\A621916\\Desktop\\Pruebas\\empty_signature_field_signed2.pdf", //$NON-NLS-1$
-				null,
-				"EmptySignatureField",
-				null,
-				null
-			);
-		} catch (final Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+//		try {
+//			pdfSign(
+//				"C:\\Users\\A621916\\Desktop\\Pruebas\\empty_signature_field.pdf", //$NON-NLS-1$
+//				"C:\\Users\\A621916\\Desktop\\Pruebas\\empty_signature_field_signed.pdf", //$NON-NLS-1$
+//				null,
+//				null,
+//				null,
+//				null
+//			);
+//		} catch (final Exception e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+		cnTarjeta();
 	}
 
 }

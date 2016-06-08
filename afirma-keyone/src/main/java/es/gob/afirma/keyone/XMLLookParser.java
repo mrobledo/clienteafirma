@@ -99,8 +99,7 @@ public final class XMLLookParser {
 			}
 
 			if (this.image != null) {
-				this.prop.setProperty("image", getImageInBase64(this.image)); //$NON-NLS-1$
-				this.prop.put("layer2Text", ""); //$NON-NLS-1$ //$NON-NLS-2$
+				this.prop.setProperty("signatureRubricImage", getImageInBase64(this.image)); //$NON-NLS-1$
 			}
 			return this.prop;
 		}
@@ -416,8 +415,8 @@ public final class XMLLookParser {
 			g.drawImage(this.image, 0, 0, null);
 		}
 		else {
-			g.setPaint(Color.WHITE);
-			g.fillRect(0, 0, newImage.getWidth(), newImage.getHeight());
+			g.setBackground(Color.WHITE);
+			g.clearRect(0, 0, newImage.getWidth(), newImage.getHeight());
 		}
 		g.drawImage(
 			im,
@@ -438,15 +437,18 @@ public final class XMLLookParser {
 
 		final Graphics2D g = newImage.createGraphics();
 
+		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
         g.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
+        g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
 		g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_LCD_HRGB);
 
 		if (this.image != null) {
 			g.drawImage(this.image, 0, 0, null);
 		}
 		else {
-			g.setPaint(Color.WHITE);
-			g.fillRect(0, 0, newImage.getWidth(), newImage.getHeight());
+			g.setBackground(Color.WHITE);
+			g.clearRect(0, 0, newImage.getWidth(), newImage.getHeight());
 		}
 
 		g.setFont(new Font("Courier", Font.PLAIN, 12)); //$NON-NLS-1$
