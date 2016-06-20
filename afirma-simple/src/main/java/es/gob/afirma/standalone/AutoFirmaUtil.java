@@ -158,7 +158,7 @@ public final class AutoFirmaUtil {
 			return 0;
 		}
 	}
-	
+
 	/** Recupera el n&uacute;mero de pantallas que tiene habilitadas el usuario.
 	 * @return N&uacute;mero de pantallas.
 	 * @throws HeadlessException
@@ -166,7 +166,7 @@ public final class AutoFirmaUtil {
 	public static int getDisplaysNumber() throws HeadlessException {
 		return GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices().length;
 	}
-	
+
 	/** Devuelve el fichero en su forma can&oacute;nica.
 	 * @param file Fichero del cual obtener su forma can&oacute;nica.
 	 * @return Fichero en su forma can&oacute;nica o el fichero de entrada si hay error.*/
@@ -181,7 +181,6 @@ public final class AutoFirmaUtil {
 			return file;
 		}
 	}
-	
     /** Establece la configuraci&oacute;n para el servidot <i>Proxy</i> seg&uacute;n los valores
      * de configuraci&oacute;n encontrados. */
     public static void setProxySettings() {

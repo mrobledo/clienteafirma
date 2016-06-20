@@ -10,7 +10,6 @@
 
 package es.gob.afirma.standalone.ui.preferences;
 
-import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
@@ -34,7 +33,7 @@ public final class PreferencesManager {
 
 	/** Configuraci&oacute;n de <i>proxy</i> seleccionada.
 	 * Un valor de <code>true</code> en esta preferencia indica que debe usarse el <i>proxy</i> configurado,
-	 * y un valor de <code>false</code> que no usar&aacute;a <i>proxy</i> en las conexiones de red. */
+	 * y un valor de <code>false</code> que no usar&aacute; <i>proxy</i> en las conexiones de red. */
 	public static final String PREFERENCE_GENERAL_PROXY_SELECTED = "proxySelected"; //$NON-NLS-1$
 
 	/** Host del servidor <i>proxy</i> configurado. */
@@ -103,8 +102,8 @@ public final class PreferencesManager {
 	 * Esta preferencia debe tener uno de estos valores:
 	 * <ul>
 	 *  <li>OOXML (Office Open XML)</li>
-	 *  <li>CAdes</li>
-	 *  <li>XAdes</li>
+	 *  <li>CAdES</li>
+	 *  <li>XAdES</li>
 	 * </ul> */
 	public static final String PREFERENCE_GENERAL_DEFAULT_FORMAT_OOXML = "defaultSignatureFormatOoxml"; //$NON-NLS-1$
 
@@ -112,8 +111,8 @@ public final class PreferencesManager {
 	 * Esta preferencia debe tener uno de estos valores:
 	 * <ul>
 	 *  <li>FacturaE</li>
-	 *  <li>CAdes</li>
-	 *  <li>XAdes</li>
+	 *  <li>CAdES</li>
+	 *  <li>XAdES</li>
 	 * </ul> */
 	public static final String PREFERENCE_GENERAL_DEFAULT_FORMAT_FACTURAE = "defaultSignatureFormatFacturae"; //$NON-NLS-1$
 
@@ -121,24 +120,24 @@ public final class PreferencesManager {
 	 * Esta preferencia debe tener uno de estos valores:
 	 * <ul>
 	 *  <li>ODF (Open Document Format)</li>
-	 *  <li>CAdes</li>
-	 *  <li>XAdes</li>
+	 *  <li>CAdES</li>
+	 *  <li>XAdES</li>
 	 * </ul> */
 	public static final String PREFERENCE_GENERAL_DEFAULT_FORMAT_ODF = "defaultSignatureFormatOdf"; //$NON-NLS-1$
 
 	/** Formato de firma por defecto para documentos XML.
 	 * Esta preferencia debe tener uno de estos valores:
 	 * <ul>
-	 *  <li>CAdes</li>
-	 *  <li>XAdes</li>
+	 *  <li>CAdES</li>
+	 *  <li>XAdES</li>
 	 * </ul> */
 	public static final String PREFERENCE_GENERAL_DEFAULT_FORMAT_XML = "defaultSignatureFormatXml"; //$NON-NLS-1$
 
 	/** Formato de firma por defecto para ficheros binarios que no se adec&uacute;en a ninguna otra categor&iacute;a.
 	 * Esta preferencia debe tener uno de estos valores:
 	 * <ul>
-	 *  <li>CAdes</li>
-	 *  <li>XAdes</li>
+	 *  <li>CAdES</li>
+	 *  <li>XAdES</li>
 	 * </ul> */
 	public static final String PREFERENCE_GENERAL_DEFAULT_FORMAT_BIN = "defaultSignatureFormatBin"; //$NON-NLS-1$
 
@@ -159,8 +158,8 @@ public final class PreferencesManager {
 	/** En el cifrado de sobres digitales, restringir que &uacute;nicamente se puedan usar certificados de cifrado. */
 	public static final String PREFERENCE_KEYSTORE_CYPH_ONLY_CERTS = "useOnlyEnciphermentCertificates"; //$NON-NLS-1$
 
-	/** En firma, restringir que &uacute;nicamente se puedan usar certificados de seud&oacute;nimo cuando estos est&eacute;n 
-	 * disponibles. Un valor de <code>true</code> en esta preferencia permitir&aacute; usar solo  certificados de 
+	/** En firma, restringir que &uacute;nicamente se puedan usar certificados de seud&oacute;nimo cuando estos est&eacute;n
+	 * disponibles. Un valor de <code>true</code> en esta preferencia permitir&aacute; usar solo  certificados de
 	 * seud&oacute;nimo cuando estos est&eacute;n disponibles.*/
 	public static final String PREFERENCE_KEYSTORE_ALIAS_ONLY_CERTS = "useOnlyAliasCertificates"; //$NON-NLS-1$
 
@@ -170,16 +169,16 @@ public final class PreferencesManager {
 	/** Lista de OID de las pol&iacute;ticas de certificados aceptados para firma. */
 	public static final String PREFERENCE_KEYSTORE_ACCEPTED_POLICIES_LIST = "acceptedCertPoliciesList"; //$NON-NLS-1$
 
-	/** Almacen de claves por defecto. */
+	/** Almac&eacute;n de claves por defecto. */
 	public static final String PREFERENCE_KEYSTORE_DEFAULT_STORE = "defaultStore"; //$NON-NLS-1$
 
-	/** Almacen de claves prioritario. */
+	/** Almac&eacute;n de claves prioritario. */
 	public static final String PREFERENCE_KEYSTORE_PRIORITARY_STORE = "prioritaryStore"; //$NON-NLS-1$
 
-	/** Cerrar almacen de claves prioritario. */
+	/** Cerrar almac&eacute;n de claves prioritario. */
 	public static final String PREFERENCE_KEYSTORE_CLOSE_KEYSTORE = "closeKeyStore"; //$NON-NLS-1$
 
-	/** Tiempo de espera para cerrar el almacen. */
+	/** Tiempo de espera para cerrar el almac&eacute;n. */
 	public static final String PREFERENCE_KEYSTORE_CLOSE_KEYSTORE_TIMEOUT = "closeKeyStoreTimeout"; //$NON-NLS-1$
 
 	//**************** FIN PREFERENCIAS DE ALMACENES DE CLAVES *****************************************************************
@@ -188,10 +187,10 @@ public final class PreferencesManager {
 	//**************************************************************************************************************************
 	//************************* PREFERENCIAS DE FIRMAS XAdES *******************************************************************
 
-	/** Identificador de la pol&iacute;tica de firma para XAdES. */
+	/** Identificador de la pol&iacute;tica de firma para XAdES. Debe ser un OID.*/
 	public static final String PREFERENCE_XADES_POLICY_IDENTIFIER = "xadesPolicyIdentifier"; //$NON-NLS-1$
 
-	/** Huella digital del identificador de la pol&iacute;tica de firma para XAdES. */
+	/** Huella digital del identificador de la pol&iacute;tica de firma para XAdES. Debe estar en base64.*/
 	public static final String PREFERENCE_XADES_POLICY_IDENTIFIER_HASH = "xadesPolicyIdentifierHash"; //$NON-NLS-1$
 
 	/** Algoritmo de la huella digital del identificador de la pol&iacute;tica de firma para XAdES.
@@ -204,7 +203,7 @@ public final class PreferencesManager {
 	 * </ul> */
 	public static final String PREFERENCE_XADES_POLICY_IDENTIFIER_HASH_ALGORITHM = "xadesPolicyIdentifierHashAlgorithm"; //$NON-NLS-1$
 
-	/** Calificador de la pol&iacute;tica de firma para XAdES. */
+	/** Calificador de la pol&iacute;tica de firma para XAdES. Debe ser una URL.*/
 	public static final String PREFERENCE_XADES_POLICY_QUALIFIER = "xadesPolicyQualifier"; //$NON-NLS-1$
 
 	/** Ciudad de firma para firmas XAdES. */
@@ -225,9 +224,9 @@ public final class PreferencesManager {
 	/** Formato de las firmas XAdES.
 	 * Esta preferencia debe tener uno de estos valores:
 	 * <ul>
-	 *  <li>XAdes Detached</li>
-	 *  <li>XAdes Enveloping</li>
-	 *  <li>XAdes Enveloped</li>
+	 *  <li>XAdES Detached</li>
+	 *  <li>XAdES Enveloping</li>
+	 *  <li>XAdES Enveloped</li>
 	 * </ul> */
 	public static final String PREFERENCE_XADES_SIGN_FORMAT = "xadesSignFormat"; //$NON-NLS-1$
 
@@ -254,10 +253,10 @@ public final class PreferencesManager {
 	 * </ul>*/
 	public static final String PREFERENCE_PADES_FORMAT = "padesBasicFormat"; //$NON-NLS-1$
 
-	/** Identificador de la pol&iacute;tica de firma para PAdES. */
+	/** Identificador de la pol&iacute;tica de firma para PAdES. Debe ser un OID.*/
 	public static final String PREFERENCE_PADES_POLICY_IDENTIFIER = "padesPolicyIdentifier"; //$NON-NLS-1$
 
-	/** Huella digital, en Base64, del identificador de la pol&iacute;tica de firma para PAdES. */
+	/** Huella digital del identificador de la pol&iacute;tica de firma para PAdES. Debe estar en base64.*/
 	public static final String PREFERENCE_PADES_POLICY_IDENTIFIER_HASH = "padesPolicyIdentifierHash"; //$NON-NLS-1$
 
 	/** Algoritmo de la huella digital del identificador de la pol&iacute;tica de firma para PAdES.
@@ -270,7 +269,7 @@ public final class PreferencesManager {
 	 * </ul> */
 	public static final String PREFERENCE_PADES_POLICY_IDENTIFIER_HASH_ALGORITHM = "padesPolicyIdentifierHashAlgorithm"; //$NON-NLS-1$
 
-	/** Calificador de la pol&iacute;tica de firma para PAdES. */
+	/** Calificador de la pol&iacute;tica de firma para PAdES. Debe ser una URL.*/
 	public static final String PREFERENCE_PADES_POLICY_QUALIFIER = "padesPolicyQualifier"; //$NON-NLS-1$
 
 	/** Nivel de certificaci&oacute;n de firma para PAdES. */
@@ -327,7 +326,7 @@ public final class PreferencesManager {
 	//**************************************************************************************************************************
 	//************************* PREFERENCIAS DE FIRMAS CAdES *******************************************************************
 
-	/** Identificador de la pol&iacute;tica de firma para CAdES. */
+	/** Identificador de la pol&iacute;tica de firma para CAdES. Debe ser un OID.*/
 	public static final String PREFERENCE_CADES_POLICY_IDENTIFIER = "cadesPolicyIdentifier"; //$NON-NLS-1$
 
 	/** Huella digital del identificador de la pol&iacute;tica de firma para CAdES. */
@@ -343,10 +342,11 @@ public final class PreferencesManager {
 	 * </ul> */
 	public static final String PREFERENCE_CADES_POLICY_HASH_ALGORITHM = "cadesPolicyIdentifierHashAlgorithm"; //$NON-NLS-1$
 
-	/** Calificador de la pol&iacute;tica de firma para CAdES. */
+	/** Calificador de la pol&iacute;tica de firma para CAdES. Debe ser una URL.*/
 	public static final String PREFERENCE_CADES_POLICY_QUALIFIER = "cadesPolicyQualifier"; //$NON-NLS-1$
 
-	/** Indica si la firma CAdES debe realizarse en modo impl&iacute;cito (<i>attached</i>) o no (<i>detached</i>). */
+	/** Si est&aacute; establecido a <code>true</code> la firma CAdES se realizar&aacute; en modo impl&iacute;cito (<i>attached</i>),
+	 *  si est&aacute; establecido a <code>false</code> se realizar&aacute; en modo (<i>detached</i>). */
 	public static final String PREFERENCE_CADES_IMPLICIT = "cadesImplicitMode"; //$NON-NLS-1$
 
 	//**************** PREFERENCIAS DE SELLOS DE TIEMPO CADES*****************************************************************
@@ -389,6 +389,15 @@ public final class PreferencesManager {
 	//**************************************************************************************************************************
 	//**************** PREFERENCIAS DE FACTURAS ELECTRONICAS *******************************************************************
 
+
+	/** Nombre de la pol&iacute;tica de FacturaE.
+	 *  Esta preferencia debe tener uno de estos valores:
+	 * <ul>
+	 *  <li>Pol&iacute;tica de Factura Electr&oacute;nica 3.0</li>
+	 *  <li>Pol&iacute;tica de Factura Electr&oacute;nica 3.1</li>
+	 * </ul> */
+	public static final String PREFERENCE_FACTURAE_POLICY = "facturaEPolicy"; //$NON-NLS-1$
+
 	/** Ciudad de firma para firmas FacturaE. */
 	public static final String PREFERENCE_FACTURAE_SIGNATURE_PRODUCTION_CITY = "facturaeSignatureProductionCity"; //$NON-NLS-1$
 
@@ -410,10 +419,10 @@ public final class PreferencesManager {
 	 * </ul> */
 	public static final String PREFERENCE_FACTURAE_SIGNER_ROLE = "facturaeSignerRole"; //$NON-NLS-1$
 
-	/** Identificador de la pol&iacute;tica de firma para FacturaE. */
+	/** Identificador de la pol&iacute;tica de firma para FacturaE. Debe ser un OID.*/
 	public static final String PREFERENCE_FACTURAE_POLICY_IDENTIFIER = "facturaePolicyIdentifier"; //$NON-NLS-1$
 
-	/** Huella digital del identificador de la pol&iacute;tica de firma para FacturaE. */
+	/** Huella digital del identificador de la pol&iacute;tica de firma para FacturaE. Debe estar en base64.*/
 	public static final String PREFERENCE_FACTURAE_POLICY_IDENTIFIER_HASH = "facturaePolicyIdentifierHash"; //$NON-NLS-1$
 
 	/** Algoritmo de la huella digital del identificador de la pol&iacute;tica de firma para FacturaE.
@@ -426,11 +435,20 @@ public final class PreferencesManager {
 	 * </ul> */
 	public static final String PREFERENCE_FACTURAE_POLICY_IDENTIFIER_HASH_ALGORITHM = "facturaePolicyIdentifierHashAlgorithm"; //$NON-NLS-1$
 
-	/** Calificador de la pol&iacute;tica de firma para FacturaE. */
+	/** Calificador de la pol&iacute;tica de firma para FacturaE. Debe ser una URL. */
 	public static final String PREFERENCE_FACTURAE_POLICY_QUALIFIER = "facturaePolicyQualifier"; //$NON-NLS-1$
 
 	//**************** FIN PREFERENCIAS DE FACTURAS ELECTRONICAS ***************************************************************
 	//**************************************************************************************************************************
+
+	/** Algoritmo de la huella digital para la creaci&oacute;n de huellas digitales de ficheros.*/
+	public static final String PREFERENCE_CREATE_HASH_ALGORITHM = "createHashAlgorithm"; //$NON-NLS-1$
+
+	/** Si est&aacute; establecido a <code>true</code> se genera la huella digital de fichero en base64.*/
+	public static final String PREFERENCE_CREATE_HASH_BASE64 = "createHashAsBase64"; //$NON-NLS-1$
+
+	/** Algoritmo de la huella digital para la creaci&oacute;n de huellas digitales de directorio. */
+	public static final String PREFERENCE_CREATE_HASH_DIRECTORY_ALGORITHM = "createHashDirectoryAlgorithm"; //$NON-NLS-1$
 
 	//**************************************************************************************************************************
 	//**************** PREFERENCIAS SOBRBES DIGITALES **********************************************************************************
@@ -441,9 +459,16 @@ public final class PreferencesManager {
 	/** Tipo de sobre. */
 	public static final String PREFERENCE_ENVELOPE_TYPE = "envelopeType"; //$NON-NLS-1$
 
-	//**************************************************************************************************************************
-	//**************** PREFERENCIAS SOBRBES DIGITALES **********************************************************************************
+	/** Si est&aacute; establecido a <code>true</code> se pide al usuario que determine mediante di&aacute;logos
+	 * gr&aacute;ficos los par&aacute;metros de una firma visible PDF y se inserta como tal en el
+	 * documento. */
+	public static final String PREFERENCE_PADES_VISIBLE = "padesVisibleSignature"; //$NON-NLS-1$
 
+	/** Agoritmo de cifrado. */
+	public static final String PREFERENCE_CIPHER_ALGORITHM = "cipherAlgorithms"; //$NON-NLS-1$
+
+	/** Agoritmo de descifrado. */
+	public static final String PREFERENCE_DECIPHER_ALGORITHM = "decipherAlgorithms"; //$NON-NLS-1$
 
 	//**************** PREFERENCIAS DE CIFRADO*****************************************************************
 
@@ -473,7 +498,6 @@ public final class PreferencesManager {
 
 	/**KeyUsage  . */
 	public static final String PREFERENCE_CIPHERMENT_DECIPHERONLY = "keyUsageDecipherOnly"; //$NON-NLS-1$
-
 	/** Agoritmo de cifrado. */
 	public static final String PREFERENCE_CIPHERMENT_ALGORITHM = "ciphermentAlgorithm"; //$NON-NLS-1$
 
@@ -482,20 +506,6 @@ public final class PreferencesManager {
 
 	/** URI de acceso repositorio. */
 	public static final String PREFERENCE_CIPHERMENT_URI = "repositoryURI"; //$NON-NLS-1$
-
-	//**************** PREFERENCIAS DE CIFRADO*****************************************************************
-
-
-	/** Agoritmo de cifrado. */
-	public static final String PREFERENCE_CIPHER_ALGORITHM = "cipherAlgorithms"; //$NON-NLS-1$
-
-	/** Agoritmo de descifrado. */
-	public static final String PREFERENCE_DECIPHER_ALGORITHM = "decipherAlgorithms"; //$NON-NLS-1$
-
-	/** Si esta establecido a <code>true</code> se pide al usuario que determine mediante di&aacute;logos
-	 * gr&aacute;ficos los par&aacute;metros de una firma visible PDF y se inserta como tal en el
-	 * documento. */
-	public static final String PREFERENCE_PADES_VISIBLE = "padesVisibleSignature"; //$NON-NLS-1$
 
 	/** Recupera el valor de una cadena de texto almacenada entre las preferencias de la
 	 * aplicaci&oacute;n.

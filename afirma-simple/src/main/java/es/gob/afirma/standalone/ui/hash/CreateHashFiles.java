@@ -63,7 +63,6 @@ import es.gob.afirma.standalone.ui.preferences.PreferencesManager;
 public final class CreateHashFiles extends JDialog {
 
 	private static final long serialVersionUID = -7224732001218823361L;
-	private static final String PREFERENCE_ALGORITHM = "createHashAlgorithm"; //$NON-NLS-1$
 	private static final int SIZE_WAIT = 50000000; //Tamano en bytes
 
 	private static final String[] HASH_ALGOS = new String[] { "SHA-512", //$NON-NLS-1$
@@ -164,13 +163,16 @@ public final class CreateHashFiles extends JDialog {
 
 		// ComboBox con los algoritmos de generacion
 		this.hashAlgorithms.setSelectedItem(
-			PreferencesManager.get(PREFERENCE_ALGORITHM, "SHA-512") //$NON-NLS-1$
+			PreferencesManager.get(PreferencesManager.PREFERENCE_CREATE_HASH_DIRECTORY_ALGORITHM, "SHA-512") //$NON-NLS-1$
 		);
 		this.hashAlgorithms.addActionListener(
 			new ActionListener() {
 				@Override
 				public void actionPerformed(final ActionEvent e) {
-					PreferencesManager.put(PREFERENCE_ALGORITHM, getSelectedHashAlgorithm());
+					PreferencesManager.put(
+						PreferencesManager.PREFERENCE_CREATE_HASH_DIRECTORY_ALGORITHM,
+						getSelectedHashAlgorithm()
+					);
 				}
 			}
 		);
@@ -589,11 +591,11 @@ public final class CreateHashFiles extends JDialog {
 		return directoryHash;
 	}
 
-	static long getSize(File file) {
+	static long getSize(final File file) {
 	    long size;
 	    if (file.isDirectory()) {
 	        size = 0;
-	        for (File child : file.listFiles()) {
+	        for (final File child : file.listFiles()) {
 	            size += getSize(child);
 	        }
 	    } else {

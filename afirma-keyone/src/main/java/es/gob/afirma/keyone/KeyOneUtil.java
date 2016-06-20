@@ -45,13 +45,12 @@ import es.gob.afirma.signers.pades.PdfUtil.SignatureField;
 import es.gob.afirma.standalone.SimpleKeyStoreManager;
 import es.gob.afirma.standalone.ui.preferences.PreferencesManager;
 
-public final class KeyOne {
+public final class KeyOneUtil {
 
 	private static final String SEPARATOR = ","; //$NON-NLS-1$
 	private static final Logger LOGGER = Logger.getLogger("es.gob.afirma"); //$NON-NLS-1$
 
-
-	private static String enumSignatureFieldNames(final String filePath) throws PdfException {
+	public static String enumSignatureFieldNames(final String filePath) throws PdfException {
 		final StringBuilder sb = new StringBuilder();
         try ( final InputStream fis = new FileInputStream(new File(filePath)) ) {
         	final byte[] data = AOUtil.getDataFromInputStream(fis);
@@ -68,7 +67,7 @@ public final class KeyOne {
         }
 	}
 
-	private static void addBlankPage(final String filePath) throws PdfException {
+	public static void addBlankPage(final String filePath) throws PdfException {
         try ( final ByteArrayOutputStream baos = new ByteArrayOutputStream() ) {
         	final PdfReader pdfReader = new PdfReader(filePath);
         	final Calendar cal = Calendar.getInstance();
@@ -86,7 +85,7 @@ public final class KeyOne {
         }
 	}
 
-	private static void pdfSign(final String originalPath,
+	public static void pdfSign(final String originalPath,
 								   final String destinyPath,
 								   final String policyIdentifier,
 								   final String fieldName,
@@ -100,11 +99,11 @@ public final class KeyOne {
 
 		final AOSigner signer = AOSignerFactory.getSigner(AOSignConstants.SIGN_FORMAT_PADES);
 
+		// TODO Eliminar encoded y usar xmllook
 		byte[] encoded = null;
 		try {
 			encoded = Files.readAllBytes(Paths.get("C:\\Users\\A621916\\Desktop\\Pruebas\\defensa\\aparienciaPrueba.xml")); //$NON-NLS-1$
 		} catch (final IOException e1) {
-			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
 
@@ -203,7 +202,7 @@ public final class KeyOne {
         }
 	}
 
-	private static boolean verifySignature(final String filePath) throws PdfException {
+	public static boolean verifySignature(final String filePath) throws PdfException {
 		byte[] sign = null;
 		try ( final FileInputStream fis = new FileInputStream(new File(filePath)) ) {
 			sign = AOUtil.getDataFromInputStream(fis);
@@ -215,7 +214,7 @@ public final class KeyOne {
 		}
 	}
 
-	private static PrivateKeyEntry getPrivateKeyEntry(final List<? extends CertificateFilter> filters) throws UnrecoverableEntryException,
+	public static PrivateKeyEntry getPrivateKeyEntry(final List<? extends CertificateFilter> filters) throws UnrecoverableEntryException,
 																											  AOKeyStoreManagerException,
 																											  AOCertificatesNotFoundException,
 																											  KeyStoreException,
@@ -238,7 +237,7 @@ public final class KeyOne {
 		);
 	}
 
-	private static String cnTarjeta() throws SmartCardException{
+	public static String cnTarjeta() throws SmartCardException{
 		AOKeyStoreManager ksm = null;
 		try {
 			ksm = AOKeyStoreManagerFactory.getAOKeyStoreManager(
@@ -251,9 +250,12 @@ public final class KeyOne {
 		}
 		catch (final Exception e) {
 			LOGGER.severe("Error recuperando el almacen de tarjetas del Ministerio de Defensa: " + e); //$NON-NLS-1$
-			throw new SmartCardException("Error recuperando el almacen de tarjetas del Ministerio de Defens: " + e, e); //$NON-NLS-1$
+			throw new SmartCardException("Error recuperando el almacen de tarjetas del Ministerio de Defensa: " + e, e); //$NON-NLS-1$
 		}
 		final String[] aliases = ksm.getAliases();
+		for (final String al : aliases) {
+			System.out.println(al);
+		}
 		if (aliases.length != 1) {
 			LOGGER.severe("Hay mas de una tarjeta de defensa insertada"); //$NON-NLS-1$
 			throw new SmartCardException("Hay mas de una tarjeta de defensa insertada"); //$NON-NLS-1$
@@ -263,20 +265,20 @@ public final class KeyOne {
 
 	public static void main(final String[] args) {
 		//System.out.println("verify: " + verifySignature("C:\\Users\\A621916\\Desktop\\Pruebas\\defensa\\aparienciaPrueba.xml_signed.xsig")); //$NON-NLS-1$ //$NON-NLS-2$
-//		try {
-//			pdfSign(
-//				"C:\\Users\\A621916\\Desktop\\Pruebas\\empty_signature_field.pdf", //$NON-NLS-1$
-//				"C:\\Users\\A621916\\Desktop\\Pruebas\\empty_signature_field_signed.pdf", //$NON-NLS-1$
-//				null,
-//				null,
-//				null,
-//				null
-//			);
-//		} catch (final Exception e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
-		cnTarjeta();
+		try {
+			pdfSign(
+				"C:\\Users\\A621916\\Desktop\\Pruebas\\empty_signature_field.pdf", //$NON-NLS-1$
+				"C:\\Users\\A621916\\Desktop\\Pruebas\\empty_signature_field_signed.pdf", //$NON-NLS-1$
+				null,
+				null,
+				null,
+				null
+			);
+		} catch (final Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+//		cnTarjeta();
 	}
 
 }

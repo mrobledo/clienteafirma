@@ -194,7 +194,7 @@ public final class XMLLookParser {
 					}
 				}
 				if (im != null) {
-					//paintImage(im, width, height, posX, posY);
+					paintImage(im, width, height, posX, posY);
 					saveImageProperties();
 				}
 			}
@@ -252,7 +252,7 @@ public final class XMLLookParser {
 					if (this.image == null) {
 						saveImageProperties();
 					}
-					//paintImage(im, width, height, posX, posY);
+					paintImage(im, width, height, posX, posY);
 				}
 			}
 			if (foreItem != null && foreItem.getNodeName().equals("text")) { //$NON-NLS-1$
@@ -442,6 +442,7 @@ public final class XMLLookParser {
         g.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
         g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
 		g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_LCD_HRGB);
+		g.setRenderingHint(RenderingHints.KEY_DITHERING, RenderingHints.VALUE_DITHER_DISABLE);
 
 		if (this.image != null) {
 			g.drawImage(this.image, 0, 0, null);

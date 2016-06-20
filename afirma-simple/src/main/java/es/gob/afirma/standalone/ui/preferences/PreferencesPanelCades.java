@@ -160,7 +160,7 @@ final class PreferencesPanelCades extends JPanel {
 	}
 
 	void savePreferences() {
-		PreferencesManager.put(PREFERENCE_CADES_IMPLICIT, Boolean.valueOf(this.cadesImplicit.isSelected()).toString());
+		PreferencesManager.putBoolean(PREFERENCE_CADES_IMPLICIT, this.cadesImplicit.isSelected());
 		final AdESPolicy cadesPolicy = this.cadesPolicyPanel.getCurrentPolicy();
 		if (cadesPolicy != null) {
 			PreferencesManager.put(PREFERENCE_CADES_POLICY_IDENTIFIER, cadesPolicy.getPolicyIdentifier());

@@ -73,10 +73,7 @@ final class PreferencesPanelGeneral extends JPanel {
 
 	private final JCheckBox showIconInit = new JCheckBox(SimpleAfirmaMessages.getString("PreferencesPanel.113")); //$NON-NLS-1$
 
-	private final JCheckBox avoidAskForClose = new JCheckBox(
-		SimpleAfirmaMessages.getString("PreferencesPanel.36"), //$NON-NLS-1$
-		PreferencesManager.getBoolean(PREFERENCE_GENERAL_OMIT_ASKONCLOSE, false)
-	);
+	private final JCheckBox avoidAskForClose = new JCheckBox(SimpleAfirmaMessages.getString("PreferencesPanel.36")); //$NON-NLS-1$
 
 	private final JCheckBox hideDniStartScreen = new JCheckBox(SimpleAfirmaMessages.getString("PreferencesPanel.81")); //$NON-NLS-1$
 

@@ -19,6 +19,7 @@ import javax.swing.JFileChooser;
 import es.gob.afirma.core.AOCancelledOperationException;
 import es.gob.afirma.core.misc.AOUtil;
 import es.gob.afirma.core.misc.Base64;
+import es.gob.afirma.core.misc.Platform;
 import es.gob.afirma.core.misc.http.UrlHttpManagerFactory;
 import es.gob.afirma.core.misc.http.UrlHttpMethod;
 import es.gob.afirma.core.misc.protocol.UrlParametersToSignAndSave;
@@ -97,6 +98,9 @@ final class ProtocolInvocationLauncherSignAndSave {
 
 			final File selectedDataFile;
 			try {
+				if (Platform.OS.MACOSX.equals(Platform.getOS())) {
+					ServiceInvocationManager.focusApplication();
+				}
 				selectedDataFile = AOUIFactory.getLoadFiles(
 					dialogTilte,
 					new JFileChooser().getFileSystemView().getDefaultDirectory().toString(),
@@ -243,6 +247,7 @@ final class ProtocolInvocationLauncherSignAndSave {
 		LOGGER.info("Cargando dialogo de seleccion de certificados..."); //$NON-NLS-1$
 
 		try {
+			ServiceInvocationManager.focusApplication();
 			final AOKeyStoreDialog dialog = new AOKeyStoreDialog(
 				ksm,
 				null,

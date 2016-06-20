@@ -44,6 +44,7 @@ import es.gob.afirma.core.signers.AOSigner;
 import es.gob.afirma.core.signers.CounterSignTarget;
 import es.gob.afirma.keystores.AOKeyStore;
 import es.gob.afirma.keystores.AOKeyStoreManager;
+import es.gob.afirma.keystores.AOKeyStoreManagerException;
 import es.gob.afirma.keystores.AOKeyStoreManagerFactory;
 import es.gob.afirma.keystores.AOKeystoreAlternativeException;
 import es.gob.afirma.keystores.callbacks.CachePasswordCallback;
@@ -152,6 +153,7 @@ final class CommandLineLauncher {
 						closeApp(STATUS_SUCCESS, pw, response);
 						return;
 					case CIPHERANDSIGN:
+						cipherAndSignByGui(params);
 						break;
 					case CREATEHASH:
 						createHashByGui(params);
@@ -203,6 +205,18 @@ final class CommandLineLauncher {
 			}
 
 		}
+	}
+
+	/** Realizamos el cifrado y firma de un fichero mostrando los di&aacute;logos necesarios.
+	 * @param Par&aacute;metros de configuraci&oacute;n.
+	 * @throws CommandLineException Cuando falta algun par&aacute;metro necesario o no se puede cargar el almac&eacute;n de claves. */
+	private static void cipherAndSignByGui(final CommandLineParameters params) throws CommandLineException {
+		final File inputFile = params.getInputFile();
+		if (inputFile == null) {
+			throw new CommandLineException(CommandLineMessages.getString("CommandLineLauncher.5")); //$NON-NLS-1$
+		}
+
+		AutoFirmaUtil.sfn2lfn(inputFile).getAbsolutePath();
 	}
 
 	/** Realizamos la creaci&oacute;n de un sobre digital del fichero seleccionado mostrando los di&aacute;logos necesarios.
@@ -688,7 +702,7 @@ final class CommandLineLauncher {
 		return resBytes;
 	}
 
-	private static String listAliasesByCommandLine(final CommandLineParameters params) throws IOException, CommandLineException, AOKeystoreAlternativeException {
+	private static String listAliasesByCommandLine(final CommandLineParameters params) throws IOException, CommandLineException, AOKeystoreAlternativeException, AOKeyStoreManagerException {
 
 		final String[] aliases = getKsm(params.getStore(), params.getPassword()).getAliases();
 		final StringBuilder sb = new StringBuilder();
@@ -709,7 +723,7 @@ final class CommandLineLauncher {
 		return sb.toString();
 	}
 
-	private static AOKeyStoreManager getKsm(final String storeType, final String pwd) throws IOException, CommandLineException, AOKeystoreAlternativeException {
+	private static AOKeyStoreManager getKsm(final String storeType, final String pwd) throws IOException, CommandLineException, AOKeystoreAlternativeException, AOKeyStoreManagerException {
 		final AOKeyStore store;
 		String lib = null;
 		if (STORE_AUTO.equals(storeType) || storeType == null) {
