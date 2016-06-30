@@ -4,10 +4,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.security.KeyStore.PrivateKeyEntry;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -99,14 +96,6 @@ public final class KeyOneUtil {
 
 		final AOSigner signer = AOSignerFactory.getSigner(AOSignConstants.SIGN_FORMAT_PADES);
 
-		// TODO Eliminar encoded y usar xmllook
-		byte[] encoded = null;
-		try {
-			encoded = Files.readAllBytes(Paths.get("C:\\Users\\A621916\\Desktop\\Pruebas\\defensa\\aparienciaPrueba.xml")); //$NON-NLS-1$
-		} catch (final IOException e1) {
-			e1.printStackTrace();
-		}
-
 		byte[] data = null;
 		try ( final InputStream fis = new FileInputStream(new File(originalPath)); ) {
         	data = AOUtil.getDataFromInputStream(fis);
@@ -124,7 +113,6 @@ public final class KeyOneUtil {
 				}
 			}
 		}
-		final String xml = new String(encoded);
 
 		final Properties p = new Properties();
 
@@ -162,7 +150,7 @@ public final class KeyOneUtil {
     		PreferencesManager.PREFERENCE_GENERAL_SIGNATURE_ALGORITHM, "SHA512withRSA" //$NON-NLS-1$
 		);
 
-        new XMLLookParser(xml, field, p, pke).parse();
+        new XMLLookParser(xmlLook, field, p, pke).parse();
 
         final byte[] signResult;
         try {
@@ -261,24 +249,6 @@ public final class KeyOneUtil {
 			throw new SmartCardException("Hay mas de una tarjeta de defensa insertada"); //$NON-NLS-1$
 		}
 		return AOUtil.getCN(ksm.getCertificate(aliases[0]));
-	}
-
-	public static void main(final String[] args) {
-		//System.out.println("verify: " + verifySignature("C:\\Users\\A621916\\Desktop\\Pruebas\\defensa\\aparienciaPrueba.xml_signed.xsig")); //$NON-NLS-1$ //$NON-NLS-2$
-		try {
-			pdfSign(
-				"C:\\Users\\A621916\\Desktop\\Pruebas\\empty_signature_field.pdf", //$NON-NLS-1$
-				"C:\\Users\\A621916\\Desktop\\Pruebas\\empty_signature_field_signed.pdf", //$NON-NLS-1$
-				null,
-				null,
-				null,
-				null
-			);
-		} catch (final Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-//		cnTarjeta();
 	}
 
 }
