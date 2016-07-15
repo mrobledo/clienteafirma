@@ -120,7 +120,7 @@ final class PreferencesPanelGeneral extends JPanel {
 
 	void loadPreferences() {
 		// Opciones varias
-		this.signarureAlgorithms.setSelectedItem(PreferencesManager.get(PREFERENCE_GENERAL_SIGNATURE_ALGORITHM, "SHA1withRSA")); //$NON-NLS-1$
+		this.signarureAlgorithms.setSelectedItem(PreferencesManager.get(PREFERENCE_GENERAL_SIGNATURE_ALGORITHM, "SHA256withRSA")); //$NON-NLS-1$
 		this.showIconInit.setSelected(PreferencesManager.getBoolean(PREFERENCE_GENERAL_SHOW_ICON_INIT, false));
 		this.avoidAskForClose.setSelected(PreferencesManager.getBoolean(PREFERENCE_GENERAL_OMIT_ASKONCLOSE, false));
 		this.hideDniStartScreen.setSelected(PreferencesManager.getBoolean(PREFERENCE_GENERAL_HIDE_DNIE_START_SCREEN, false));
@@ -164,7 +164,6 @@ final class PreferencesPanelGeneral extends JPanel {
 		signConstraint.gridy = 0;
 		signConstraint.insets = new Insets(0, 0, 0, 0);
 
-		loadPreferences();
 		final JButton importConfigFromFileButton = new JButton(
 			SimpleAfirmaMessages.getString("PreferencesPanel.107") //$NON-NLS-1$
 		);
@@ -366,12 +365,12 @@ final class PreferencesPanelGeneral extends JPanel {
 		this.signarureAlgorithms.addItemListener(modificationListener);
 		this.signarureAlgorithms.addKeyListener(keyListener);
 		this.signarureAlgorithms.setModel(
-			new DefaultComboBoxModel<>(
+			new DefaultComboBoxModel<String>(
 				new String[] {
-					"SHA1withRSA", //$NON-NLS-1$
-					"SHA512withRSA", //$NON-NLS-1$
-					"SHA384withRSA", //$NON-NLS-1$
-					"SHA256withRSA" //$NON-NLS-1$
+						"SHA1withRSA", //$NON-NLS-1$
+						"SHA256withRSA", //$NON-NLS-1$
+						"SHA384withRSA", //$NON-NLS-1$
+						"SHA512withRSA" //$NON-NLS-1$
 				}
 			)
 		);
@@ -426,6 +425,9 @@ final class PreferencesPanelGeneral extends JPanel {
 		gbc.weighty = 1.0;
 		gbc.gridy++;
 		add(new JPanel(), gbc);
+		
+		//Cargamos las preferencias por defecto
+		loadPreferences();
 
 	}
 

@@ -529,10 +529,11 @@ final class SignPdfUiPanel extends JPanel implements PageLabel.PageLabelListener
 				SignPdfUiMessages.getString(
 					"SignPdfUiPanel.5", //$NON-NLS-1$
 					Integer.toString(getCurrentPage()),
-					Integer.toString(this.pdfPages.size()),
+					Integer.toString(this.pdfPages.size() + 1),
 					Integer.toString(this.currentScale)
 				)
 			);
+			
 			this.nextPageButton.setEnabled(false);
 			this.previousPageButton.setEnabled(true);
 			this.appendPage = bi;

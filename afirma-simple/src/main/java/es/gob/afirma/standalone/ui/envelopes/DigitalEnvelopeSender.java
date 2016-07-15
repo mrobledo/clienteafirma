@@ -496,10 +496,13 @@ public class DigitalEnvelopeSender extends JPanel {
      * @return Devuelve <code>true</code> si se ha podido generar el sobre correctamente, <code>false</code> en caso contrario.
      */
 	boolean createEnvelope() {
-        final X509Certificate[] certs = new X509Certificate[this.certificateRecipientsList.size()];
+        final X509Certificate[] certs = new X509Certificate[this.certificateRecipientsList.size() + 1];
         for (int i = 0; i < this.certificateRecipientsList.size(); i++) {
             certs[i] = (X509Certificate) this.certificateRecipientsList.get(i).getCertificate();
         }
+        
+        //Incluimos tambien como destinatario al remitente del sobre para que el mismo pueda abrirlo tambien
+        certs[this.certificateRecipientsList.size()] = (X509Certificate) this.privateKeyEntry.getCertificate();
 
         final AOCMSEnveloper enveloper = new AOCMSEnveloper();
         byte[] contentData = null;
