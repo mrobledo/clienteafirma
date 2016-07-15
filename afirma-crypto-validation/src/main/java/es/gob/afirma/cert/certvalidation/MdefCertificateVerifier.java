@@ -1,10 +1,9 @@
-package es.gob.afirma.standalone.certvalidation;
+package es.gob.afirma.cert.certvalidation;
 
 import java.security.cert.X509Certificate;
 
-import es.gob.afirma.cert.certvalidation.CertificateVerifier;
-import es.gob.afirma.cert.certvalidation.ValidationResult;
-
+/** Clase que valida los certificados de Defensa.
+ * @author Sergio Mart&iacute;nez Rico. */
 public class MdefCertificateVerifier extends CertificateVerifier {
 
 	@Override

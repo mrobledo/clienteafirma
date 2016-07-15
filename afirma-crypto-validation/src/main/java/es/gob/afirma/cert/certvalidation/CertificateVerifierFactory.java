@@ -46,7 +46,7 @@ public final class CertificateVerifierFactory {
 	 * @return Validador para el certificado proporcionado
 	 * @throws CertificateVerifierFactoryException Si o se conocen mecanismos de validacion
 	 *                                             para los certificados del emisor indicado.*/
-	public static CertificateVerifier getCertificateVerifier(final X509Certificate cert) throws CertificateVerifierFactoryException {
+	public static CertificateVerificable getCertificateVerifier(final X509Certificate cert) throws CertificateVerifierFactoryException {
 		if (cert == null) {
 			throw new IllegalArgumentException("El certificado no puede ser nulo"); //$NON-NLS-1$
 		}
@@ -71,12 +71,13 @@ public final class CertificateVerifierFactory {
 		}
 
 		final String validationProperties = p.getProperty(crc + ".validation.properties"); //$NON-NLS-1$
-		final String validationMethod = p.getProperty(crc + ".validation.type"); //$NON-NLS-1$
+		final String validationClass = p.getProperty(crc + ".validation.type"); //$NON-NLS-1$
 
-		try{
-			final Class<?> certVerifierClass = Class.forName(validationMethod);
-			return (CertificateVerifier) certVerifierClass.getConstructor(
-					String.class, X509Certificate.class).newInstance(validationProperties, cert);
+		try {
+			final Class<?> certVerifierClass = Class.forName(validationClass);
+			CertificateVerificable certVerif = (CertificateVerificable) certVerifierClass.getConstructor().newInstance();
+			certVerif.setValidationProperties(validationProperties);
+			return certVerif;
 		}
 		catch (final ClassNotFoundException e) {
 			LOGGER.warning("No se encuentran la clase validadora: " + e.toString()); //$NON-NLS-1$
@@ -86,7 +87,7 @@ public final class CertificateVerifierFactory {
 		}
 
 		throw new IllegalStateException(
-			"No se soporta el medio de validacion: " + validationMethod //$NON-NLS-1$
+			"No se soporta el medio de validacion: " + validationClass //$NON-NLS-1$
 		);
 	}
 

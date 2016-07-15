@@ -60,6 +60,7 @@ public final class ValidateBinarySignature implements SignValider{
      * se comprobar&aacute; que efectivamente fueron estos, mientras que si no se indican
      * se extraer&aacute;n de la propia firma. Si la firma no contiene los datos no se realizara
      * esta comprobaci&oacute;n.
+     * Se validan los certificados en local revisando las fechas de validez de los certificados.
      * @param sign Firma binaria
      * @param data Datos firmados o {@code null} si se desea comprobar contra los datos incrustados
      *             en la firma.
@@ -103,11 +104,11 @@ public final class ValidateBinarySignature implements SignValider{
         }
     	catch (final CertificateExpiredException e) {
     		// Certificado caducado
-            return new SignValidity(SIGN_DETAIL_TYPE.KO, VALIDITY_ERROR.CERTIFICATE_EXPIRED);
+    		return new SignValidity(SIGN_DETAIL_TYPE.KO, VALIDITY_ERROR.CERTIFICATE_EXPIRED);
         }
     	catch (final CertificateNotYetValidException e) {
     		// Certificado aun no valido
-            return new SignValidity(SIGN_DETAIL_TYPE.KO, VALIDITY_ERROR.CERTIFICATE_NOT_VALID_YET);
+    		return new SignValidity(SIGN_DETAIL_TYPE.KO, VALIDITY_ERROR.CERTIFICATE_NOT_VALID_YET);
         }
     	catch (final NoSuchAlgorithmException e) {
          // Algoritmo no reconocido
@@ -179,6 +180,8 @@ public final class ValidateBinarySignature implements SignValider{
     				certIt.next().getEncoded()
 				)
     		);
+            
+            cert.checkValidity();
 
             if (!signer.verify(new SignerInformationVerifier(
             	new	DefaultCMSSignatureAlgorithmNameGenerator(),

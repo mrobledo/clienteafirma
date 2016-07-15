@@ -1,5 +1,7 @@
 package es.gob.afirma.cert.signvalidation;
 
+/** Factoria para la creaci&oacute;n de los validadores de firma.
+ * @author Sergio Mart&iacute;nez Rico. */
 public class SignValiderFactory {
 
 	/* Listado de los validadores de firma soportados y los identificadores de formato de firma asociados. */
@@ -12,6 +14,10 @@ public class SignValiderFactory {
 		// No permitimos la instanciacion externa
 	}
 
+	/** Obtiene el resultado al validar la firma.
+	 * @param data Firma a validar.
+	 * @return Resultado la validar la firma.
+	 * @throws IllegalArgumentException Fallo si la firma obtenida est&aacute; vac&iacute;a. */
 	public static SignValider getSignValider(byte[] data) throws IllegalArgumentException {
 		if (data == null) {
 			throw new IllegalArgumentException("No se han indicado datos de firma"); //$NON-NLS-1$
