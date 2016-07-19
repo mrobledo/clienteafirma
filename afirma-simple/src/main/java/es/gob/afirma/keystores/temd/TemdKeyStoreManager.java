@@ -1,7 +1,5 @@
 package es.gob.afirma.keystores.temd;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
@@ -15,7 +13,6 @@ import javax.smartcardio.Card;
 import javax.smartcardio.CardException;
 import javax.smartcardio.CardTerminal;
 import javax.smartcardio.TerminalFactory;
-import javax.swing.Timer;
 
 import es.gob.afirma.keystores.AOKeyStore;
 import es.gob.afirma.keystores.AOKeyStoreManager;
@@ -25,19 +22,23 @@ import es.gob.afirma.keystores.AOKeystoreAlternativeException;
 import es.gob.afirma.keystores.AggregatedKeyStoreManager;
 import es.gob.afirma.keystores.AutoCloseableStore;
 import es.gob.afirma.keystores.KeyStoreUtilities;
-import es.gob.afirma.keystores.callbacks.CachePasswordCallback;
 import es.gob.jmulticard.card.Atr;
 
 /** Almac&eacute;n TEMD en tarjeta.
  * @author Tom&aacute;s Garc&iacute;a-Mer&aacute;s. */
 public final class TemdKeyStoreManager extends AggregatedKeyStoreManager implements AutoCloseableStore {
 
-	private Timer timer = null;
-	private int timerDelay = -1;
-
 	static Logger getLogger() {
 		return LOGGER;
 	}
+
+	@Override
+	public void setParentComponent(final Object p) {
+		super.setParentComponent(p);
+		this.pwc.setParent(p);
+	}
+
+	private final TimedPersistentCachePasswordCallback pwc = new TimedPersistentCachePasswordCallback(1, null);
 
 	private AOKeyStoreManager getTemdPkcs11KeyStoreManager() throws AOKeyStoreManagerException {
 
@@ -56,15 +57,17 @@ public final class TemdKeyStoreManager extends AggregatedKeyStoreManager impleme
 				AOKeyStore.PKCS11,
 				card.getLibPath(),
 				card.toString(),
-				// Pedimos el PIN para almacenarlo (peticion expresa del Ministerio de Defensa pese a lo
+				this.// Pedimos el PIN para almacenarlo (peticion expresa del Ministerio de Defensa pese a lo
 				// inseguro de la practica).
-				new CachePasswordCallback(AOKeyStore.TEMD.getStorePasswordCallback(getParentComponent()).getPassword()),
+				pwc,
 				getParentComponent()
 			);
 		}
 		catch (AOKeystoreAlternativeException | IOException e) {
+			this.pwc.clearPassword();
 			throw new AOKeyStoreManagerException(e);
 		}
+
 	}
 
 	/** Construye un almac&eacute;n TEMD en tarjeta.
@@ -276,12 +279,8 @@ public final class TemdKeyStoreManager extends AggregatedKeyStoreManager impleme
 		}
 	}
 
-	private void resetTimer() {
-		if (this.timer != null && this.timerDelay > 0) {
-			this.timer.stop();
-			this.timer.setDelay(this.timerDelay);
-			this.timer.start();
-		}
+	private static void resetTimer() {
+		TimedPersistentCachePasswordCallback.resetTimer();
 	}
 
 	@Override
@@ -291,22 +290,7 @@ public final class TemdKeyStoreManager extends AggregatedKeyStoreManager impleme
 				"El numero de segundos debe ser mayor que cero, y se ha especificado: " + seconds //$NON-NLS-1$
 			);
 		}
-		if (this.timer != null) {
-			this.timer.stop();
-		}
-		this.timerDelay = seconds * 1000;
-		this.timer = new Timer(
-			this.timerDelay,
-			new ActionListener() {
-				@Override
-				public void actionPerformed(final ActionEvent ae) {
-					getLogger().info("Reinicio del almacen '" + getType() + " por accion planificada"); //$NON-NLS-1$ //$NON-NLS-2$
-					removeAll();
-				}
-			}
-		);
-		this.timer.setRepeats(false);
-		this.timer.start();
+		this.pwc.setSecondsToClose(seconds);
 	}
 
     private static TEMD_CARD getInsertedTemd() {
@@ -345,7 +329,6 @@ public final class TemdKeyStoreManager extends AggregatedKeyStoreManager impleme
     	}
 
     	return null;
-
     }
 
 }
