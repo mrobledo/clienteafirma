@@ -23,10 +23,8 @@ import es.gob.afirma.core.misc.Platform;
 import es.gob.afirma.standalone.AutoFirmaUtil;
 import es.gob.afirma.standalone.SimpleAfirmaMessages;
 
-/**
- * Di&aacute;logo con el panel inicial del asistente de generaci&oacute;n de sobres digitales.
- * @author Juliana Marulanda.
- */
+/** Di&aacute;logo con el panel inicial del asistente de generaci&oacute;n de sobres digitales.
+ * @author Juliana Marulanda. */
 public class DigitalEnvelopePresentation extends JDialog implements KeyListener{
 
 	private static final long serialVersionUID = -7464675019212378413L;
@@ -37,19 +35,31 @@ public class DigitalEnvelopePresentation extends JDialog implements KeyListener{
 	private final JButton cancelButton = new JButton(SimpleAfirmaMessages.getString("DigitalEnvelopePresentation.4")); //$NON-NLS-1$
 
 	private final JPanel panelCentral = new JPanel();
+
+	/** Obtiene el panel central del GUI.
+	 * @return Panel central del GUI. */
 	public JPanel getPanelCentral() {
 		return this.panelCentral;
 	}
 
 	private final JPanel panel = new JPanel();
+
+	/** Obtiene el panel principal del GUI.
+	 * @return Panel principal del GUI. */
 	public JPanel getPanel() {
 		return this.panel;
 	}
 
 	private JPanel filePanel = new JPanel();
+
+	/** Obtiene el panel de GUI para el fichero.
+	 * @return Panel de GUI para el fichero. */
 	public JPanel getFilePanel() {
 		return this.filePanel;
 	}
+
+	/** Establece el panel de GUI para el fichero.
+	 * @param p Panel de GUI para el fichero. */
 	public void setFilePanel(final JPanel p) {
 		this.filePanel = p;
 	}

@@ -75,7 +75,7 @@ final class PreferencesPanelKeyStores extends JPanel {
 	JSpinner sizeSpinner = new JSpinner(this.sizeSpinnerModel);
 	String getSelectedTimeout() {
 		//Se obtiene en minutos y se devuelve en segundos
-		return (Integer.parseInt(this.sizeSpinner.getValue().toString())*60) + "";
+		return Integer.toString((Integer.parseInt(this.sizeSpinner.getValue().toString())*60));
 	}
 	void setSizeSpinnerEnabled(final boolean enable) {
 		this.sizeSpinner.setEnabled(enable);

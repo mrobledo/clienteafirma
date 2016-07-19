@@ -97,7 +97,7 @@ public final class CertValidationUi {
 		}
 	}
 
-	public static void validateCert(final byte[] rawCert,
+	static void validateCert(final byte[] rawCert,
 			                 final Component parent,
 			                 final Component currentComponent,
 			                 final Image icon) {

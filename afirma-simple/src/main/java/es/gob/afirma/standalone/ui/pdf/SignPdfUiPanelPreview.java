@@ -87,7 +87,7 @@ import es.gob.afirma.standalone.ui.EditorFocusManager;
 import es.gob.afirma.standalone.ui.EditorFocusManagerAction;
 import es.gob.afirma.standalone.ui.pdf.SignPdfUiPanel.SignPdfUiPanelListener;
 
-public final class SignPdfUiPanelPreview extends JPanel implements KeyListener {
+final class SignPdfUiPanelPreview extends JPanel implements KeyListener {
 
 	private static final long serialVersionUID = 1848879900511003335L;
 	static final Logger LOGGER = Logger.getLogger("es.gob.afirma"); //$NON-NLS-1$
@@ -894,7 +894,7 @@ public final class SignPdfUiPanelPreview extends JPanel implements KeyListener {
 		this.signImageDefault = bi;
 	}
 
-	private static double determineImageScale(int sourceWidth, int sourceHeight, int targetWidth, int targetHeight) {
+	private static double determineImageScale(final int sourceWidth, final int sourceHeight, final int targetWidth, final int targetHeight) {
 		final double scalex = (double) targetWidth / sourceWidth;
 		final double scaley = (double) targetHeight / sourceHeight;
 		return Math.min(scalex, scaley);

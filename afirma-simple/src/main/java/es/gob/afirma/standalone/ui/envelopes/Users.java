@@ -1,22 +1,24 @@
 package es.gob.afirma.standalone.ui.envelopes;
 
-public class Users {
+final class Users {
 
 	private final String cn;
 	private final String email;
 	private final String uid;
 
-	public String getCn() {
+	String getCn() {
 		return this.cn;
 	}
-	public String getEmail() {
+
+	String getEmail() {
 		return this.email;
 	}
-	public String getUid() {
+
+	String getUid() {
 		return this.uid;
 	}
 
-	public Users(final String cn, final String email, final String uid) {
+	Users(final String cn, final String email, final String uid) {
 		this.cn = cn;
 		this.email = email;
 		this.uid = uid;

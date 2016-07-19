@@ -79,16 +79,14 @@ final class PreferencesPanelFacturaE extends JPanel {
 
 	PreferencesPanelFacturaE(final KeyListener keyListener,
 							 final ModificationListener modificationListener,
-							 final boolean unprotected) {
-
-		createUI(keyListener, modificationListener, unprotected);
+							 final boolean unprotect) {
+		this.unprotected = unprotect;
+		createUI(keyListener, modificationListener);
 	}
 
 	void createUI(final KeyListener keyListener,
-				  final ModificationListener modificationListener,
-				  final boolean unprotected) {
+				  final ModificationListener modificationListener) {
 
-		this.unprotected = unprotected;
         setLayout(new GridBagLayout());
 
         final GridBagConstraints gbc = new GridBagConstraints();

@@ -21,14 +21,11 @@ import java.awt.event.KeyListener;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.security.cert.CertificateExpiredException;
-import java.security.cert.CertificateNotYetValidException;
 import java.security.cert.X509Certificate;
 import java.util.logging.Logger;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 import es.gob.afirma.cert.certvalidation.CertificateVerificable;
@@ -62,7 +59,7 @@ import es.gob.afirma.standalone.VisorFirma;
 public final class VisorPanel extends JPanel implements KeyListener {
 
 	private static final Logger LOGGER = Logger.getLogger("es.gob.afirma"); //$NON-NLS-1$
-	
+
     /** Version ID. */
     private static final long serialVersionUID = 8309157734617505338L;
 
@@ -128,7 +125,7 @@ public final class VisorPanel extends JPanel implements KeyListener {
             }
         }
 
-        
+
         final X509Certificate cert = getCertificate(sign);
 
         //Tambien se valida el certificado
@@ -139,40 +136,45 @@ public final class VisorPanel extends JPanel implements KeyListener {
         catch(final Exception e) {
         	LOGGER.warning("No se ha podido cargar el verificador de certificados: " + e); //$NON-NLS-1$
         }
-        
+
         //Si la firma es valida comprobamos la validez del certificado
         if(SIGN_DETAIL_TYPE.OK == validity.getValidity()) {
-	        final ValidationResult vr = cfv.validateCertificate(cert);
-			
-			switch(vr) {
-				case VALID:
-					break;
-				case EXPIRED:
-					validity = new SignValidity(SIGN_DETAIL_TYPE.KO, VALIDITY_ERROR.CERTIFICATE_EXPIRED);
-					break;
-				case REVOKED:
-					validity = new SignValidity(SIGN_DETAIL_TYPE.KO, VALIDITY_ERROR.CRL_PROBLEM);
-					break;
-				case NOT_YET_VALID:
-					validity = new SignValidity(SIGN_DETAIL_TYPE.KO, VALIDITY_ERROR.CERTIFICATE_NOT_VALID_YET);
-					break;
-				case CA_NOT_SUPPORTED:
-					validity = new SignValidity(SIGN_DETAIL_TYPE.KO, VALIDITY_ERROR.CA_NOT_SUPPORTED);
-					break;
-				case CORRUPT:
-					validity = new SignValidity(SIGN_DETAIL_TYPE.KO, VALIDITY_ERROR.CORRUPTED_SIGN);
-					break;
-				case SERVER_ERROR:
-					validity = new SignValidity(SIGN_DETAIL_TYPE.KO, VALIDITY_ERROR.CERTIFICATE_PROBLEM);
-					break;
-				case UNKNOWN:
-					validity = new SignValidity(SIGN_DETAIL_TYPE.KO, VALIDITY_ERROR.UNKOWN_ERROR);
-					break;
-				default:
-					validity = new SignValidity(SIGN_DETAIL_TYPE.KO, VALIDITY_ERROR.UNKOWN_ERROR);
-			}
+        	if (cfv == null) {
+        		validity = new SignValidity(SIGN_DETAIL_TYPE.KO, VALIDITY_ERROR.UNKOWN_ERROR);
+        	}
+        	else {
+		        final ValidationResult vr = cfv.validateCertificate(cert);
+
+				switch(vr) {
+					case VALID:
+						break;
+					case EXPIRED:
+						validity = new SignValidity(SIGN_DETAIL_TYPE.KO, VALIDITY_ERROR.CERTIFICATE_EXPIRED);
+						break;
+					case REVOKED:
+						validity = new SignValidity(SIGN_DETAIL_TYPE.KO, VALIDITY_ERROR.CRL_PROBLEM);
+						break;
+					case NOT_YET_VALID:
+						validity = new SignValidity(SIGN_DETAIL_TYPE.KO, VALIDITY_ERROR.CERTIFICATE_NOT_VALID_YET);
+						break;
+					case CA_NOT_SUPPORTED:
+						validity = new SignValidity(SIGN_DETAIL_TYPE.KO, VALIDITY_ERROR.CA_NOT_SUPPORTED);
+						break;
+					case CORRUPT:
+						validity = new SignValidity(SIGN_DETAIL_TYPE.KO, VALIDITY_ERROR.CORRUPTED_SIGN);
+						break;
+					case SERVER_ERROR:
+						validity = new SignValidity(SIGN_DETAIL_TYPE.KO, VALIDITY_ERROR.CERTIFICATE_PROBLEM);
+						break;
+					case UNKNOWN:
+						validity = new SignValidity(SIGN_DETAIL_TYPE.KO, VALIDITY_ERROR.UNKOWN_ERROR);
+						break;
+					default:
+						validity = new SignValidity(SIGN_DETAIL_TYPE.KO, VALIDITY_ERROR.UNKOWN_ERROR);
+				}
+        	}
         }
-        
+
         final JPanel resultPanel = new SignResultPanel(validity, this);
         final JPanel dataPanel = new SignDataPanel(
     		signFile,

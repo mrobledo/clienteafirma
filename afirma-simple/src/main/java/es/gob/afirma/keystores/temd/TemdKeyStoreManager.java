@@ -17,19 +17,20 @@ import javax.smartcardio.CardTerminal;
 import javax.smartcardio.TerminalFactory;
 import javax.swing.Timer;
 
-import es.gob.afirma.core.keystores.AutoCloseable;
 import es.gob.afirma.keystores.AOKeyStore;
 import es.gob.afirma.keystores.AOKeyStoreManager;
 import es.gob.afirma.keystores.AOKeyStoreManagerException;
 import es.gob.afirma.keystores.AOKeyStoreManagerFactory;
 import es.gob.afirma.keystores.AOKeystoreAlternativeException;
 import es.gob.afirma.keystores.AggregatedKeyStoreManager;
+import es.gob.afirma.keystores.AutoCloseableStore;
 import es.gob.afirma.keystores.KeyStoreUtilities;
 import es.gob.afirma.keystores.callbacks.CachePasswordCallback;
+import es.gob.jmulticard.card.Atr;
 
 /** Almac&eacute;n TEMD en tarjeta.
  * @author Tom&aacute;s Garc&iacute;a-Mer&aacute;s. */
-public final class TemdKeyStoreManager extends AggregatedKeyStoreManager implements AutoCloseable {
+public final class TemdKeyStoreManager extends AggregatedKeyStoreManager implements AutoCloseableStore {
 
 	private Timer timer = null;
 	private int timerDelay = -1;
@@ -67,12 +68,10 @@ public final class TemdKeyStoreManager extends AggregatedKeyStoreManager impleme
 	}
 
 	/** Construye un almac&eacute;n TEMD en tarjeta.
-	 * @param parent Componente padre para la modalidad.
 	 * @throws AOKeyStoreManagerException Si no puede construirse el almac&eacute;n. */
-	public TemdKeyStoreManager(final Object parent) throws AOKeyStoreManagerException {
+	public TemdKeyStoreManager() throws AOKeyStoreManagerException {
 		System.setProperty("es.gob.afirma.keystores.DoNotReusePkcs11Provider", Boolean.TRUE.toString()); //$NON-NLS-1$
 		setKeyStoreType(AOKeyStore.TEMD);
-		setParentComponent(parent);
 		addKeyStoreManager(getTemdPkcs11KeyStoreManager());
 	}
 

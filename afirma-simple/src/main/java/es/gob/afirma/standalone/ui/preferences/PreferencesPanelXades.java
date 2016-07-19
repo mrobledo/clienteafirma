@@ -65,15 +65,14 @@ final class PreferencesPanelXades extends JPanel {
 
 	PreferencesPanelXades(final KeyListener keyListener,
 						  final ModificationListener modificationListener,
-						  final boolean unprotected) {
+						  final boolean unprotect) {
 
-		this.unprotected = unprotected;
-		createUI(keyListener, modificationListener, unprotected);
+		this.unprotected = unprotect;
+		createUI(keyListener, modificationListener);
 	}
 
 	void createUI(final KeyListener keyListener,
-				  final ModificationListener modificationListener,
-				  final boolean unprotected) {
+				  final ModificationListener modificationListener) {
 
         setLayout(new GridBagLayout());
 
@@ -175,7 +174,7 @@ final class PreferencesPanelXades extends JPanel {
         this.xadesSignFormat.getAccessibleContext().setAccessibleDescription(SimpleAfirmaMessages.getString("PreferencesPanel.53")); //$NON-NLS-1$
         this.xadesSignFormat.addItemListener(modificationListener);
         this.xadesSignFormat.addKeyListener(keyListener);
-        this.xadesSignFormat.setEnabled(unprotected);
+        this.xadesSignFormat.setEnabled(this.unprotected);
 
         final JLabel xadesFormatLabel = new JLabel(
 				SimpleAfirmaMessages.getString("PreferencesPanel.15") //$NON-NLS-1$

@@ -5,7 +5,7 @@ import java.util.logging.Logger;
 
 import es.gob.afirma.standalone.AutoFirmaUtil;
 
-public class TryIconBuilder {
+final class TryIconBuilder {
 
 	static final int TRY_ICON_INSTALL = 0;
 	static final int TRY_ICON_UNINSTALL = 1;

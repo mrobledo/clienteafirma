@@ -4,14 +4,13 @@ import java.security.cert.X509Certificate;
 
 import es.gob.afirma.keystores.filters.rfc.KeyUsageFilter;
 
-/**
- * @author Mariano Mart&iacute;nez.
- * Filtro de Certificados para cifrado.
- */
+/** Filtro de Certificados para cifrado.
+ * @author Mariano Mart&iacute;nez. */
 public final class CipherCertificateFilter extends CertificateFilter {
 
 	private final KeyUsageFilter keyUsageFilter;
 
+	/** Construye un filtro de Certificados para cifrado. */
 	public CipherCertificateFilter() {
 		this.keyUsageFilter = new KeyUsageFilter(AUTHENTICATION_CERT_USAGE);
 	}
@@ -22,9 +21,7 @@ public final class CipherCertificateFilter extends CertificateFilter {
 		return this.keyUsageFilter.matches(cert);
 	}
 
-	/**
-	 * Usos de clave permitidos en los certificados para la autenticaci&oacute;n de usuarios.
-	 */
+	/** Usos de clave permitidos en los certificados para la autenticaci&oacute;n de usuarios. */
     private static final Boolean[] AUTHENTICATION_CERT_USAGE = {
     	Boolean.TRUE, // digitalSignature
         null, // nonRepudiation

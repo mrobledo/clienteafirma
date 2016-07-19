@@ -12,6 +12,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.security.cert.X509Certificate;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.swing.ImageIcon;
@@ -56,8 +57,8 @@ public final class DefenseDirectoryDialog extends JDialog implements KeyListener
 		this.certificate = cert;
 	}
 
-	private final LDAPMDEFManager lm = new LDAPMDEFManager();
-	LDAPMDEFManager getLDAPMDEFManager() {
+	private final FakeLDAPMDEFManager lm = new FakeLDAPMDEFManager();
+	FakeLDAPMDEFManager getLDAPMDEFManager() {
 		return this.lm;
 	}
 
@@ -81,10 +82,9 @@ public final class DefenseDirectoryDialog extends JDialog implements KeyListener
 		this.searchUserButton.setEnabled(enable);
 	}
 
-	/**
-	 * Crea el di&aacute;logo y lo hace visible.
+	/** Crea el di&aacute;logo y lo hace visible.
 	 * @param parent Frame padre del di&aacute;logo.
-	 */
+	 * @return Certificado seleccionado. */
 	public static X509Certificate startDefenseDirectoryDialog(final Frame parent) {
 		final DefenseDirectoryDialog ode = new DefenseDirectoryDialog(parent);
 		ode.setSize(PREFERRED_WIDTH, PREFERRED_HEIGHT);
@@ -103,8 +103,7 @@ public final class DefenseDirectoryDialog extends JDialog implements KeyListener
 		createUI();
 	}
 
-	public void createUI() {
-
+	void createUI() {
 
 		setTitle(SimpleAfirmaMessages.getString("DefenseDirectoryDialog.0")); //$NON-NLS-1$
 
@@ -187,8 +186,8 @@ public final class DefenseDirectoryDialog extends JDialog implements KeyListener
 					if (getSearchedUser() != null && !getSearchedUser().trim().isEmpty()) {
 						final Users[] users = getLDAPMDEFManager().getUsers(getSearchedUser());
 						tableModel.setRowCount(0);
-						for (int i = 0; i < users.length; i++) {
-							final Object[] row = {users[i].getCn(), users[i].getEmail(), users[i].getUid()};
+						for (final Users user : users) {
+							final Object[] row = {user.getCn(), user.getEmail(), user.getUid()};
 							tableModel.addRow(row);
 				        }
 					}
@@ -235,11 +234,26 @@ public final class DefenseDirectoryDialog extends JDialog implements KeyListener
 				@Override
 				public void actionPerformed(final ActionEvent ae) {
 					if (table.getSelectedRow() != -1) {
-						setCertificate(
-							getLDAPMDEFManager().getCertificate(
-								(String) tableModel.getValueAt(table.convertRowIndexToView(table.getSelectedRow()), 2)
-							)
-						);
+						try {
+							setCertificate(
+								getLDAPMDEFManager().getCertificate(
+									(String) tableModel.getValueAt(table.convertRowIndexToView(table.getSelectedRow()), 2)
+								)
+							);
+						}
+						catch (final Exception e) {
+							LOGGER.log(
+								Level.SEVERE,
+								"No se pudo recuperar el certificado del usuario: " + e, //$NON-NLS-1$
+								e
+							);
+					        AOUIFactory.showErrorMessage(
+								this,
+								SimpleAfirmaMessages.getString("DefenseDirectoryDialog.13"), //$NON-NLS-1$
+								SimpleAfirmaMessages.getString("DefenseDirectoryDialog.12"), //$NON-NLS-1$
+								JOptionPane.ERROR_MESSAGE
+							);
+						}
 						setVisible(false);
 						dispose();
 					}

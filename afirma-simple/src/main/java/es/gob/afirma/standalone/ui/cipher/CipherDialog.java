@@ -107,10 +107,10 @@ public final class CipherDialog extends JDialog implements KeyListener{
 		super(parent);
 		setTitle(SimpleAfirmaMessages.getString("CipherDialog.0")); //$NON-NLS-1$
 		setModalityType(ModalityType.APPLICATION_MODAL);
-		createUI(parent);
+		createUI();
 	}
 
-	void createUI(final Frame parent) {
+	void createUI() {
 
 		final Container c = getContentPane();
 		final GridBagLayout gbl = new GridBagLayout();

@@ -298,7 +298,7 @@ public final class DecipherDialog extends JDialog implements KeyListener{
 		pack();
 	}
 
-	private boolean decipher() {
+	boolean decipher() {
 		if (getTextFieldDataText() == null) {
 			LOGGER.warning("No se ha indicado un fichero de datos"); //$NON-NLS-1$
 			AOUIFactory.showMessageDialog(

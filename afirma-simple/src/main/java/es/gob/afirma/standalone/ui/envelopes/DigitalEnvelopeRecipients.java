@@ -45,7 +45,7 @@ import es.gob.afirma.standalone.SimpleAfirmaMessages;
  * Panel para seleccionar los destinatarios que se quieren incluir en el sobre digital.
  * @author Juliana Marulanda
  */
-public class DigitalEnvelopeRecipients extends JPanel {
+final class DigitalEnvelopeRecipients extends JPanel {
 
 	private static final long serialVersionUID = 8190414784696825608L;
 	private static final Logger LOGGER = Logger.getLogger("es.gob.afirma"); //$NON-NLS-1$
@@ -107,7 +107,7 @@ public class DigitalEnvelopeRecipients extends JPanel {
 	/**
 	 * Genera un panel de destinatarios de sobres digitales.
 	 * @param parent Di&aacute;logo del asistente de ensobrado.
-	 * @param Ruta del fichero a ensobrar.
+	 * @param file Ruta del fichero a ensobrar.
 	 * @param type Tipo de sobre a realizar.
 	 * @param algorithm Tipo de algortimo de cifrado.
 	 */
@@ -338,7 +338,7 @@ public class DigitalEnvelopeRecipients extends JPanel {
     	AOKeyStoreManager keyStoreManager = null;
         final KeyStoreConfiguration kc = (KeyStoreConfiguration) this.comboBoxRecipients.getSelectedItem();
 
-        /////LDAPMDEF
+        /////CertificateDirectoryProvider
         CertificateDestiny certDest = null;
         if (kc.getType().equals(AOKeyStore.LDAPMDEF)) {
         	final X509Certificate cert = DefenseDirectoryDialog.startDefenseDirectoryDialog(
@@ -349,7 +349,7 @@ public class DigitalEnvelopeRecipients extends JPanel {
         	}
         }
         else{
-        /////LDAPMDEF
+        /////CertificateDirectoryProvider
 	        try {
 	            final AOKeyStore ao = kc.getType();
 	            String lib = null;

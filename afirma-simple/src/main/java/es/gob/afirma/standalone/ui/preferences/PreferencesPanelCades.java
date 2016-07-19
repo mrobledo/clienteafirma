@@ -58,15 +58,14 @@ final class PreferencesPanelCades extends JPanel {
 
 	PreferencesPanelCades(final KeyListener keyListener,
 						  final ModificationListener modificationListener,
-						  final boolean unprotected) {
+						  final boolean unprotect) {
 
-		this.unprotected = unprotected;
-		createUI(keyListener, modificationListener, unprotected);
+		this.unprotected = unprotect;
+		createUI(keyListener, modificationListener);
 	}
 
 	void createUI(final KeyListener keyListener,
-				  final ModificationListener modificationListener,
-				  final boolean unprotected) {
+				  final ModificationListener modificationListener) {
 
         setLayout(new GridBagLayout());
 
@@ -96,7 +95,7 @@ final class PreferencesPanelCades extends JPanel {
 	    this.cadesImplicit.setMnemonic('i');
 	    this.cadesImplicit.addItemListener(modificationListener);
 	    this.cadesImplicit.addKeyListener(keyListener);
-	    this.cadesImplicit.setEnabled(unprotected);
+	    this.cadesImplicit.setEnabled(this.unprotected);
 	    signatureMode.add(this.cadesImplicit);
 
 	    final JPanel timeStampPanel = new JPanel();
@@ -122,7 +121,7 @@ final class PreferencesPanelCades extends JPanel {
 			}
 		);
 		this.configureTimeStampOptionsButton.addKeyListener(keyListener);
-		this.configureTimeStampOptionsButton.setEnabled(unprotected);
+		this.configureTimeStampOptionsButton.setEnabled(this.unprotected);
 
 		final JLabel timeStampLabel = new JLabel(
 				SimpleAfirmaMessages.getString("PreferencesPanel.118") //$NON-NLS-1$

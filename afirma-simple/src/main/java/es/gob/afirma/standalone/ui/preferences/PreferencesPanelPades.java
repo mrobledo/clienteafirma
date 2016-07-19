@@ -84,15 +84,14 @@ final class PreferencesPanelPades extends JPanel {
 
 	PreferencesPanelPades(final KeyListener keyListener,
 						  final ModificationListener modificationListener,
-						  final boolean unprotected) {
+						  final boolean unprotect) {
 
-		this.unprotected = unprotected;
-		createUI(keyListener, modificationListener, unprotected);
+		this.unprotected = unprotect;
+		createUI(keyListener, modificationListener);
 	}
 
 	void createUI(final KeyListener keyListener,
-				  final ModificationListener modificationListener,
-				  final boolean unprotected) {
+				  final ModificationListener modificationListener) {
 
 		setLayout(new GridBagLayout());
 
@@ -201,10 +200,10 @@ final class PreferencesPanelPades extends JPanel {
 		);
 
 		this.padesBasicFormat.setModel(padesFormatModel);
-		this.padesBasicFormat.setEnabled(unprotected);
+		this.padesBasicFormat.setEnabled(this.unprotected);
 		this.padesBasicFormat.addItemListener(modificationListener);
 		this.padesBasicFormat.addKeyListener(keyListener);
-        this.padesBasicFormat.setEnabled(unprotected);
+        this.padesBasicFormat.setEnabled(this.unprotected);
 
 
 		cf.anchor = GridBagConstraints.LINE_START;
@@ -232,7 +231,7 @@ final class PreferencesPanelPades extends JPanel {
 		certificationLevelLabel.addKeyListener(keyListener);
 		certificationLevelLabel.setLabelFor(this.certificationLevel);
 
-		this.certificationLevel.setEnabled(unprotected);
+		this.certificationLevel.setEnabled(this.unprotected);
 		this.certificationLevel.addItemListener(modificationListener);
 		this.certificationLevel.addKeyListener(keyListener);
 
@@ -277,7 +276,7 @@ final class PreferencesPanelPades extends JPanel {
 			}
 		);
 		this.configureTimeStampOptionsButton.addKeyListener(keyListener);
-		this.configureTimeStampOptionsButton.setEnabled(unprotected);
+		this.configureTimeStampOptionsButton.setEnabled(this.unprotected);
 
 		final JLabel timeStampLabel = new JLabel(
 				SimpleAfirmaMessages.getString("PreferencesPanel.122") //$NON-NLS-1$

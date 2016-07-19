@@ -365,7 +365,7 @@ final class PreferencesPanelGeneral extends JPanel {
 		this.signarureAlgorithms.addItemListener(modificationListener);
 		this.signarureAlgorithms.addKeyListener(keyListener);
 		this.signarureAlgorithms.setModel(
-			new DefaultComboBoxModel<String>(
+			new DefaultComboBoxModel<>(
 				new String[] {
 						"SHA1withRSA", //$NON-NLS-1$
 						"SHA256withRSA", //$NON-NLS-1$
@@ -425,7 +425,7 @@ final class PreferencesPanelGeneral extends JPanel {
 		gbc.weighty = 1.0;
 		gbc.gridy++;
 		add(new JPanel(), gbc);
-		
+
 		//Cargamos las preferencias por defecto
 		loadPreferences();
 

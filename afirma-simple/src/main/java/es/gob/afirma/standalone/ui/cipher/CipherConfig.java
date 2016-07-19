@@ -41,7 +41,7 @@ public final class CipherConfig {
     /** Listado de proveedores de cifrado soportados (AOCipher). Para agregar nuevos proveedores
      * basta con agregarlos al array. */
     private static final AOCipher[] SUPPORTED_CIPHER_PROVIDERS = new AOCipher[] {
-                                                                                 new AOSunJCECipher()
+         new AOSunJCECipher()
     };
 
     static {

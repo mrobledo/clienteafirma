@@ -208,7 +208,7 @@ final class CommandLineLauncher {
 	}
 
 	/** Realizamos el cifrado y firma de un fichero mostrando los di&aacute;logos necesarios.
-	 * @param Par&aacute;metros de configuraci&oacute;n.
+	 * @param params Par&aacute;metros de configuraci&oacute;n.
 	 * @throws CommandLineException Cuando falta algun par&aacute;metro necesario o no se puede cargar el almac&eacute;n de claves. */
 	private static void cipherAndSignByGui(final CommandLineParameters params) throws CommandLineException {
 		final File inputFile = params.getInputFile();
@@ -220,7 +220,7 @@ final class CommandLineLauncher {
 	}
 
 	/** Realizamos la creaci&oacute;n de un sobre digital del fichero seleccionado mostrando los di&aacute;logos necesarios.
-	 * @param Par&aacute;metros de configuraci&oacute;n.
+	 * @param params Par&aacute;metros de configuraci&oacute;n.
 	 * @throws CommandLineException Cuando falta algun par&aacute;metro necesario o no se puede cargar el almac&eacute;n de claves. */
 	private static void createEnvelopeByGui(final CommandLineParameters params) throws CommandLineException {
 		final File inputFile = params.getInputFile();
@@ -240,7 +240,7 @@ final class CommandLineLauncher {
 	}
 
 	/** Realizamos la apertura del sobre digital seleccionado mostrando los di&aacute;logos necesarios.
-	 * @param Par&aacute;metros de configuraci&oacute;n.
+	 * @param params Par&aacute;metros de configuraci&oacute;n.
 	 * @throws CommandLineException Cuando falta algun par&aacute;metro necesario o no se puede cargar el almac&eacute;n de claves. */
 	private static void openEnvelope(final CommandLineParameters params) throws CommandLineException {
 		final File inputFile = params.getInputFile();

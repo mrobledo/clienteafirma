@@ -19,7 +19,7 @@ import javax.swing.SwingConstants;
 
 import es.gob.afirma.standalone.SimpleAfirmaMessages;
 
-public final class DigitalEnvelopeEnd extends JDialog {
+final class DigitalEnvelopeEnd extends JDialog {
 
 	private static final long serialVersionUID = 4673856930142046569L;
 	static final Logger LOGGER = Logger.getLogger("es.gob.afirma"); //$NON-NLS-1$
@@ -33,7 +33,7 @@ public final class DigitalEnvelopeEnd extends JDialog {
 
 	/** Crea el di&aacute;logo de finalizaci&oacute;n de los sobres digitales.
 	 * @param parent Componente padre para la modalidad. */
-	public DigitalEnvelopeEnd(final DigitalEnvelopePresentation parent) {
+	DigitalEnvelopeEnd(final DigitalEnvelopePresentation parent) {
 		this.dialog = parent;
 		createUI();
 	}

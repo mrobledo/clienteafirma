@@ -57,9 +57,10 @@ public class OpenDigitalEnvelopeDialog extends JDialog implements KeyListener{
 	private final JButton openButton = new JButton(SimpleAfirmaMessages.getString("OpenDigitalEnvelope.3")); //$NON-NLS-1$
 	private final JButton cancelButton = new JButton(SimpleAfirmaMessages.getString("OpenDigitalEnvelope.4")); //$NON-NLS-1$
 
-	/**
-	 * Crea el di&aacute;logo y lo hace visible.
+	/** Crea el di&aacute;logo y lo hace visible.
 	 * @param parent Frame padre del di&aacute;logo.
+	 * @param ksm Almac&eacute;n de claves a usar para el sobre.
+	 * @param filePath Ruta hacia el sobre digital.
 	 * @param sa Instancia de SimpleAfirma para utilizar el almac&eacute;n de la aplicaci&oacute;n.
 	 */
 	public static void startOpenDigitalEnvelopeDialog(final Frame parent,
@@ -74,6 +75,8 @@ public class OpenDigitalEnvelopeDialog extends JDialog implements KeyListener{
 
 	/** Crea el panel de apertura de un sobre digital.
 	 * @param parent Componente padre del di&aacute;logo.
+	 * @param ksm Almac&eacute;n de claves a usar para el sobre.
+	 * @param filePath Ruta hacia el sobre digital.
 	 * @param sa Instancia de SimpleAfirma para utilizar el almac&eacute;n de la aplicaci&oacute;n.
 	 **/
 	public OpenDigitalEnvelopeDialog(final Frame parent, final AOKeyStoreManager ksm, final String filePath) {
@@ -85,7 +88,7 @@ public class OpenDigitalEnvelopeDialog extends JDialog implements KeyListener{
 		createUI();
 	}
 
-	public void createUI() {
+	private void createUI() {
 
 		LOGGER.warning(
 			"createui: " //$NON-NLS-1$
@@ -284,7 +287,8 @@ public class OpenDigitalEnvelopeDialog extends JDialog implements KeyListener{
 				EnvelopesUtils.readFile(this.selectedFilePath.getText()),
 				pke
 			);
-		} catch (final InvalidKeyException e1) {
+		}
+        catch (final InvalidKeyException e1) {
 			LOGGER.severe("La clave indicada no pertenece a ninguno de los destinatarios del envoltorio" + e1); //$NON-NLS-1$
         	AOUIFactory.showErrorMessage(
                 this,
@@ -293,7 +297,8 @@ public class OpenDigitalEnvelopeDialog extends JDialog implements KeyListener{
                 JOptionPane.ERROR_MESSAGE
             );
         	return false;
-		} catch (final Exception e1) {
+		}
+        catch (final Exception e1) {
 			LOGGER.severe("Error desensobrando el fichero: " + e1); //$NON-NLS-1$
         	AOUIFactory.showErrorMessage(
                 this,
@@ -314,7 +319,8 @@ public class OpenDigitalEnvelopeDialog extends JDialog implements KeyListener{
 			    null,
 			    this
 			);
-		} catch (final IOException e) {
+		}
+		catch (final IOException e) {
 			LOGGER.severe("No se ha posido guardar el sobre: " + e); //$NON-NLS-1$
 			AOUIFactory.showMessageDialog(
         		this,
@@ -327,9 +333,8 @@ public class OpenDigitalEnvelopeDialog extends JDialog implements KeyListener{
 	}
 
 	private PrivateKeyEntry getPrivateKeyEntry() throws AOCertificatesNotFoundException, KeyStoreException, NoSuchAlgorithmException, UnrecoverableEntryException {
-		final AOKeyStoreManager ksm = this.ksm;
     	final AOKeyStoreDialog dialog = new AOKeyStoreDialog(
-			ksm,
+			this.ksm,
 			this,
 			true,             // Comprobar claves privadas
 			false,            // Mostrar certificados caducados
@@ -338,8 +343,8 @@ public class OpenDigitalEnvelopeDialog extends JDialog implements KeyListener{
 			false             // mandatoryCertificate
 		);
     	dialog.show();
-    	ksm.setParentComponent(this);
-    	return ksm.getKeyEntry(
+    	this.ksm.setParentComponent(this);
+    	return this.ksm.getKeyEntry(
 			dialog.getSelectedAlias()
 		);
 	}
