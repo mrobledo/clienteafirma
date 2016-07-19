@@ -4,9 +4,11 @@ import org.junit.Test;
 
 import es.gob.afirma.standalone.SimpleAfirma;
 
+/** Pruebas de sobres en l&iacute;nea de comando. */
 public class EnvelopesFormCommandLineTest {
 
 	/** Prueba apertura de sobres digitales. */
+	@SuppressWarnings("static-method")
 	@Test
 	public void testOpenEnvelope() {
 		SimpleAfirma.main(
@@ -17,6 +19,7 @@ public class EnvelopesFormCommandLineTest {
 	}
 
 	/** Prueba crear sobres digitales. */
+	@SuppressWarnings("static-method")
 	@Test
 	public void testCreateEnvelope() {
 		SimpleAfirma.main(
