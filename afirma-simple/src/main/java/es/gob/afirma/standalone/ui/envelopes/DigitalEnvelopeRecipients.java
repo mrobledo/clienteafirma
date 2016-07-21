@@ -74,16 +74,6 @@ final class DigitalEnvelopeRecipients extends JPanel {
 		ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED
 	);
 
-	private final EnvelopesTypeResources envelopeType;
-	EnvelopesTypeResources getEnvelopeType() {
-		return this.envelopeType;
-	}
-
-	private final String filePath;
-	String getFilePath() {
-		return this.filePath;
-	}
-
 	private final DigitalEnvelopePresentation dialog;
 	DigitalEnvelopePresentation getDialog() {
 		return this.dialog;
@@ -99,26 +89,10 @@ final class DigitalEnvelopeRecipients extends JPanel {
 		return this.panelCentral;
 	}
 
-	private final String signAlgorithm;
-	String getSignAlgorithm() {
-		return this.signAlgorithm;
-	}
-
-	/**
-	 * Genera un panel de destinatarios de sobres digitales.
-	 * @param parent Di&aacute;logo del asistente de ensobrado.
-	 * @param file Ruta del fichero a ensobrar.
-	 * @param type Tipo de sobre a realizar.
-	 * @param algorithm Tipo de algortimo de cifrado.
-	 */
-	public DigitalEnvelopeRecipients(final DigitalEnvelopePresentation parent,
-									 final String file,
-									 final EnvelopesTypeResources type,
-									 final String algorithm) {
+	/** Genera un panel de destinatarios de sobres digitales.
+	 * @param parent Di&aacute;logo del asistente de ensobrado. */
+	public DigitalEnvelopeRecipients(final DigitalEnvelopePresentation parent) {
 		this.dialog = parent;
-		this.filePath = file;
-		this.envelopeType = type;
-		this.signAlgorithm = algorithm;
 		createUI();
 	}
 
@@ -146,7 +120,7 @@ final class DigitalEnvelopeRecipients extends JPanel {
     		SimpleAfirmaMessages.getString("DigitalEnvelopeRecipients.0"), //$NON-NLS-1$
     		SwingConstants.CENTER
         );
-        label.setFont(new java.awt.Font ("Century Schoolbook L", 0, 13)); //$NON-NLS-1$
+        label.setFont(new java.awt.Font("Century Schoolbook L", 0, 13)); //$NON-NLS-1$
 
         // Label para el Combobox
         final JLabel labelCB = new JLabel(
@@ -212,13 +186,10 @@ final class DigitalEnvelopeRecipients extends JPanel {
  					getDialog().remove(getPanelCentral());
  					getDialog().remove(getPanel());
  					getDialog().remove(getDialog().getRecipientsPanel());
+ 					getDialog().getEnvelopeData().addCertificateRecipients(getCertificateList());
  					getDialog().setSendersPanel(
  						new DigitalEnvelopeSender(
-							getDialog(),
-							getFilePath(),
-							getEnvelopeType(),
-							getCertificateList(),
-							getSignAlgorithm()
+							getDialog()
 						)
  					);
  					getDialog().add(getDialog().getSendersPanel());
@@ -255,7 +226,11 @@ final class DigitalEnvelopeRecipients extends JPanel {
 				getDialog().remove(getPanelCentral());
 				getDialog().remove(getPanel());
 				getDialog().remove(getDialog().getRecipientsPanel());
-				getDialog().setFilePanel(new DigitalEnvelopeSelectFile(getDialog(), getFilePath()));
+				getDialog().setFilePanel(
+					new DigitalEnvelopeSelectFile(
+						getDialog()
+					)
+				);
 				getDialog().add(getDialog().getFilePanel());
 			}
 		});

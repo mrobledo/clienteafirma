@@ -36,6 +36,14 @@ public class DigitalEnvelopePresentation extends JDialog implements KeyListener{
 
 	private final JPanel panelCentral = new JPanel();
 
+	private final EnvelopeData envelopeData = new EnvelopeData();
+
+	/** Obtiene los datos de configuraci&oacute;n del sobre digital.
+	 * @return Datos de configuraci&oacute;n del sobre digital. */
+	public EnvelopeData getEnvelopeData() {
+		return this.envelopeData;
+	}
+
 	/** Obtiene el panel central del GUI.
 	 * @return Panel central del GUI. */
 	public JPanel getPanelCentral() {
@@ -100,9 +108,7 @@ public class DigitalEnvelopePresentation extends JDialog implements KeyListener{
 		createUI();
 	}
 
-	/**
-	 * Crea una ventana con un mensaje de bienvenida.
-	 */
+	/** Crea una ventana con un mensaje de bienvenida. */
 	public void createUI() {
 
 		setTitle(SimpleAfirmaMessages.getString("DigitalEnvelopePresentation.0")); //$NON-NLS-1$
@@ -143,7 +149,11 @@ public class DigitalEnvelopePresentation extends JDialog implements KeyListener{
  				public void actionPerformed(final ActionEvent ae) {
  					remove(getPanelCentral());
  					remove(getPanel());
- 					setFilePanel(new DigitalEnvelopeSelectFile(DigitalEnvelopePresentation.this, null));
+ 					setFilePanel(
+						new DigitalEnvelopeSelectFile(
+							DigitalEnvelopePresentation.this
+						)
+					);
  					add(getFilePanel());
  				}
  			}

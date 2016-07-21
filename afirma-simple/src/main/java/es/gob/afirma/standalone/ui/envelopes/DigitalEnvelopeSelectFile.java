@@ -34,10 +34,10 @@ public class DigitalEnvelopeSelectFile extends JPanel {
 	private static final long serialVersionUID = -5430415718507253691L;
 	static final Logger LOGGER = Logger.getLogger("es.gob.afirma"); //$NON-NLS-1$
 	private static final String[] SIGN_ALGORITHM = {
-			"SHA1withRSA", //$NON-NLS-1$
-			"SHA512withRSA", //$NON-NLS-1$
-			"SHA384withRSA", //$NON-NLS-1$
-			"SHA256withRSA"//$NON-NLS-1$
+		"SHA512withRSA", //$NON-NLS-1$
+		"SHA384withRSA", //$NON-NLS-1$
+		"SHA256withRSA",//$NON-NLS-1$
+		"SHA1withRSA", //$NON-NLS-1$
 	};
 
 	private final JComboBox<EnvelopesTypeResources> envelopeTypes = new JComboBox<>(
@@ -79,12 +79,11 @@ public class DigitalEnvelopeSelectFile extends JPanel {
 	}
 
 	/** Crea el panel para seleccionar el fichero a ensobrar, el tipo de sobre y el algoritmo a utilizar.
-	 * @param dl Di&aacute;logo principal del asistente.
-	 * @param path Ruta hacia el fichero a ensobrar. */
-	public DigitalEnvelopeSelectFile(final DigitalEnvelopePresentation dl, final String path) {
+	 * @param dl Di&aacute;logo principal del asistente. */
+	public DigitalEnvelopeSelectFile(final DigitalEnvelopePresentation dl) {
 		this.dialog = dl;
-		if (path != null) {
-			setSelectedFile(path);
+		if (dl != null && dl.getEnvelopeData().getFilePath() != null) {
+			setSelectedFile(dl.getEnvelopeData().getFilePath());
 		}
 		createUI();
 	}
@@ -201,12 +200,12 @@ public class DigitalEnvelopeSelectFile extends JPanel {
 				getDialog().remove(getPanelCentral());
 				getDialog().remove(getPanel());
 				getDialog().remove(getDialog().getFilePanel());
+				getDialog().getEnvelopeData().setFilePath(getSelectedFile());
+				getDialog().getEnvelopeData().setEnvelopeType(getSelectedType());
+				getDialog().getEnvelopeData().setSignatureAlgorithm(getSignAlgorithm());
 				getDialog().setRecipientsPanel(
 					new DigitalEnvelopeRecipients(
-						getDialog(),
-						getSelectedFile(),
-						getSelectedType(),
-						getSignAlgorithm()
+						getDialog()
 					)
 				);
 				getDialog().add(getDialog().getRecipientsPanel());

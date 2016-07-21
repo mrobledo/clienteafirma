@@ -13,14 +13,11 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import java.security.KeyStore.PrivateKeyEntry;
-import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableEntryException;
-import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
-import javax.crypto.Cipher;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListModel;
@@ -35,11 +32,8 @@ import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingConstants;
 
 import es.gob.afirma.core.AOCancelledOperationException;
-import es.gob.afirma.core.ciphers.AOCipherConfig;
-import es.gob.afirma.core.ciphers.CipherConstants.AOCipherAlgorithm;
 import es.gob.afirma.core.misc.Platform;
 import es.gob.afirma.core.ui.AOUIFactory;
-import es.gob.afirma.envelopers.cms.AOCMSEnveloper;
 import es.gob.afirma.keystores.AOKeyStore;
 import es.gob.afirma.keystores.AOKeyStoreDialog;
 import es.gob.afirma.keystores.AOKeyStoreManager;
@@ -58,7 +52,6 @@ public class DigitalEnvelopeSender extends JPanel {
 
 	private static final long serialVersionUID = 7169956308231498090L;
 	private static final Logger LOGGER = Logger.getLogger("es.gob.afirma"); //$NON-NLS-1$
-	private static final Integer AES_MAX_KEY_SIZE = Integer.valueOf(256);
 
 	private final DigitalEnvelopePresentation dialog;
 	DigitalEnvelopePresentation getDialog() {
@@ -77,8 +70,6 @@ public class DigitalEnvelopeSender extends JPanel {
 		return this.backButton;
 	}
 
-	private final List<CertificateDestiny> certificateRecipientsList;
-
 	private final List<CertificateDestiny> certificateList = new ArrayList<>();
 	private final JList<String> senderList = new JList<>();
 	JList<String> getSendersList() {
@@ -95,42 +86,21 @@ public class DigitalEnvelopeSender extends JPanel {
 	JPanel getPanel() {
 		return this.panel;
 	}
-	private final EnvelopesTypeResources envelopeType;
-	EnvelopesTypeResources getEnvelopeType() {
-		return this.envelopeType;
+
+	private PrivateKeyEntry senderPrivateKeyEntry = null;
+	PrivateKeyEntry getSenderPrivateKeyEntry() {
+		return this.senderPrivateKeyEntry;
 	}
 
-	private final String filePath;
-
-	private PrivateKeyEntry privateKeyEntry;
-	String getFilePath() {
-		return this.filePath;
+	private AOKeyStoreManager senderKeyStoreManager = null;
+	AOKeyStoreManager getSenderKeyStoreManager() {
+		return this.senderKeyStoreManager;
 	}
 
-	private final String signAlgorithm;
-	String getSignAlgorithm() {
-		return this.signAlgorithm;
-	}
-
-	/**
-	 * Crea el panel de remitentes del asistente.
-	 * @param parent Di&aacute;logo del asistente de ensobrado.
-	 * @param file Ruta del fichero a ensobrar.
-	 * @param type Tipo de sobre a realizar.
-	 * @param certificateRecipientsList Lista de certificados de los destinatarios seleccionados.
-	 * @param algorithm Tipo de algortimo de cifrado.
-	 */
-	public DigitalEnvelopeSender(final DigitalEnvelopePresentation parent,
-								final String file,
-								final EnvelopesTypeResources type,
-								final List<CertificateDestiny> certificateRecipientsList,
-								final String algorithm) {
+	/** Crea el panel de remitentes del asistente.
+	 * @param parent Di&aacute;logo del asistente de ensobrado. */
+	public DigitalEnvelopeSender(final DigitalEnvelopePresentation parent) {
 		this.dialog = parent;
-		this.filePath = file;
-		this.envelopeType = type;
-		this.certificateRecipientsList = certificateRecipientsList;
-		this.privateKeyEntry = null;
-		this.signAlgorithm = algorithm;
 		createUI();
 	}
 
@@ -215,7 +185,13 @@ public class DigitalEnvelopeSender extends JPanel {
  				/** {@inheritDoc} */
  				@Override
  				public void actionPerformed(final ActionEvent ae) {
- 					if (createEnvelope()) {
+ 					if (
+						Enveloper.createEnvelope(
+ 							getDialog(),
+ 							DigitalEnvelopeSender.this.getSenderPrivateKeyEntry(),
+ 							DigitalEnvelopeSender.this.getSenderKeyStoreManager()
+						)
+					) {
  						getDialog().remove(panelCentral);
  						getDialog().remove(getPanel());
  						getDialog().remove(getDialog().getSendersPanel());
@@ -256,10 +232,7 @@ public class DigitalEnvelopeSender extends JPanel {
 				getDialog().remove(getDialog().getSendersPanel());
 				getDialog().setRecipientsPanel(
 					new DigitalEnvelopeRecipients(
-						getDialog(),
-						getFilePath(),
-						getEnvelopeType(),
-						getSignAlgorithm()
+						getDialog()
 					)
 				);
 				getDialog().add(getDialog().getRecipientsPanel());
@@ -334,13 +307,11 @@ public class DigitalEnvelopeSender extends JPanel {
         enableButtons(this.senderList.getModel().getSize() > 0);
 	}
 
-    /**
-    * A&ntilde;ade un remitente del origen seleccionado en el combo
-    */
+    /** A&ntilde;ade un remitente del origen seleccionado en el desplegable. */
     void addSender() {
     	final DefaultListModel<String> modelList = (DefaultListModel<String>) getSendersList().getModel();
     	String[] filter;
-    	AOKeyStoreManager keyStoreManager = null;
+    	final AOKeyStoreManager keyStoreManager;
         final KeyStoreConfiguration kc = (KeyStoreConfiguration) this.comboBoxRecipients.getSelectedItem();
         try {
             final AOKeyStore ao = kc.getType();
@@ -411,16 +382,17 @@ public class DigitalEnvelopeSender extends JPanel {
     			true,             // Comprobar claves privadas
     			false,            // Mostrar certificados caducados
     			true,             // Comprobar validez temporal del certificado
-    			filtersList, 				// Filtros
+    			filtersList, 	  // Filtros
     			false             // mandatoryCertificate
 		);
 
     	try {
 			keyStoreDialog.show();
 			keyStoreManager.setParentComponent(this);
-        	this.privateKeyEntry = keyStoreManager.getKeyEntry(
+        	this.senderPrivateKeyEntry = keyStoreManager.getKeyEntry(
     			keyStoreDialog.getSelectedAlias()
     		);
+        	this.senderKeyStoreManager = keyStoreManager;
     	}
     	catch (final UnrecoverableEntryException e) {
         	LOGGER.severe("Error de constasena: " + e); //$NON-NLS-1$
@@ -436,12 +408,13 @@ public class DigitalEnvelopeSender extends JPanel {
         catch (final AOCancelledOperationException e) {
         	LOGGER.info("Operacion cancelada por el usuario: " + e); //$NON-NLS-1$
         	return;
-        } catch (final Exception e1) {
+        }
+    	catch (final Exception e1) {
         	LOGGER.info("Error recuperando la clave privada: " + e1); //$NON-NLS-1$
         	return;
         }
 
-	    final CertificateDestiny certDest = new CertificateDestiny(keyStoreDialog.getSelectedAlias(), this.privateKeyEntry.getCertificate());
+	    final CertificateDestiny certDest = new CertificateDestiny(keyStoreDialog.getSelectedAlias(), this.senderPrivateKeyEntry.getCertificate());
 
 	    // Comprobamos que el certificado es correcto
 	    if (certDest.getAlias() != null && !certDest.equals("")) { //$NON-NLS-1$
@@ -470,9 +443,7 @@ public class DigitalEnvelopeSender extends JPanel {
     }
 
 
-	/**
-	 * Elimina el remitente de la lista.
-     * */
+	/** Elimina el remitente de la lista.*/
     void removeSender() {
     	final DefaultListModel<String> listaModel = (DefaultListModel<String>) getSendersList().getModel();
         for (int i = 0; i < this.certificateList.size(); i++) {
@@ -488,139 +459,11 @@ public class DigitalEnvelopeSender extends JPanel {
         }
 
         // Borramos las posibles claves del certificado
-        this.privateKeyEntry = null;
+        this.senderPrivateKeyEntry = null;
     }
 
-    /**
-     * Genera el sobre digital.
-     * @return Devuelve <code>true</code> si se ha podido generar el sobre correctamente, <code>false</code> en caso contrario.
-     */
-	boolean createEnvelope() {
-        final X509Certificate[] certs = new X509Certificate[this.certificateRecipientsList.size() + 1];
-        for (int i = 0; i < this.certificateRecipientsList.size(); i++) {
-            certs[i] = (X509Certificate) this.certificateRecipientsList.get(i).getCertificate();
-        }
-        
-        //Incluimos tambien como destinatario al remitente del sobre para que el mismo pueda abrirlo tambien
-        certs[this.certificateRecipientsList.size()] = (X509Certificate) this.privateKeyEntry.getCertificate();
-
-        final AOCMSEnveloper enveloper = new AOCMSEnveloper();
-        byte[] contentData = null;
-        byte[] envelopedData = null;
-        enveloper.setSignatureAlgorithm(getSignAlgorithm());
-        final AOCipherConfig cipherConfig = new AOCipherConfig(AOCipherAlgorithm.AES, null, null);
-
-        try {
-        	contentData = EnvelopesUtils.readFile(this.filePath);
-        }
-        catch(final OutOfMemoryError e) {
-        	LOGGER.severe("Error de memoria: " + e); //$NON-NLS-1$
-        	AOUIFactory.showMessageDialog(
-        		getDialog(),
-        		SimpleAfirmaMessages.getString("DigitalEnvelopeSender.26"), //$NON-NLS-1$
-        		SimpleAfirmaMessages.getString("DigitalEnvelopeSender.27"), //$NON-NLS-1$
-                JOptionPane.ERROR_MESSAGE
-            );
-        	return false;
-        } catch (final IOException e) {
-        	LOGGER.severe("Error leyendo el fichero: " + e); //$NON-NLS-1$
-        	AOUIFactory.showMessageDialog(
-        		getDialog(),
-        		SimpleAfirmaMessages.getString("DigitalEnvelopeSender.28"), //$NON-NLS-1$
-        		SimpleAfirmaMessages.getString("DigitalEnvelopeSender.29"), //$NON-NLS-1$
-                JOptionPane.ERROR_MESSAGE
-            );
-        	return false;
-		}
-
-        Integer keySize = null;
-        int aesMaxKeySize;
-		try {
-			aesMaxKeySize = Cipher.getMaxAllowedKeyLength(AOCipherAlgorithm.AES.getName());
-			 if (aesMaxKeySize == Integer.MAX_VALUE && AOUIFactory.showConfirmDialog(
-				this.dialog,
-				SimpleAfirmaMessages.getString("DigitalEnvelopeSender.35"), //$NON-NLS-1$
-				SimpleAfirmaMessages.getString("DigitalEnvelopeSender.36"), //$NON-NLS-1$
-				JOptionPane.YES_NO_OPTION,
-				JOptionPane.WARNING_MESSAGE
-			) == 0) {
-	    		LOGGER.info("Se ha establecido la clave AES a " + Integer.toString(aesMaxKeySize) + " bits"); //$NON-NLS-1$ //$NON-NLS-2$
-	    		keySize = AES_MAX_KEY_SIZE;
-	        }
-		} catch (final NoSuchAlgorithmException e1) {
-			LOGGER.info("Error obteniendo el tamano maximo AES: " + e1); //$NON-NLS-1$
-		}
-
-       	try {
-            if (this.envelopeType == EnvelopesTypeResources.AUTHENTICATED) {
-            	envelopedData = enveloper.createCMSAuthenticatedEnvelopedData(
-					contentData,
-					this.privateKeyEntry,
-					cipherConfig,
-					certs,
-					keySize
-				);
-            }
-            else if (this.envelopeType == EnvelopesTypeResources.SIGNED) {
-            	envelopedData = enveloper.createCMSSignedAndEnvelopedData(
-					contentData,
-					this.privateKeyEntry,
-					cipherConfig,
-					certs,
-					keySize
-				);
-            }
-            else if (this.envelopeType == EnvelopesTypeResources.SIMPLE) {
-				envelopedData = enveloper.createCMSEnvelopedData(
-					contentData,
-					this.privateKeyEntry,
-					cipherConfig,
-					certs,
-					keySize
-				);
-			}
-       	}
-        catch (final Exception e) {
-			LOGGER.severe("No se ha posido crear el sobre: " + e); //$NON-NLS-1$
-			AOUIFactory.showMessageDialog(
-        		getDialog(),
-        		SimpleAfirmaMessages.getString("DigitalEnvelopeSender.30"), //$NON-NLS-1$
-        		SimpleAfirmaMessages.getString("DigitalEnvelopeSender.31"), //$NON-NLS-1$
-                JOptionPane.ERROR_MESSAGE
-            );
-            return false;
-        }
-
-       	File savedFile;
-		try {
-			savedFile = AOUIFactory.getSaveDataToFile(
-			    envelopedData,
-			    SimpleAfirmaMessages.getString("DigitalEnvelopeSender.32"), //$NON-NLS-1$
-			    null,
-			    new File(this.filePath).getName() + ".enveloped", //$NON-NLS-1$
-			    null,
-			    null,
-			    this.dialog
-			);
-		} catch (final IOException e) {
-			LOGGER.severe("No se ha posido guardar el sobre: " + e); //$NON-NLS-1$
-			AOUIFactory.showMessageDialog(
-        		getDialog(),
-        		SimpleAfirmaMessages.getString("DigitalEnvelopeSender.33"), //$NON-NLS-1$
-        		SimpleAfirmaMessages.getString("DigitalEnvelopeSender.31"), //$NON-NLS-1$
-                JOptionPane.ERROR_MESSAGE
-            );
-            return false;
-		}
-        // Si el usuario cancela el guardado de los datos, no nos desplazamos a la ultima pantalla
-        if (savedFile == null) {
-            return false;
-        }
-		return true;
-	}
-
-	 void enableButtons(final boolean enable) {
-		if (this.envelopeType != EnvelopesTypeResources.SIMPLE) {
+	void enableButtons(final boolean enable) {
+		if (getDialog().getEnvelopeData().getEnvelopeType() != EnvelopesTypeResources.SIMPLE) {
 			this.nextButton.setEnabled(enable);
 		    this.nextButton.setFocusable(enable);
 		    this.removeButton.setEnabled(enable);
@@ -641,5 +484,5 @@ public class DigitalEnvelopeSender extends JPanel {
 		    this.addButton.setFocusable(!enable);
 		    this.nextButton.requestFocusInWindow();
 		}
-	 }
+	}
 }

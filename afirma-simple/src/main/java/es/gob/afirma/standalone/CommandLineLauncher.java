@@ -233,7 +233,12 @@ final class CommandLineLauncher {
 		de.setLocationRelativeTo(null);
 		de.remove(de.getPanelCentral());
 		de.remove(de.getPanel());
-		de.setFilePanel(new DigitalEnvelopeSelectFile(de, AutoFirmaUtil.sfn2lfn(inputFile).getAbsolutePath()));
+		de.getEnvelopeData().setFilePath(AutoFirmaUtil.sfn2lfn(inputFile).getAbsolutePath());
+		de.setFilePanel(
+			new DigitalEnvelopeSelectFile(
+				de
+			)
+		);
 		de.setModalityType(ModalityType.APPLICATION_MODAL);
 		de.setVisible(true);
 		de.add(de.getFilePanel());

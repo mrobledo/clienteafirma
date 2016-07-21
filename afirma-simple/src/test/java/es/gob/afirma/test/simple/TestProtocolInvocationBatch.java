@@ -11,7 +11,7 @@ public class TestProtocolInvocationBatch {
 
 	private static final String SAMPLE_BATCH_XML =
 			"<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\r\n" + //$NON-NLS-1$
-			"<signbatch stoponerror=\"false\" algorithm=\"SHA256withRSA\">\r\n" + //$NON-NLS-1$
+			"<signbatch stoponerror=\"false\" signatureAlgorithm=\"SHA256withRSA\">\r\n" + //$NON-NLS-1$
 			" <singlesign Id=\"7725374e-728d-4a33-9db9-3a4efea4cead\">\r\n" + //$NON-NLS-1$
 			"  <datasource>http://google.com</datasource>\r\n" + //$NON-NLS-1$
 			"  <format>XAdES</format>\r\n" + //$NON-NLS-1$

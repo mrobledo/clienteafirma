@@ -26,7 +26,7 @@ final class CommandLineParameters {
 	private static final String PARAM_FORMAT  = "-format"; //$NON-NLS-1$
 	private static final String PARAM_PASSWD  = "-password"; //$NON-NLS-1$
 	private static final String PARAM_XML     = "-xml"; //$NON-NLS-1$
-	private static final String PARAM_ALGO    = "-algorithm"; //$NON-NLS-1$
+	private static final String PARAM_ALGO    = "-signatureAlgorithm"; //$NON-NLS-1$
 	private static final String PARAM_CONFIG  = "-config"; //$NON-NLS-1$
 	private static final String PARAM_OP	  = "-operation"; //$NON-NLS-1$
 	private static final String PARAM_GUI     = "-gui"; //$NON-NLS-1$
