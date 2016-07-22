@@ -1,6 +1,5 @@
 package es.gob.afirma.standalone.ui.envelopes;
 
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.cert.CertificateException;
@@ -30,9 +29,9 @@ final class FakeLDAPMDEFManager implements CertificateDirectoryProvider {
 			 path = "C:\\Users\\A621916\\Desktop\\Pruebas\\Certificadopruebacer.cer"; //$NON-NLS-1$
 		 }
 		 else {
-			 path = "C:\\Users\\A621916\\Desktop\\Pruebas\\FisicoActivo.cer"; //$NON-NLS-1$
+			 path = "/cert_test_fnmt.cer"; //$NON-NLS-1$
 		 }
-		 try ( final InputStream inStream = new FileInputStream(path); ) {
+		 try ( final InputStream inStream = FakeLDAPMDEFManager.class.getResourceAsStream(path); ) {
 		     final CertificateFactory cf = CertificateFactory.getInstance("X.509"); //$NON-NLS-1$
 		     return (X509Certificate)cf.generateCertificate(inStream);
 		 }

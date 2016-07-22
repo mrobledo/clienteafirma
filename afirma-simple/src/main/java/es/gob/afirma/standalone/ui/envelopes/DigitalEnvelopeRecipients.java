@@ -7,8 +7,6 @@ import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import java.security.cert.X509Certificate;
@@ -41,10 +39,8 @@ import es.gob.afirma.keystores.AOKeyStoreManagerFactory;
 import es.gob.afirma.keystores.KeyStoreConfiguration;
 import es.gob.afirma.standalone.SimpleAfirmaMessages;
 
-/**
- * Panel para seleccionar los destinatarios que se quieren incluir en el sobre digital.
- * @author Juliana Marulanda
- */
+/** Panel para seleccionar los destinatarios que se quieren incluir en el sobre digital.
+ * @author Juliana Marulanda. */
 final class DigitalEnvelopeRecipients extends JPanel {
 
 	private static final long serialVersionUID = 8190414784696825608L;
@@ -104,7 +100,7 @@ final class DigitalEnvelopeRecipients extends JPanel {
 
 		this.recipientsList.setModel(new DefaultListModel<String>());
 
-		// Commbobox con los tipos de certificado a elegir
+		// ComboBox con los tipos de certificado a elegir
 		this.comboBoxRecipients.setModel(new DefaultComboBoxModel<>(EnvelopesUtils.getKeyStoresToWrap()));
 		this.comboBoxRecipients.setToolTipText(SimpleAfirmaMessages.getString("DigitalEnvelopeRecipients.12")); //$NON-NLS-1$);
 		this.comboBoxRecipients.addKeyListener(this.dialog);
@@ -134,13 +130,7 @@ final class DigitalEnvelopeRecipients extends JPanel {
 			SimpleAfirmaMessages.getString("DigitalEnvelopeRecipients.31") //$NON-NLS-1$
 		);
 		this.removeButton.addActionListener(
-			new ActionListener() {
-				/** {@inheritDoc} */
-				@Override
-				public void actionPerformed(final ActionEvent ae) {
-					removeRecipient();
-				}
-			}
+			ae -> removeRecipient()
 		);
 		this.removeButton.addKeyListener(this.dialog);
 
@@ -150,13 +140,7 @@ final class DigitalEnvelopeRecipients extends JPanel {
 			SimpleAfirmaMessages.getString("DigitalEnvelopeRecipients.30") //$NON-NLS-1$
 		);
 		this.addButton.addActionListener(
-			new ActionListener() {
-				/** {@inheritDoc} */
-				@Override
-				public void actionPerformed(final ActionEvent ae) {
-					addRecipient();
-				}
-			}
+			ae -> addRecipient()
 		);
 		this.addButton.addKeyListener(this.dialog);
 
@@ -179,22 +163,18 @@ final class DigitalEnvelopeRecipients extends JPanel {
  			SimpleAfirmaMessages.getString("DigitalEnvelopePresentation.6") //$NON-NLS-1$
 		);
  		this.nextButton.addActionListener(
- 			new ActionListener() {
- 				/** {@inheritDoc} */
- 				@Override
- 				public void actionPerformed(final ActionEvent ae) {
- 					getDialog().remove(getPanelCentral());
- 					getDialog().remove(getPanel());
- 					getDialog().remove(getDialog().getRecipientsPanel());
- 					getDialog().getEnvelopeData().addCertificateRecipients(getCertificateList());
- 					getDialog().setSendersPanel(
- 						new DigitalEnvelopeSender(
-							getDialog()
-						)
- 					);
- 					getDialog().add(getDialog().getSendersPanel());
- 				}
- 			}
+ 			ae -> {
+				getDialog().remove(getPanelCentral());
+				getDialog().remove(getPanel());
+				getDialog().remove(getDialog().getRecipientsPanel());
+				getDialog().getEnvelopeData().addCertificateRecipients(getCertificateList());
+				getDialog().setSendersPanel(
+					new DigitalEnvelopeSender(
+						getDialog()
+					)
+				);
+				getDialog().add(getDialog().getSendersPanel());
+			}
  		);
  		this.nextButton.addKeyListener(this.dialog);
 
@@ -204,13 +184,9 @@ final class DigitalEnvelopeRecipients extends JPanel {
  			SimpleAfirmaMessages.getString("DigitalEnvelopePresentation.7") //$NON-NLS-1$
 		);
 		this.cancelButton.addActionListener(
-			new ActionListener() {
-				/** {@inheritDoc} */
-				@Override
-				public void actionPerformed(final ActionEvent ae) {
-					getDialog().setVisible(false);
-					getDialog().dispose();
-				}
+			ae -> {
+				getDialog().setVisible(false);
+				getDialog().dispose();
 			}
 		);
 		this.cancelButton.addKeyListener(this.dialog);
@@ -220,19 +196,16 @@ final class DigitalEnvelopeRecipients extends JPanel {
 		this.backButton.getAccessibleContext().setAccessibleDescription(
  			SimpleAfirmaMessages.getString("DigitalEnvelopePresentation.8") //$NON-NLS-1$
 		);
-		this.backButton.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(final ActionEvent e) {
-				getDialog().remove(getPanelCentral());
-				getDialog().remove(getPanel());
-				getDialog().remove(getDialog().getRecipientsPanel());
-				getDialog().setFilePanel(
-					new DigitalEnvelopeSelectFile(
-						getDialog()
-					)
-				);
-				getDialog().add(getDialog().getFilePanel());
-			}
+		this.backButton.addActionListener(e -> {
+			getDialog().remove(getPanelCentral());
+			getDialog().remove(getPanel());
+			getDialog().remove(getDialog().getRecipientsPanel());
+			getDialog().setFilePanel(
+				new DigitalEnvelopeSelectFile(
+					getDialog()
+				)
+			);
+			getDialog().add(getDialog().getFilePanel());
 		});
 		this.backButton.addKeyListener(this.dialog);
 
@@ -303,9 +276,7 @@ final class DigitalEnvelopeRecipients extends JPanel {
 		enableButtons(this.recipientsList.getModel().getSize() > 0);
 	}
 
-    /**
-     * A&ntilde;ade un destinatario del tipo seleccionado.
-     */
+    /** A&ntilde;ade un destinatario del tipo seleccionado. */
     void addRecipient() {
 
     	final DefaultListModel<String> modelList = (DefaultListModel<String>) getRecipientsList().getModel();
@@ -313,7 +284,6 @@ final class DigitalEnvelopeRecipients extends JPanel {
     	AOKeyStoreManager keyStoreManager = null;
         final KeyStoreConfiguration kc = (KeyStoreConfiguration) this.comboBoxRecipients.getSelectedItem();
 
-        /////CertificateDirectoryProvider
         CertificateDestiny certDest = null;
         if (kc.getType().equals(AOKeyStore.LDAPMDEF)) {
         	final X509Certificate cert = DefenseDirectoryDialog.startDefenseDirectoryDialog(
@@ -323,17 +293,16 @@ final class DigitalEnvelopeRecipients extends JPanel {
         		certDest = new CertificateDestiny(AOUtil.getCN(cert), cert);
         	}
         }
-        else{
-        /////CertificateDirectoryProvider
+        else {
 	        try {
 	            final AOKeyStore ao = kc.getType();
 	            String lib = null;
 	            if (ao == AOKeyStore.PKCS12 || ao == AOKeyStore.SINGLE) {
 	                if (ao == AOKeyStore.PKCS12) {
-	                    filter = new String[] {"p12", "pfx"};  //$NON-NLS-1$//$NON-NLS-2$
+	                    filter = new String[] { "p12", "pfx" };  //$NON-NLS-1$//$NON-NLS-2$
 	                }
 	                else {
-	                    filter = new String[] { "cer", "p7b", "p7s"}; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+	                    filter = new String[] { "cer", "p7b", "p7s" }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 	                }
 	                final File keystorePath = EnvelopesUtils.addFileSelected(filter, this.comboBoxRecipients, getDialog());
 	                if (keystorePath == null) {
@@ -394,6 +363,9 @@ final class DigitalEnvelopeRecipients extends JPanel {
 	        if (copiar) {
 	        	modelList.addElement(certDest.getAlias());
 	            this.certificateList.add(certDest);
+	            this.recipientsList.setSelectedIndex(
+	            	modelList.indexOf(certDest.getAlias())
+    			);
 	        }
 	        else {
 	        	 LOGGER.severe("Ya existe ese usuario"); //$NON-NLS-1$
@@ -409,9 +381,7 @@ final class DigitalEnvelopeRecipients extends JPanel {
 	    enableButtons(true);
     }
 
-    /**
-    * Elimina un destintatario de la lista.
-    */
+    /** Elimina un destintatario de la lista. */
     void removeRecipient() {
     	final DefaultListModel<String>listaModel = (DefaultListModel<String>) getRecipientsList().getModel();
         for (int i = 0; i < this.certificateList.size(); i++) {
@@ -424,6 +394,9 @@ final class DigitalEnvelopeRecipients extends JPanel {
 
         if (listaModel.isEmpty()) {
             enableButtons(false);
+        }
+        else {
+        	this.recipientsList.setSelectedIndex(0);
         }
     }
 

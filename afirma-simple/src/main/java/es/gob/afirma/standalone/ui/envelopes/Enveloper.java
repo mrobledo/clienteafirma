@@ -12,6 +12,7 @@ import java.util.logging.Logger;
 import javax.crypto.Cipher;
 import javax.swing.JOptionPane;
 
+import es.gob.afirma.core.AOCancelledOperationException;
 import es.gob.afirma.core.ciphers.AOCipherConfig;
 import es.gob.afirma.core.ciphers.CipherConstants.AOCipherAlgorithm;
 import es.gob.afirma.core.ui.AOUIFactory;
@@ -160,7 +161,7 @@ final class Enveloper {
             return false;
         }
 
-       	final File savedFile;
+       	File savedFile;
 		try {
 			savedFile = AOUIFactory.getSaveDataToFile(
 			    envelopedData,
@@ -184,6 +185,9 @@ final class Enveloper {
             );
             return false;
 		}
+		catch(final AOCancelledOperationException e) {
+			savedFile = null;
+		}
         // Si el usuario cancela el guardado de los datos, no nos desplazamos a la ultima pantalla
         if (savedFile == null) {
             return false;
@@ -193,6 +197,7 @@ final class Enveloper {
 
 
 	private static X509Certificate getPublicCypherCert(final AOKeyStoreManager ksm, final Certificate signingCert) {
+		System.out.println("GET CYPHER");
 		return (X509Certificate) signingCert;
 	}
 }

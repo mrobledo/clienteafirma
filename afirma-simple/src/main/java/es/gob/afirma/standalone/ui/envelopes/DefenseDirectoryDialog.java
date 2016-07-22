@@ -7,10 +7,10 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.Toolkit;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.security.cert.X509Certificate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -28,9 +28,8 @@ import javax.swing.ListSelectionModel;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableModel;
 
 import es.gob.afirma.core.misc.Platform;
 import es.gob.afirma.core.ui.AOUIFactory;
@@ -38,10 +37,8 @@ import es.gob.afirma.standalone.AutoFirmaUtil;
 import es.gob.afirma.standalone.SimpleAfirmaMessages;
 import es.gob.afirma.standalone.ui.hash.CheckHashDialog;
 
-/**
- * @author Mariano Mart&iacute;nez
- * Di&aacute;logo para seleccionar un certificado del directorio del Ministerio de Defensa.
- */
+/** Di&aacute;logo para seleccionar un certificado del directorio del Ministerio de Defensa.
+ * @author Mariano Mart&iacute;nez. */
 public final class DefenseDirectoryDialog extends JDialog implements KeyListener{
 
 	private static final long serialVersionUID = 2772370402712649569L;
@@ -50,7 +47,11 @@ public final class DefenseDirectoryDialog extends JDialog implements KeyListener
 	private static final int PREFERRED_HEIGHT = 400;
 	private static final int PREFERRED_SCROLLPANE_WIDTH = 550;
 	private static final int PREFERRED_SCROLLPANE_HEIGHT = 150;
-	private static final String[] COLUMN_NAMES = {"Nombre", "Correo", "UID"}; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+	private static final String[] COLUMN_NAMES = {
+		SimpleAfirmaMessages.getString("DefenseDirectoryDialog.14"), //$NON-NLS-1$
+		SimpleAfirmaMessages.getString("DefenseDirectoryDialog.15"), //$NON-NLS-1$
+		SimpleAfirmaMessages.getString("DefenseDirectoryDialog.16") //$NON-NLS-1$
+	};
 
 	private X509Certificate certificate;
 	void setCertificate(final X509Certificate cert) {
@@ -95,8 +96,7 @@ public final class DefenseDirectoryDialog extends JDialog implements KeyListener
 	}
 
 	/** Crea el panel de apertura de un sobre digital.
-	 * @param parent Componente padre del di&aacute;logo.
-	 **/
+	 * @param parent Componente padre del di&aacute;logo. */
 	public DefenseDirectoryDialog(final Frame parent) {
 		super(parent);
 		setModalityType(java.awt.Dialog.ModalityType.APPLICATION_MODAL);
@@ -128,18 +128,27 @@ public final class DefenseDirectoryDialog extends JDialog implements KeyListener
 		table.setAutoCreateRowSorter(true);
 		table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		table.getSelectionModel().addListSelectionListener(
-			new ListSelectionListener() {
-			    @Override
-				public void valueChanged(final ListSelectionEvent lse) {
-			    	if (!lse.getValueIsAdjusting()) {
-			    		setAcceptButtonEnabled(true);
-			    	}
-			    }
+			lse -> {
+				if (!lse.getValueIsAdjusting()) {
+					setAcceptButtonEnabled(true);
+				}
 			}
 		);
 		table.getColumnModel().getColumn(0).setPreferredWidth(250);
 		table.getColumnModel().getColumn(1).setPreferredWidth(250);
 		table.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
+
+		table.addMouseListener(
+			new MouseAdapter() {
+			    @Override
+				public void mousePressed(final MouseEvent me) {
+			        if (me.getClickCount() == 2) {
+			        	addSelectedItem(table, tableModel);
+			        }
+			    }
+			}
+		);
+
 		final JScrollPane scrollPane = new JScrollPane(
 			table,
 			ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
@@ -147,7 +156,6 @@ public final class DefenseDirectoryDialog extends JDialog implements KeyListener
 		);
 		scrollPane.setPreferredSize(new Dimension(PREFERRED_SCROLLPANE_WIDTH, PREFERRED_SCROLLPANE_HEIGHT));
 		scrollPane.addKeyListener(this);
-
 
 		// Icono de la ventana
 		setIconImage(AutoFirmaUtil.getDefaultDialogsIcon());
@@ -166,7 +174,6 @@ public final class DefenseDirectoryDialog extends JDialog implements KeyListener
 		);
 		usersListLabel.setLabelFor(scrollPane);
 
-
 		this.searchUserButton.setIcon(
 			new ImageIcon(
 				Toolkit.getDefaultToolkit().getImage(
@@ -179,18 +186,14 @@ public final class DefenseDirectoryDialog extends JDialog implements KeyListener
  			SimpleAfirmaMessages.getString("DefenseDirectoryDialog.8") //$NON-NLS-1$
 		);
 		this.searchUserButton.addActionListener(
-			new ActionListener() {
-				/** {@inheritDoc} */
-				@Override
-				public void actionPerformed(final ActionEvent ae) {
-					if (getSearchedUser() != null && !getSearchedUser().trim().isEmpty()) {
-						final Users[] users = getLDAPMDEFManager().getUsers(getSearchedUser());
-						tableModel.setRowCount(0);
-						for (final Users user : users) {
-							final Object[] row = {user.getCn(), user.getEmail(), user.getUid()};
-							tableModel.addRow(row);
-				        }
-					}
+			ae -> {
+				if (getSearchedUser() != null && !getSearchedUser().trim().isEmpty()) {
+					final Users[] users = getLDAPMDEFManager().getUsers(getSearchedUser());
+					tableModel.setRowCount(0);
+					for (final Users user : users) {
+						final Object[] row = { user.getCn(), user.getEmail(), user.getUid() };
+						tableModel.addRow(row);
+			        }
 				}
 			}
 		);
@@ -229,45 +232,7 @@ public final class DefenseDirectoryDialog extends JDialog implements KeyListener
  			SimpleAfirmaMessages.getString("DefenseDirectoryDialog.9") //$NON-NLS-1$
 		);
 		this.acceptButton.addActionListener(
-			new ActionListener() {
-				/** {@inheritDoc} */
-				@Override
-				public void actionPerformed(final ActionEvent ae) {
-					if (table.getSelectedRow() != -1) {
-						try {
-							setCertificate(
-								getLDAPMDEFManager().getCertificate(
-									(String) tableModel.getValueAt(table.convertRowIndexToView(table.getSelectedRow()), 2)
-								)
-							);
-						}
-						catch (final Exception e) {
-							LOGGER.log(
-								Level.SEVERE,
-								"No se pudo recuperar el certificado del usuario: " + e, //$NON-NLS-1$
-								e
-							);
-					        AOUIFactory.showErrorMessage(
-								this,
-								SimpleAfirmaMessages.getString("DefenseDirectoryDialog.13"), //$NON-NLS-1$
-								SimpleAfirmaMessages.getString("DefenseDirectoryDialog.12"), //$NON-NLS-1$
-								JOptionPane.ERROR_MESSAGE
-							);
-						}
-						setVisible(false);
-						dispose();
-					}
-					else {
-						LOGGER.severe("No se ha seleccionado usuario"); //$NON-NLS-1$
-				        AOUIFactory.showErrorMessage(
-							this,
-							SimpleAfirmaMessages.getString("DefenseDirectoryDialog.11"), //$NON-NLS-1$
-							SimpleAfirmaMessages.getString("DefenseDirectoryDialog.12"), //$NON-NLS-1$
-							JOptionPane.ERROR_MESSAGE
-						);
-					}
-				}
-			}
+			ae -> addSelectedItem(table, tableModel)
 		);
 		this.acceptButton.setEnabled(false);
 		this.acceptButton.addKeyListener(this);
@@ -277,14 +242,10 @@ public final class DefenseDirectoryDialog extends JDialog implements KeyListener
  			SimpleAfirmaMessages.getString("DefenseDirectoryDialog.10") //$NON-NLS-1$
 		);
 		this.cancelButton.addActionListener(
-			new ActionListener() {
-				/** {@inheritDoc} */
-				@Override
-				public void actionPerformed(final ActionEvent ae) {
-					setCertificate(null);
-					setVisible(false);
-					dispose();
-				}
+			ae -> {
+				setCertificate(null);
+				setVisible(false);
+				dispose();
 			}
 		);
 		this.cancelButton.addKeyListener(this);
@@ -351,6 +312,42 @@ public final class DefenseDirectoryDialog extends JDialog implements KeyListener
 			setCertificate(null);
 			this.setVisible(false);
 			dispose();
+		}
+	}
+
+	void addSelectedItem(final JTable table, final TableModel tableModel) {
+		if (table.getSelectedRow() != -1) {
+			try {
+				setCertificate(
+					getLDAPMDEFManager().getCertificate(
+						(String) tableModel.getValueAt(table.convertRowIndexToView(table.getSelectedRow()), 2)
+					)
+				);
+			}
+			catch (final Exception e) {
+				LOGGER.log(
+					Level.SEVERE,
+					"No se pudo recuperar el certificado del usuario: " + e, //$NON-NLS-1$
+					e
+				);
+		        AOUIFactory.showErrorMessage(
+					this,
+					SimpleAfirmaMessages.getString("DefenseDirectoryDialog.13"), //$NON-NLS-1$
+					SimpleAfirmaMessages.getString("DefenseDirectoryDialog.12"), //$NON-NLS-1$
+					JOptionPane.ERROR_MESSAGE
+				);
+			}
+			setVisible(false);
+			dispose();
+		}
+		else {
+			LOGGER.severe("No se ha seleccionado usuario"); //$NON-NLS-1$
+	        AOUIFactory.showErrorMessage(
+				this,
+				SimpleAfirmaMessages.getString("DefenseDirectoryDialog.11"), //$NON-NLS-1$
+				SimpleAfirmaMessages.getString("DefenseDirectoryDialog.12"), //$NON-NLS-1$
+				JOptionPane.ERROR_MESSAGE
+			);
 		}
 	}
 }
