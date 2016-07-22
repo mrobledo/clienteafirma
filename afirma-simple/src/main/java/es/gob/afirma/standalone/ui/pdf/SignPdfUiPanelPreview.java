@@ -879,12 +879,12 @@ final class SignPdfUiPanelPreview extends JPanel implements KeyListener {
 		    this.image.getWidth(), this.image.getHeight(), this.image.getType()
 		);
 
-		final double scale = determineImageScale(bi.getWidth(), bi.getHeight(), this.image.getWidth(), this.image.getHeight());
+		final double imageScale = determineImageScale(bi.getWidth(), bi.getHeight(), this.image.getWidth(), this.image.getHeight());
 
 		final Graphics2D g = newImage.createGraphics();
 		g.drawImage(this.image, 0, 0, null);
 		g.drawImage(
-			bi.getScaledInstance((int) (bi.getWidth() * scale), (int) (bi.getHeight() * scale), Image.SCALE_SMOOTH),
+			bi.getScaledInstance((int) (bi.getWidth() * imageScale), (int) (bi.getHeight() * imageScale), Image.SCALE_SMOOTH),
 			0,
 			0,
 			null
