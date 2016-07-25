@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.IOException;
 import java.security.KeyStore.PrivateKeyEntry;
 import java.security.NoSuchAlgorithmException;
-import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.Collections;
 import java.util.logging.Logger;
@@ -15,9 +14,12 @@ import javax.swing.JOptionPane;
 import es.gob.afirma.core.AOCancelledOperationException;
 import es.gob.afirma.core.ciphers.AOCipherConfig;
 import es.gob.afirma.core.ciphers.CipherConstants.AOCipherAlgorithm;
+import es.gob.afirma.core.misc.AOUtil;
 import es.gob.afirma.core.ui.AOUIFactory;
 import es.gob.afirma.envelopers.cms.AOCMSEnveloper;
 import es.gob.afirma.keystores.AOKeyStoreManager;
+import es.gob.afirma.keystores.filters.CertificateFilter;
+import es.gob.afirma.keystores.filters.CipherCertificateFilter;
 import es.gob.afirma.standalone.SimpleAfirmaMessages;
 
 final class Enveloper {
@@ -49,9 +51,9 @@ final class Enveloper {
 			Collections.singletonList(
 				new CertificateDestiny(
 					"Remitente", //$NON-NLS-1$
-					getPublicCypherCert(
+					getPublicCipherCert(
 						senderKeyStoreManager,
-						senderPrivateKeyEntry.getCertificate()
+						(X509Certificate) senderPrivateKeyEntry.getCertificate()
 					)
 				)
 			)
@@ -195,9 +197,29 @@ final class Enveloper {
 		return true;
 	}
 
-
-	private static X509Certificate getPublicCypherCert(final AOKeyStoreManager ksm, final Certificate signingCert) {
-		System.out.println("GET CYPHER");
-		return (X509Certificate) signingCert;
+	private static X509Certificate getPublicCipherCert(final AOKeyStoreManager ksm, final X509Certificate signingCert) {
+		final CertificateFilter ccf = new CipherCertificateFilter();
+		if (ccf.matches(signingCert)) {
+			return signingCert;
+		}
+		final String[] cipherAliases = ccf.matches(ksm.getAliases(), ksm);
+		if (cipherAliases != null) {
+			for (final String alias : cipherAliases) {
+				final X509Certificate tmpCert = ksm.getCertificate(alias);
+				if (
+					tmpCert.getIssuerX500Principal().equals(signingCert.getIssuerX500Principal()) &&
+					tmpCert.getNotAfter().equals(signingCert.getNotAfter())
+				) {
+					LOGGER.info(
+						"Se ha anadido como destinatario del sobre el certificado: " + AOUtil.getCN(tmpCert) //$NON-NLS-1$
+					);
+					return tmpCert;
+				}
+			}
+		}
+		LOGGER.warning(
+			"No se ha encontrado un certificado de cifrado para el remitente del sobre, se anadira como destinatario el propio de firma" //$NON-NLS-1$
+		);
+		return signingCert;
 	}
 }
