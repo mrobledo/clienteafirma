@@ -111,9 +111,9 @@ final class AppleKeyStoreManager extends AOKeyStoreManager {
 	}
 
 	private void getAliasesWithoutDuplicates() throws AOKeyStoreManagerException {
-		final List<String> tmpAliases = new ArrayList<String>();
-		final List<String> tmpAliasesWithPrivateKey = new ArrayList<String>();
-		final Set<BigInteger> addedSerials = new HashSet<BigInteger>();
+		final List<String> tmpAliases = new ArrayList<>();
+		final List<String> tmpAliasesWithPrivateKey = new ArrayList<>();
+		final Set<BigInteger> addedSerials = new HashSet<>();
 		final Enumeration<String> aliases;
 		try {
 			aliases = getKeyStore().aliases();

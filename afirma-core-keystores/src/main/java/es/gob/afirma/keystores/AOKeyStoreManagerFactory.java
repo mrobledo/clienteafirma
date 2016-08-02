@@ -186,10 +186,8 @@ public final class AOKeyStoreManagerFactory {
             }
         }
 
-        try {
-        	final InputStream is = new FileInputStream(storeFilename);
+        try ( final InputStream is = new FileInputStream(storeFilename); ) {
             ksm.init(null, is, pssCallback, null, forceReset);
-            is.close();
         }
         catch (final AOException e) {
             throw new AOKeystoreAlternativeException(
@@ -318,10 +316,8 @@ public final class AOKeyStoreManagerFactory {
             }
         }
 
-        try {
-        	final InputStream is = new FileInputStream(storeFilename);
+        try ( final InputStream is = new FileInputStream(storeFilename); ){
             ksm.init(store, is, pssCallback, null, forceReset);
-            is.close();
         }
         catch (final AOException e) {
             throw new AOKeystoreAlternativeException(
