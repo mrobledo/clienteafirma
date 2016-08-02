@@ -10,39 +10,29 @@
 
 package es.gob.afirma.test.keystores;
 
-import java.security.cert.X509Certificate;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 
-import es.gob.afirma.keystores.AOKeyStore;
-import es.gob.afirma.keystores.AOKeyStoreManager;
-import es.gob.afirma.keystores.AOKeyStoreManagerFactory;
 import es.gob.afirma.keystores.temd.WindowsRegistry;
 
 /** Pruebas espec&iacute;ficas para el almac&eacute;n DNIe 100% Java.
  * @author Tom&aacute;s Garc&iacute;a-Mer&aacute;s */
 public class TestWindowsRegistry {
 
-	
-    /** Prueba de carga y el almacenado de cadenas en el registro.
-     * @throws Exception En cualquier error. */
+
+    /** Prueba de carga y el almacenado de cadenas en el registro.*/
+	@SuppressWarnings("static-method")
 	@Test
-    public void testRegistryReadWrite() throws Exception {
-		String passwd = "pass1234"; //$NON-NLS-1$
+    public void testRegistryReadWrite() {
+		final String passwd = "pass1234"; //$NON-NLS-1$
 		System.out.println("Pass a guardar: " + passwd); //$NON-NLS-1$
-		WindowsRegistry.writeRegistry("HKCU\\Software\\Microsoft\\Windows\\CurrentVersion", "temd_pass_test", passwd.toCharArray()); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-        String result = WindowsRegistry.readRegistry("HKCU\\Software\\Microsoft\\Windows\\CurrentVersion", "temd_pass_test"); //$NON-NLS-1$ //$NON-NLS-2$
+		WindowsRegistry.writeRegistry("HKCU\\Software\\Microsoft\\Windows\\CurrentVersion", "temd_pass_test", passwd.toCharArray()); //$NON-NLS-1$ //$NON-NLS-2$
+        final String result = WindowsRegistry.readRegistry("HKCU\\Software\\Microsoft\\Windows\\CurrentVersion", "temd_pass_test"); //$NON-NLS-1$ //$NON-NLS-2$
         System.out.println("Pass cargada: " + result); //$NON-NLS-1$
     }
 
 	/** Main.
-	 * @param args No se usa.
-	 * @throws Exception En cualquier error. */
-	public static void main(final String[] args) throws Exception {
+	 * @param args No se usa.*/
+	public static void main(final String[] args) {
 		new TestWindowsRegistry().testRegistryReadWrite();
 	}
 

@@ -47,10 +47,11 @@ public class TestMacKeyChain {
         // Copiamos el KeyChain a un fichero temporal
         final File kc = File.createTempFile("test", ".keychain"); //$NON-NLS-1$ //$NON-NLS-2$
         kc.deleteOnExit();
-        final OutputStream os = new FileOutputStream(kc);
-        os.write(AOUtil.getDataFromInputStream(ClassLoader.getSystemResourceAsStream("test.keychain"))); //$NON-NLS-1$
-        os.flush();
-        os.close();
+        try (
+    		final OutputStream os = new FileOutputStream(kc);
+		) {
+        	os.write(AOUtil.getDataFromInputStream(ClassLoader.getSystemResourceAsStream("test.keychain"))); //$NON-NLS-1$
+        }
 
         final AOKeyStoreManager ksm = AOKeyStoreManagerFactory.getAOKeyStoreManager(
     		AOKeyStore.APPLE,
