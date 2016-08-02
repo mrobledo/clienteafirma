@@ -57,14 +57,10 @@ public final class EnvelopesUtils {
 
         final List<KeyStoreConfiguration> stores = new ArrayList<>();
 
+        stores.add(new KeyStoreConfiguration(AOKeyStore.LDAPMDEF, null, null));
         stores.add(new KeyStoreConfiguration(AOKeyStore.SINGLE, null, null));
         stores.add(new KeyStoreConfiguration(AOKeyStore.PKCS12, null, null));
         stores.add(new KeyStoreConfiguration(AOKeyStore.PKCS11, null, null));
-
-        if (Platform.getOS().equals(Platform.OS.WINDOWS)) {
-            stores.add(new KeyStoreConfiguration(AOKeyStore.WINADDRESSBOOK, null, null));
-        }
-        stores.add(new KeyStoreConfiguration(AOKeyStore.LDAPMDEF, null, null));
 
         return stores.toArray(new KeyStoreConfiguration[0]);
     }
@@ -82,7 +78,7 @@ public final class EnvelopesUtils {
 				);
 			}
 			file = AOUIFactory.getLoadFiles(
-				SimpleAfirmaMessages.getString("MenuDigitalEnvelope.14"), //$NON-NLS-1$
+				SimpleAfirmaMessages.getString("MenuDigitalEnvelope.8"), //$NON-NLS-1$
 				null,
 				null,
 				extension,

@@ -58,13 +58,7 @@
 			<artifactId>afirma-keystores-single</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-		
-		<dependency>
-			<groupId>es.gob.afirma</groupId>
-			<artifactId>afirma-keystores-capiaddressbook</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		
+
 		<dependency>
 			<groupId>es.gob.afirma</groupId>
 			<artifactId>afirma-keystores-filters</artifactId>
@@ -355,3 +349,4 @@
 		</plugins>
 	</build>
 </project>
+	

@@ -383,22 +383,7 @@ public final class KeyStoreUtilities {
 				public void handle(final Callback[] cbs) throws UnsupportedCallbackException {
 					for (final Callback callback : cbs) {
 						if (callback instanceof PasswordCallback) {
-							//Para las tarjetas de defensa guardamos y obtenemos el PIN desde el registro
-							//TODO ver la manera de diferenciar una tarjeta de defensa del resto
-							if(ks.getName().equals("")) { //$NON-NLS-1$
-								String pass = WindowsRegistry.readRegistry(PIN_LOCATION, TEMD_PASS_KEY);
-								if(pass != null) {
-									((PasswordCallback) callback).setPassword(pass.toCharArray());
-								}
-								else {
-									((PasswordCallback) callback).setPassword(pssCallBack.getPassword());
-									//TODO eliminar de aqui y ponerlo despues de verificar que el PIN es correcto
-									WindowsRegistry.writeRegistry(PIN_LOCATION, TEMD_PASS_KEY, pssCallBack.getPassword());
-								}
-							}
-							else {
-								((PasswordCallback) callback).setPassword(pssCallBack.getPassword());
-							}
+							((PasswordCallback) callback).setPassword(pssCallBack.getPassword());
 						}
 						else if (callback instanceof TextOutputCallback) {
 							final TextOutputCallback toc = (TextOutputCallback)callback;

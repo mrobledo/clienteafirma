@@ -8,6 +8,8 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.io.File;
 import java.util.logging.Logger;
 
@@ -58,6 +60,15 @@ public class DigitalEnvelopeSelectFile extends JPanel {
 	private final JButton nextButton = new JButton(SimpleAfirmaMessages.getString("DigitalEnvelopePresentation.3")); //$NON-NLS-1$
 	private final JButton cancelButton = new JButton(SimpleAfirmaMessages.getString("DigitalEnvelopePresentation.4")); //$NON-NLS-1$
 	private final JButton examineButton = new JButton(SimpleAfirmaMessages.getString("DigitalEnvelopePresentation.9")); //$NON-NLS-1$
+
+	private boolean browseDialogOpenned = false;
+	public boolean isBrowseDialogOpenned() {
+		return this.browseDialogOpenned;
+	}
+
+	public void setBrowseDialogOpenned(final boolean browseDialogOpenned) {
+		this.browseDialogOpenned = browseDialogOpenned;
+	}
 
 	JButton getNextButton() {
 		return this.nextButton;
@@ -128,6 +139,7 @@ public class DigitalEnvelopeSelectFile extends JPanel {
 				/** {@inheritDoc} */
 				@Override
 				public void actionPerformed(final ActionEvent ae) {
+					setBrowseDialogOpenned(true);
 					final File file;
 					try {
 						file = AOUIFactory.getLoadFiles(
@@ -148,6 +160,8 @@ public class DigitalEnvelopeSelectFile extends JPanel {
 						);
 						return;
 					}
+					setBrowseDialogOpenned(false);
+
 					if (!file.canRead()) {
 						LOGGER.warning(
 							"No ha podido cargarse el fichero para envolver: " //$NON-NLS-1$
@@ -167,7 +181,29 @@ public class DigitalEnvelopeSelectFile extends JPanel {
 				}
 			}
 		);
-		this.examineButton.addKeyListener(this.dialog);
+		this.examineButton.addKeyListener(new KeyListener() {
+
+			@Override
+			public void keyTyped(final KeyEvent ke) {
+				getDialog().keyTyped(ke);
+			}
+
+			@Override
+			public void keyReleased(final KeyEvent ke) {
+
+				if (isBrowseDialogOpenned()) {
+					setBrowseDialogOpenned(false);
+				}
+				else {
+					getDialog().keyReleased(ke);
+				}
+			}
+
+			@Override
+			public void keyPressed(final KeyEvent ke) {
+				getDialog().keyPressed(ke);
+			}
+		});
 
 		// Label con los tipos de ensobrado
 		final JLabel typeFilesLabel = new JLabel(
@@ -321,4 +357,3 @@ public class DigitalEnvelopeSelectFile extends JPanel {
 	}
 
 }
-
