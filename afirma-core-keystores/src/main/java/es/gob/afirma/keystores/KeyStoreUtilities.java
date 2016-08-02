@@ -36,6 +36,7 @@ import es.gob.afirma.core.misc.AOUtil;
 import es.gob.afirma.core.misc.Platform;
 import es.gob.afirma.core.ui.AOUIFactory;
 import es.gob.afirma.keystores.filters.CertificateFilter;
+import es.gob.afirma.keystores.temd.WindowsRegistry;
 
 /** Utilidades para le manejo de almacenes de claves y certificados. */
 public final class KeyStoreUtilities {
@@ -104,6 +105,10 @@ public final class KeyStoreUtilities {
 
     private static final int ALIAS_MAX_LENGTH = 120;
 
+	protected static final String PIN_LOCATION = "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion"; //$NON-NLS-1$
+
+	protected static final String TEMD_PASS_KEY = "temd_pass"; //$NON-NLS-1$
+
     /** Obtiene una mapa con las descripciones usuales de los alias de
      * certificados (como claves de estas &uacute;ltimas). Se aplicar&aacute;n los
      * filtros de certificados sobre todos ellos y se devolver&aacute;n aquellos
@@ -134,7 +139,7 @@ public final class KeyStoreUtilities {
         // Creamos un mapa con la relacion Alias-Nombre_a_mostrar de los
         // certificados
     	final String[] trimmedAliases = aliases.clone();
-        final Map<String, String> aliassesByFriendlyName = new Hashtable<String, String>(trimmedAliases.length);
+        final Map<String, String> aliassesByFriendlyName = new Hashtable<>(trimmedAliases.length);
         for (final String trimmedAlias : trimmedAliases) {
             aliassesByFriendlyName.put(trimmedAlias, trimmedAlias);
         }
@@ -201,7 +206,7 @@ public final class KeyStoreUtilities {
             // Aplicamos los filtros de certificados
             if (certFilters != null && certFilters.size() > 0) {
             	// Tabla para los certificados que si hay que mostrar
-            	final Map<String, String> filteredAliases = new Hashtable<String, String>();
+            	final Map<String, String> filteredAliases = new Hashtable<>();
                 for (final CertificateFilter cf : certFilters) {
                 	for (final String filteredAlias : cf.matches(aliassesByFriendlyName.keySet().toArray(new String[aliassesByFriendlyName.size()]), ksm)) {
                 		filteredAliases.put(filteredAlias, aliassesByFriendlyName.get(filteredAlias));
@@ -320,6 +325,19 @@ public final class KeyStoreUtilities {
 				LOGGER.warning("No se ha podido inicializar la tarjeta CERES: " + ex); //$NON-NLS-1$
 			}
 		}
+		
+		// Anadimos el controlador Java de CERES SIEMPRE a menos que:
+		// -Se indique "es.gob.afirma.keystores.mozilla.disableTemdNativeDriver=true"
+		// -El sistema sea Linux
+		if (!Boolean.getBoolean("es.gob.afirma.keystores.mozilla.disableTemdNativeDriver") && !Platform.OS.LINUX.equals(Platform.getOS())) { //$NON-NLS-1$
+			try {
+				aksm.addKeyStoreManager(getTemd(parentComponent));
+				return; // Si instancia TEMD no pruebo otras tarjetas, no deberia haber varias tarjetas instaladas
+			}
+			catch (final Exception ex) {
+				LOGGER.warning("No se ha podido inicializar la tarjeta TEMD: " + ex); //$NON-NLS-1$
+			}
+		}
 	}
 
 	private static AOKeyStoreManager getCeres(final Object parentComponent) throws AOKeystoreAlternativeException, IOException, AOKeyStoreManagerException {
@@ -331,6 +349,19 @@ public final class KeyStoreUtilities {
 			parentComponent   // Parent
 		);
 		LOGGER.info("La tarjeta CERES ha podido inicializarse, se anadiran sus entradas"); //$NON-NLS-1$
+		tmpKsm.setPreferred(true);
+		return tmpKsm;
+	}
+	
+	private static AOKeyStoreManager getTemd(final Object parentComponent) throws AOKeystoreAlternativeException, IOException, AOKeyStoreManagerException {
+		final AOKeyStoreManager tmpKsm = AOKeyStoreManagerFactory.getAOKeyStoreManager(
+			AOKeyStore.TEMD, // Store
+			null,             // Lib (null)
+			null,             // Description (null)
+			null,             // PasswordCallback (no hay en la carga, hay en la firma
+			parentComponent   // Parent
+		);
+		LOGGER.info("La tarjeta TEMD ha podido inicializarse, se anadiran sus entradas"); //$NON-NLS-1$
 		tmpKsm.setPreferred(true);
 		return tmpKsm;
 	}
@@ -352,7 +383,22 @@ public final class KeyStoreUtilities {
 				public void handle(final Callback[] cbs) throws UnsupportedCallbackException {
 					for (final Callback callback : cbs) {
 						if (callback instanceof PasswordCallback) {
-							((PasswordCallback) callback).setPassword(pssCallBack.getPassword());
+							//Para las tarjetas de defensa guardamos y obtenemos el PIN desde el registro
+							//TODO ver la manera de diferenciar una tarjeta de defensa del resto
+							if(ks.getName().equals("")) { //$NON-NLS-1$
+								String pass = WindowsRegistry.readRegistry(PIN_LOCATION, TEMD_PASS_KEY);
+								if(pass != null) {
+									((PasswordCallback) callback).setPassword(pass.toCharArray());
+								}
+								else {
+									((PasswordCallback) callback).setPassword(pssCallBack.getPassword());
+									//TODO eliminar de aqui y ponerlo despues de verificar que el PIN es correcto
+									WindowsRegistry.writeRegistry(PIN_LOCATION, TEMD_PASS_KEY, pssCallBack.getPassword());
+								}
+							}
+							else {
+								((PasswordCallback) callback).setPassword(pssCallBack.getPassword());
+							}
 						}
 						else if (callback instanceof TextOutputCallback) {
 							final TextOutputCallback toc = (TextOutputCallback)callback;

@@ -103,7 +103,7 @@ public enum AOKeyStore {
 		new UIPasswordCallback(KeyStoreMessages.getString("AOKeyStore.8")), //$NON-NLS-1$
 		new UIPasswordCallback(KeyStoreMessages.getString("AOKeyStore.9")) //$NON-NLS-1$
 	),
-    /** Tarjeta del Ministerio de Defensa. */
+	/** Tarjeta del Ministerio de Defensa. */
 	TEMD(
 		"TEMD (Tarjeta del Ministerio de Defensa)", //$NON-NLS-1$
 		10,
@@ -144,11 +144,19 @@ public enum AOKeyStore {
 		null,
 		null
 	),
-	/** Directorio Ministerio de Defensa. */
+    /** Directorio Ministerio de Defensa. */
 	LDAPMDEF(
 		"Directorio del Ministerio de Defensa", //$NON-NLS-1$
 		15,
 		"LDAPMDEF", //$NON-NLS-1$
+		null,
+		null
+	),
+	/** Directorio Ministerio de Defensa. */
+	RECENTLYUSED(
+		"Usados con mayor frecuencia", //$NON-NLS-1$
+		16,
+		"RECENTLYUSED", //$NON-NLS-1$
 		null,
 		null
 	);

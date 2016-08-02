@@ -22,7 +22,6 @@ import es.gob.afirma.keystores.AOKeystoreAlternativeException;
 import es.gob.afirma.keystores.AggregatedKeyStoreManager;
 import es.gob.afirma.keystores.AutoCloseableStore;
 import es.gob.afirma.keystores.KeyStoreUtilities;
-import es.gob.jmulticard.card.Atr;
 
 /** Almac&eacute;n TEMD en tarjeta.
  * @author Tom&aacute;s Garc&iacute;a-Mer&aacute;s. */
@@ -190,7 +189,7 @@ public final class TemdKeyStoreManager extends AggregatedKeyStoreManager impleme
 			"Tarjeta del Ministerio de Defensa (MMAR)" //$NON-NLS-1$
 		),
 		FNMT(
-			"cardos11",
+			"cardos11", //$NON-NLS-1$
 			new Atr(
 				new byte[] {
 					(byte)0x3B, (byte)0x7F, (byte)0x96, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x6A, (byte)0x46, (byte)0x4E, (byte)0x4D,

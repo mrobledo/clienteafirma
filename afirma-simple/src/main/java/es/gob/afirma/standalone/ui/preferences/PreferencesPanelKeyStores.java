@@ -88,7 +88,8 @@ final class PreferencesPanelKeyStores extends JPanel {
 		new String[] {
 			SimpleAfirmaMessages.getString("PreferencesPanelKeyStores.20"), // Ninguno //$NON-NLS-1$
 			AOKeyStore.DNIEJAVA.toString(),
-			AOKeyStore.CERES.toString()
+			AOKeyStore.CERES.toString(),
+			AOKeyStore.TEMD.toString()
 		}
 	);
 
