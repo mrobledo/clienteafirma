@@ -123,4 +123,23 @@ public class CertificateDestiny extends JDialog {
 		return this.selectedAlias;
 	}
 
+	@Override
+	public String toString() {
+		return this.alias;
+	}
+
+	@Override
+	public boolean equals(final Object obj) {
+
+		// Un CertificateDestiny es igual a otro cuando ambos tienen el mismo certificado
+		if (obj instanceof CertificateDestiny) {
+			return ((CertificateDestiny) obj).getCertificate().equals(this.cert);
+		}
+		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		return this.cert.hashCode();
+	}
 }

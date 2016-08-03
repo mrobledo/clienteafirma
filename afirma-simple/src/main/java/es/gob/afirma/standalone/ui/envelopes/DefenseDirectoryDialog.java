@@ -277,10 +277,11 @@ public final class DefenseDirectoryDialog extends JDialog implements KeyListener
         c.gridy++;
         add(userLabel, c);
         c.gridy++;
-        c.insets = new Insets(5, 25, 0, 20);
+        c.insets = new Insets(5, 25, 0, 11);
         add(this.searchedUser, c);
         c.weightx = 0.0;
         c.gridwidth = GridBagConstraints.REMAINDER;
+        c.insets = new Insets(5, 25, 0, 20);
         add(this.searchUserButton, c);
         c.gridy++;
         c.insets = new Insets(20, 25, 0, 20);

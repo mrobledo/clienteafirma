@@ -7,8 +7,11 @@ import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.io.File;
 import java.io.IOException;
+import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.List;
@@ -25,6 +28,7 @@ import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.ListModel;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
@@ -38,6 +42,7 @@ import es.gob.afirma.keystores.AOKeyStoreManager;
 import es.gob.afirma.keystores.AOKeyStoreManagerFactory;
 import es.gob.afirma.keystores.KeyStoreConfiguration;
 import es.gob.afirma.standalone.SimpleAfirmaMessages;
+import es.gob.afirma.standalone.ui.CertificateUtils;
 
 /** Panel para seleccionar los destinatarios que se quieren incluir en el sobre digital.
  * @author Juliana Marulanda. */
@@ -54,13 +59,13 @@ final class DigitalEnvelopeRecipients extends JPanel {
 
 	final JComboBox<KeyStoreConfiguration> comboBoxRecipients = new JComboBox<>();
 
-	private final List<CertificateDestiny> certificateList = new ArrayList<>();
-	List<CertificateDestiny> getCertificateList() {
-		return this.certificateList;
-	}
+//	private final List<CertificateDestiny> certificateList = new ArrayList<>();
+//	List<CertificateDestiny> getCertificateList() {
+//		return this.certificateList;
+//	}
 
-	private final JList<String> recipientsList = new JList<>();
-	JList<String> getRecipientsList() {
+	private final JList<CertificateDestiny> recipientsList = new JList<>();
+	JList<CertificateDestiny> getRecipientsList() {
 		return this.recipientsList;
 	}
 
@@ -98,7 +103,30 @@ final class DigitalEnvelopeRecipients extends JPanel {
 			SimpleAfirmaMessages.getString("DigitalEnvelopeRecipients.32") //$NON-NLS-1$
 		);
 
-		this.recipientsList.setModel(new DefaultListModel<String>());
+		this.recipientsList.setModel(new DefaultListModel<CertificateDestiny>());
+		this.recipientsList.addMouseListener(new MouseListener() {
+			@Override
+			public void mouseReleased(final MouseEvent e) { /* No hacemos nada */}
+			@Override
+			public void mousePressed(final MouseEvent e) { /* No hacemos nada */}
+			@Override
+			public void mouseExited(final MouseEvent e) { /* No hacemos nada */}
+			@Override
+			public void mouseEntered(final MouseEvent e) { /* No hacemos nada */}
+			@Override
+			public void mouseClicked(final MouseEvent e) {
+				// Solo abriremos el certificado en caso de estar en Windows
+				if (e.getClickCount() == 2 && Platform.OS.WINDOWS == Platform.getOS()) {
+					if (e.getComponent() instanceof JList) {
+						final Object item = ((JList) e.getComponent()).getSelectedValue();
+						if (item instanceof CertificateDestiny) {
+							final Certificate cert = ((CertificateDestiny) item).getCertificate();
+							CertificateUtils.openCertificate((X509Certificate) cert, DigitalEnvelopeRecipients.this);
+						}
+					}
+				}
+			}
+		});
 
 		// ComboBox con los tipos de certificado a elegir
 		this.comboBoxRecipients.setModel(new DefaultComboBoxModel<>(EnvelopesUtils.getKeyStoresToWrap()));
@@ -130,7 +158,9 @@ final class DigitalEnvelopeRecipients extends JPanel {
 			SimpleAfirmaMessages.getString("DigitalEnvelopeRecipients.31") //$NON-NLS-1$
 		);
 		this.removeButton.addActionListener(
-			ae -> removeRecipient()
+			ae -> {
+				removeRecipient(getRecipientsList().getSelectedIndex());
+			}
 		);
 		this.removeButton.addKeyListener(this.dialog);
 
@@ -155,6 +185,7 @@ final class DigitalEnvelopeRecipients extends JPanel {
 		this.scrollPane.setBorder(BorderFactory.createLineBorder(Color.black));
 		this.scrollPane.setFont(new java.awt.Font ("Century Schoolbook L", 0, 13)); //$NON-NLS-1$
 		this.scrollPane.addKeyListener(this.dialog);
+
 		this.recipientsList.setFocusable(false);
 
 	    // Boton de siguiente
@@ -164,10 +195,17 @@ final class DigitalEnvelopeRecipients extends JPanel {
 		);
  		this.nextButton.addActionListener(
  			ae -> {
+
+ 				final ListModel<CertificateDestiny> model = getRecipientsList().getModel();
+ 				final List<CertificateDestiny> certs = new ArrayList<>();
+ 				for (int i = 0; i < model.getSize(); i++) {
+ 					certs.add(model.getElementAt(i));
+ 				}
+
 				getDialog().remove(getPanelCentral());
 				getDialog().remove(getPanel());
 				getDialog().remove(getDialog().getRecipientsPanel());
-				getDialog().getEnvelopeData().addCertificateRecipients(getCertificateList());
+				getDialog().getEnvelopeData().addCertificateRecipients(certs);
 				getDialog().setSendersPanel(
 					new DigitalEnvelopeSender(
 						getDialog()
@@ -233,26 +271,27 @@ final class DigitalEnvelopeRecipients extends JPanel {
         c.weighty = 0.0;
         c.gridx = 0;
         c.gridy = 0;
-
-		c.gridwidth = GridBagConstraints.REMAINDER;
+        c.gridwidth = GridBagConstraints.REMAINDER;
 		c.insets = new Insets(30, 10, 0, 20);
 		this.panelCentral.add(label, c);
         c.gridy++;
 		this.panelCentral.add(labelCB, c);
 		c.gridwidth = 2;
-		c.insets = new Insets(5, 10, 0, 20);
-		c.weightx = 0.0;
+		c.insets = new Insets(5, 10, 0, 11);
+		c.weightx = 1.0;
 		c.gridy++;
-		c.fill = GridBagConstraints.NONE;
+		c.gridwidth = 1;
         this.panelCentral.add(this.comboBoxRecipients, c);
-		c.gridwidth = GridBagConstraints.REMAINDER;
-		c.anchor = GridBagConstraints.LINE_END;
+        c.weightx = 0.0;
+        c.gridx = 1;
+        c.anchor = GridBagConstraints.LINE_END;
 		this.panelCentral.add(this.addButton, c);
 		c.fill = GridBagConstraints.HORIZONTAL;
 		c.insets = new Insets(20, 10, 0, 20);
 		c.gridx = 0;
 		c.weightx = 1.0;
 		c.gridy++;
+		c.gridwidth = GridBagConstraints.REMAINDER;
 		this.panelCentral.add(labelRec, c);
 		c.insets = new Insets(5, 10, 0, 20);
 		c.ipady = 150;
@@ -279,7 +318,7 @@ final class DigitalEnvelopeRecipients extends JPanel {
     /** A&ntilde;ade un destinatario del tipo seleccionado. */
     void addRecipient() {
 
-    	final DefaultListModel<String> modelList = (DefaultListModel<String>) getRecipientsList().getModel();
+    	final DefaultListModel<CertificateDestiny> modelList = (DefaultListModel<CertificateDestiny>) getRecipientsList().getModel();
     	String[] filter;
     	AOKeyStoreManager keyStoreManager = null;
         final KeyStoreConfiguration kc = (KeyStoreConfiguration) this.comboBoxRecipients.getSelectedItem();
@@ -354,21 +393,15 @@ final class DigitalEnvelopeRecipients extends JPanel {
         }
 	    // Comprobamos que el certificado es correcto
 	    if (certDest != null && certDest.getAlias() != null && !certDest.equals("")) { //$NON-NLS-1$
-	        boolean copiar = true;
-	        for (int i = 0; i < modelList.getSize(); i++) {
-	            if (certDest.getAlias().equals(modelList.getElementAt(i))) {
-	                copiar = false;
-	            }
-	        }
-	        if (copiar) {
-	        	modelList.addElement(certDest.getAlias());
-	            this.certificateList.add(certDest);
+
+	        if (!modelList.contains(certDest)) {
+	        	modelList.addElement(certDest);
 	            this.recipientsList.setSelectedIndex(
-	            	modelList.indexOf(certDest.getAlias())
+	            	modelList.indexOf(certDest)
     			);
 	        }
 	        else {
-	        	 LOGGER.severe("Ya existe ese usuario"); //$NON-NLS-1$
+	        	LOGGER.severe("El certificado de ese usuario ya se habia agregado como destinatario"); //$NON-NLS-1$
 	 	        AOUIFactory.showMessageDialog(
      				this.dialog,
      				SimpleAfirmaMessages.getString("DigitalEnvelopeRecipients.25"), //$NON-NLS-1$
@@ -382,17 +415,13 @@ final class DigitalEnvelopeRecipients extends JPanel {
     }
 
     /** Elimina un destintatario de la lista. */
-    void removeRecipient() {
-    	final DefaultListModel<String>listaModel = (DefaultListModel<String>) getRecipientsList().getModel();
-        for (int i = 0; i < this.certificateList.size(); i++) {
-            if (this.certificateList.get(i).getAlias().equals(this.recipientsList.getSelectedValue())) {
-            	this.certificateList.remove(this.certificateList.get(i));
-                listaModel.remove(this.recipientsList.getSelectedIndex());
-                break;
-            }
-        }
+    void removeRecipient(final int index) {
 
-        if (listaModel.isEmpty()) {
+    	final DefaultListModel<CertificateDestiny> listModel = (DefaultListModel<CertificateDestiny>) getRecipientsList().getModel();
+
+    	listModel.remove(index);
+
+        if (listModel.isEmpty()) {
             enableButtons(false);
         }
         else {

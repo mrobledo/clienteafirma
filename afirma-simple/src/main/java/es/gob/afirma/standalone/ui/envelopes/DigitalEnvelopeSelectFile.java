@@ -35,12 +35,8 @@ public class DigitalEnvelopeSelectFile extends JPanel {
 
 	private static final long serialVersionUID = -5430415718507253691L;
 	static final Logger LOGGER = Logger.getLogger("es.gob.afirma"); //$NON-NLS-1$
-	private static final String[] SIGN_ALGORITHM = {
-		"SHA512withRSA", //$NON-NLS-1$
-		"SHA384withRSA", //$NON-NLS-1$
-		"SHA256withRSA",//$NON-NLS-1$
-		"SHA1withRSA", //$NON-NLS-1$
-	};
+
+	static final String SIGN_ALGORITHM = "SHA256withRSA"; //$NON-NLS-1$
 
 	private final JComboBox<EnvelopesTypeResources> envelopeTypes = new JComboBox<>(
 		EnvelopesTypeResources.getAllEnvelopesTypeResources()
@@ -97,11 +93,6 @@ public class DigitalEnvelopeSelectFile extends JPanel {
 			setSelectedFile(dl.getEnvelopeData().getFilePath());
 		}
 		createUI();
-	}
-
-	private final JComboBox<String> singAlgorithm = new JComboBox<>(SIGN_ALGORITHM);
-	String getSignAlgorithm() {
-		return this.singAlgorithm.getSelectedItem().toString();
 	}
 
 	/** Crea una ventana con opciones de ensobrado. */
@@ -213,15 +204,6 @@ public class DigitalEnvelopeSelectFile extends JPanel {
 
 		this.envelopeTypes.addKeyListener(this.dialog);
 
-		// Label con los algoritmos de cifrado
-		final JLabel signAlgorithmLabel = new JLabel(
-			SimpleAfirmaMessages.getString("DigitalEnvelopeFile.8") //$NON-NLS-1$
-		);
-		signAlgorithmLabel.setLabelFor(this.singAlgorithm);
-
-
-		this.singAlgorithm.addKeyListener(this.dialog);
-
 		// Botono de siguiente
 		this.nextButton.setMnemonic('S');
 		this.nextButton.getAccessibleContext().setAccessibleDescription(
@@ -238,7 +220,7 @@ public class DigitalEnvelopeSelectFile extends JPanel {
 				getDialog().remove(getDialog().getFilePanel());
 				getDialog().getEnvelopeData().setFilePath(getSelectedFile());
 				getDialog().getEnvelopeData().setEnvelopeType(getSelectedType());
-				getDialog().getEnvelopeData().setSignatureAlgorithm(getSignAlgorithm());
+				getDialog().getEnvelopeData().setSignatureAlgorithm(SIGN_ALGORITHM);
 				getDialog().setRecipientsPanel(
 					new DigitalEnvelopeRecipients(
 						getDialog()
@@ -312,12 +294,6 @@ public class DigitalEnvelopeSelectFile extends JPanel {
 		c.fill = GridBagConstraints.NONE;
 		c.anchor = GridBagConstraints.LINE_START;
 		this.panelCentral.add(this.envelopeTypes, c);
-		c.gridy++;
-		c.insets = new Insets(20, 20, 0, 20);
-		this.panelCentral.add(signAlgorithmLabel, c);
-		c.gridy++;
-		c.insets = new Insets(5, 20, 0, 10);
-		this.panelCentral.add(this.singAlgorithm, c);
 		c.weighty = 1.0;
 		c.gridy++;
 		this.panelCentral.add(emptyPanel, c);
@@ -339,13 +315,6 @@ public class DigitalEnvelopeSelectFile extends JPanel {
 				)
 			)
 		);
-
-		this.singAlgorithm.setSelectedItem(
-			PreferencesManager.get(
-				PreferencesManager.PREFERENCE_ENVELOPE_CIPHER_ALGORITHM,
-				"SHA1withRSA" //$NON-NLS-1$
-			)
-		);
 	}
 
 	void saveConfiguration() {
@@ -353,7 +322,6 @@ public class DigitalEnvelopeSelectFile extends JPanel {
 			PreferencesManager.PREFERENCE_ENVELOPE_TYPE,
 			Integer.toString(getSelectedType().getIndex())
 		);
-		PreferencesManager.put(PreferencesManager.PREFERENCE_ENVELOPE_CIPHER_ALGORITHM, getSignAlgorithm());
 	}
 
 }

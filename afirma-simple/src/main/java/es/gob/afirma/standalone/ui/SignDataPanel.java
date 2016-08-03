@@ -23,11 +23,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.security.cert.X509Certificate;
 import java.util.logging.Logger;
 
@@ -222,7 +219,7 @@ final class SignDataPanel extends JPanel {
 	            final EditorFocusManager editorFocusManager = new EditorFocusManager (this.certDescription, new EditorFocusManagerAction() {
                     @Override
                     public void openHyperLink(final HyperlinkEvent he, final int linkIndex) {
-                        openCertificate(cert, SignDataPanel.this);
+                        CertificateUtils.openCertificate(cert, SignDataPanel.this);
                     }
                 });
                 this.certDescription.addFocusListener(editorFocusManager);
@@ -378,30 +375,6 @@ final class SignDataPanel extends JPanel {
         this.add(detailPanel, c);
     }
 
-	static void openCertificate(final X509Certificate cert, final Component parent) {
-        try {
-            final File tmp = File.createTempFile("afirma", ".cer");  //$NON-NLS-1$//$NON-NLS-2$
-            tmp.deleteOnExit();
-            try (
-        		final OutputStream bos = new BufferedOutputStream(new FileOutputStream(tmp));
-    		) {
-            	bos.write(cert.getEncoded());
-            }
-            Desktop.getDesktop().open(tmp);
-        }
-        catch(final Exception e) {
-        	LOGGER.warning(
-    			"Error abriendo el fichero con el visor por defecto: " + e //$NON-NLS-1$
-			);
-        	AOUIFactory.showErrorMessage(
-                parent,
-                SimpleAfirmaMessages.getString("SignDataPanel.23"), //$NON-NLS-1$
-                SimpleAfirmaMessages.getString("SimpleAfirma.7"), //$NON-NLS-1$
-                JOptionPane.ERROR_MESSAGE
-            );
-        }
-    }
-
     /** Recupera la informaci&oacute;n de la firma indicada.
      * @param signData Firma.
      * @return Informaci&oacute;n de la firma.
@@ -515,7 +488,7 @@ final class SignDataPanel extends JPanel {
             @Override
             public void openTreeNode(final Object nodeInfo) {
                 if (nodeInfo instanceof AOSimpleSignInfo) {
-                    openCertificate(((AOSimpleSignInfo) nodeInfo).getCerts()[0], parent);
+                	CertificateUtils.openCertificate(((AOSimpleSignInfo) nodeInfo).getCerts()[0], parent);
                 }
                 else if (nodeInfo instanceof ShowFileLinkAction) {
                     ((ShowFileLinkAction) nodeInfo).action();

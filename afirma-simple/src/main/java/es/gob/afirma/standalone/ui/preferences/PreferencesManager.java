@@ -453,9 +453,6 @@ public final class PreferencesManager {
 	//**************************************************************************************************************************
 	//**************** PREFERENCIAS SOBRBES DIGITALES **********************************************************************************
 
-	/** Agoritmo de cifrado. */
-	public static final String PREFERENCE_ENVELOPE_CIPHER_ALGORITHM = "envelopeCipherAlgorithms"; //$NON-NLS-1$
-
 	/** Tipo de sobre. */
 	public static final String PREFERENCE_ENVELOPE_TYPE = "envelopeType"; //$NON-NLS-1$
 
@@ -464,10 +461,10 @@ public final class PreferencesManager {
 	 * documento. */
 	public static final String PREFERENCE_PADES_VISIBLE = "padesVisibleSignature"; //$NON-NLS-1$
 
-	/** Agoritmo de cifrado. */
+	/** Algoritmo de cifrado. */
 	public static final String PREFERENCE_CIPHER_ALGORITHM = "cipherAlgorithms"; //$NON-NLS-1$
 
-	/** Agoritmo de descifrado. */
+	/** Algoritmo de descifrado. */
 	public static final String PREFERENCE_DECIPHER_ALGORITHM = "decipherAlgorithms"; //$NON-NLS-1$
 
 	//**************** PREFERENCIAS DE CIFRADO*****************************************************************
