@@ -87,8 +87,18 @@ final class DigitalEnvelopeRecipients extends JPanel {
 
 	/** Genera un panel de destinatarios de sobres digitales.
 	 * @param parent Di&aacute;logo del asistente de ensobrado. */
-	public DigitalEnvelopeRecipients(final DigitalEnvelopePresentation parent) {
-		this.dialog = parent;
+	public DigitalEnvelopeRecipients(final DigitalEnvelopePresentation dl) {
+		this.dialog = dl;
+		if (dl != null && dl.getEnvelopeData().getFilePath() != null) {
+			final DefaultListModel<CertificateDestiny> model = new DefaultListModel<>();
+			final List<CertificateDestiny> certList = dl.getEnvelopeData().getCertificateRecipientsList();
+			if (certList != null) {
+				for (final CertificateDestiny certDestiny : certList) {
+					model.addElement(certDestiny);
+				}
+			}
+			this.recipientsList.setModel(model);
+		}
 		createUI();
 	}
 
@@ -98,7 +108,6 @@ final class DigitalEnvelopeRecipients extends JPanel {
 			SimpleAfirmaMessages.getString("DigitalEnvelopeRecipients.32") //$NON-NLS-1$
 		);
 
-		this.recipientsList.setModel(new DefaultListModel<CertificateDestiny>());
 		this.recipientsList.addMouseListener(new MouseListener() {
 			@Override
 			public void mouseReleased(final MouseEvent e) { /* No hacemos nada */}
@@ -406,22 +415,23 @@ final class DigitalEnvelopeRecipients extends JPanel {
 	 	        return;
 	        }
 	    }
-	    enableButtons(true);
+	    enableButtons(this.recipientsList.getModel().getSize() > 0);
     }
 
     /** Elimina un destintatario de la lista. */
     void removeRecipient(final int index) {
 
-    	final DefaultListModel<CertificateDestiny> listModel = (DefaultListModel<CertificateDestiny>) getRecipientsList().getModel();
+    	if (index >= 0) {
+    		final DefaultListModel<CertificateDestiny> listModel = (DefaultListModel<CertificateDestiny>) getRecipientsList().getModel();
+    		listModel.remove(index);
 
-    	listModel.remove(index);
-
-        if (listModel.isEmpty()) {
-            enableButtons(false);
-        }
-        else {
-        	this.recipientsList.setSelectedIndex(0);
-        }
+    		if (listModel.isEmpty()) {
+    			enableButtons(false);
+    		}
+    		else {
+    			this.recipientsList.setSelectedIndex(0);
+    		}
+    	}
     }
 
     void enableButtons(final boolean enable) {

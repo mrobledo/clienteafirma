@@ -135,7 +135,6 @@ public class DigitalEnvelopePresentation extends JDialog implements KeyListener{
     		SimpleAfirmaMessages.getString("DigitalEnvelopePresentation.1"), //$NON-NLS-1$
     		SwingConstants.CENTER
         );
-        presentationLabel.setFont(new java.awt.Font ("Century Schoolbook L", 0, 13)); //$NON-NLS-1$
 
         // Boton de siguiente
  		this.nextButton.setMnemonic('S');

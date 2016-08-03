@@ -40,6 +40,7 @@ public final class EnvelopeData {
 	}
 	void addCertificateRecipients(final List<CertificateDestiny> newRecipients) {
 		if (newRecipients != null) {
+			this.certificateRecipientsList.clear();
 			this.certificateRecipientsList.addAll(newRecipients);
 		}
 	}

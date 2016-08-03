@@ -48,6 +48,7 @@ import es.gob.afirma.standalone.SimpleAfirmaMessages;
 public class DigitalEnvelopeSender extends JPanel {
 
 	private static final long serialVersionUID = 7169956308231498090L;
+
 	private static final Logger LOGGER = Logger.getLogger("es.gob.afirma"); //$NON-NLS-1$
 
 	private final DigitalEnvelopePresentation dialog;
