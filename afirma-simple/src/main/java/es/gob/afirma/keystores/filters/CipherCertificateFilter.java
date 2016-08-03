@@ -23,10 +23,10 @@ public final class CipherCertificateFilter extends CertificateFilter {
 
 	/** Usos de clave permitidos en los certificados para la autenticaci&oacute;n de usuarios. */
     private static final Boolean[] AUTHENTICATION_CERT_USAGE = {
-    	Boolean.TRUE, // digitalSignature
+    	null, // digitalSignature
         null, // nonRepudiation
         Boolean.TRUE, // keyEncipherment
-        null, // dataEncipherment
+        Boolean.TRUE, // dataEncipherment
         null, // keyAgreement
         null, // keyCertSign
         null, // cRLSign
