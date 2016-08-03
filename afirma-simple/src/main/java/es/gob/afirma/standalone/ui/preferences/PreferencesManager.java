@@ -155,9 +155,6 @@ public final class PreferencesManager {
 	 * para firma en las firmas electr&oacute;nicas. */
 	public static final String PREFERENCE_KEYSTORE_SIGN_ONLY_CERTS = "useOnlySignatureCertificates"; //$NON-NLS-1$
 
-	/** En el cifrado de sobres digitales, restringir que &uacute;nicamente se puedan usar certificados de cifrado. */
-	public static final String PREFERENCE_KEYSTORE_CYPH_ONLY_CERTS = "useOnlyEnciphermentCertificates"; //$NON-NLS-1$
-
 	/** En firma, restringir que &uacute;nicamente se puedan usar certificados de seud&oacute;nimo cuando estos est&eacute;n
 	 * disponibles. Un valor de <code>true</code> en esta preferencia permitir&aacute; usar solo  certificados de
 	 * seud&oacute;nimo cuando estos est&eacute;n disponibles.*/
@@ -451,7 +448,7 @@ public final class PreferencesManager {
 	public static final String PREFERENCE_CREATE_HASH_DIRECTORY_ALGORITHM = "createHashDirectoryAlgorithm"; //$NON-NLS-1$
 
 	//**************************************************************************************************************************
-	//**************** PREFERENCIAS SOBRBES DIGITALES **********************************************************************************
+	//**************** PREFERENCIAS SOBRES DIGITALES **********************************************************************************
 
 	/** Tipo de sobre. */
 	public static final String PREFERENCE_ENVELOPE_TYPE = "envelopeType"; //$NON-NLS-1$
@@ -469,32 +466,10 @@ public final class PreferencesManager {
 
 	//**************** PREFERENCIAS DE CIFRADO*****************************************************************
 
-	/**KeyUsage  . */
-	public static final String PREFERENCE_CIPHERMENT_DIGITALSIGNATURE = "keyUsageDigitalSignature"; //$NON-NLS-1$
+	/** En el cifrado de sobres digitales, restringir que &uacute;nicamente se puedan usar certificados de cifrado. */
+	public static final String PREFERENCE_CIPHERMENT_ONLY_CYPHER_CERTS = "useOnlyEnciphermentCertificates"; //$NON-NLS-1$
 
-	/**KeyUsage  . */
-	public static final String PREFERENCE_CIPHERMENT_NONREPUDIATION = "keyUsageNonRepudiation"; //$NON-NLS-1$
 
-	/**KeyUsage  . */
-	public static final String PREFERENCE_CIPHERMENT_KEYENCHIPERMENT = "keyUsageKeyEncipherment"; //$NON-NLS-1$
-
-	/**KeyUsage  . */
-	public static final String PREFERENCE_CIPHERMENT_DATAENCIPHERMENT = "keyUsageDataEncipherment"; //$NON-NLS-1$
-
-	/**KeyUsage  . */
-	public static final String PREFERENCE_CIPHERMENT_KEYAGREEMENT = "keyUsageKeyAgreement"; //$NON-NLS-1$
-
-	/**KeyUsage  . */
-	public static final String PREFERENCE_CIPHERMENT_KEYCERTSIGN = "keyUsageKeyCertsign"; //$NON-NLS-1$
-
-	/**KeyUsage  . */
-	public static final String PREFERENCE_CIPHERMENT_CRLSIGN = "keyUsageCrlsign"; //$NON-NLS-1$
-
-	/**KeyUsage  . */
-	public static final String PREFERENCE_CIPHERMENT_ENCIPHERONLY = "keyUsageEncipherOnly"; //$NON-NLS-1$
-
-	/**KeyUsage  . */
-	public static final String PREFERENCE_CIPHERMENT_DECIPHERONLY = "keyUsageDecipherOnly"; //$NON-NLS-1$
 	/** Agoritmo de cifrado. */
 	public static final String PREFERENCE_CIPHERMENT_ALGORITHM = "ciphermentAlgorithm"; //$NON-NLS-1$
 

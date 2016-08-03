@@ -1,7 +1,5 @@
 package es.gob.afirma.standalone.ui.preferences;
 
-import static es.gob.afirma.standalone.ui.preferences.PreferencesManager.PREFERENCE_CIPHERMENT_ENCIPHERONLY;
-
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -18,7 +16,7 @@ import es.gob.afirma.standalone.SimpleAfirmaMessages;
 public class PreferencesPanelValideCerts extends JPanel {
 
 	private static final long serialVersionUID = 3776016646875294106L;
-	
+
 	private final JTextField vaURI = new JTextField();
 	String getVaURI() {
 		return this.vaURI.getText();
@@ -28,12 +26,12 @@ public class PreferencesPanelValideCerts extends JPanel {
 	String getCrlURI() {
 		return this.crlURI.getText();
 	}
-	
+
 	private final JCheckBox pssdef = new JCheckBox(
 		SimpleAfirmaMessages.getString("PreferencesPanelValideCerts.3"), //$NON-NLS-1$
-		PreferencesManager.getBoolean("", false)
+		false
 	);
-	
+
 	private final JTextField pssdefURI = new JTextField();
 	String getPssdefURI() {
 		return this.pssdefURI.getText();
@@ -45,11 +43,11 @@ public class PreferencesPanelValideCerts extends JPanel {
 
 		createUI(keyListener, modificationListener, unprotected);
 	}
-	
+
 	void createUI(final KeyListener keyListener,
 				  final ModificationListener modificationListener,
 				  final boolean unprotected) {
-	
+
 		getAccessibleContext().setAccessibleDescription(
 			SimpleAfirmaMessages.getString("PreferencesPanelValideCerts.0") //$NON-NLS-1$
 		);
@@ -61,7 +59,7 @@ public class PreferencesPanelValideCerts extends JPanel {
 		gbc.weightx = 1.0;
 		gbc.gridx = 0;
 		gbc.gridy = 0;
-		
+
 		final JPanel mdefPanel = new JPanel(new GridBagLayout());
 		mdefPanel.setBorder(
 			BorderFactory.createTitledBorder(
@@ -75,23 +73,23 @@ public class PreferencesPanelValideCerts extends JPanel {
 		mdpc.gridx = 0;
 		mdpc.gridy = 0;
 		mdpc.insets = new Insets(5, 0, 0, 7);
-		
+
 		final JLabel vaUriLabel = new JLabel(
 			SimpleAfirmaMessages.getString("PreferencesPanelValideCerts.4") //$NON-NLS-1$
 		);
 		vaUriLabel.setLabelFor(this.vaURI);
-			
+
 		final JLabel crlUriLabel = new JLabel(
 			SimpleAfirmaMessages.getString("PreferencesPanelValideCerts.5") //$NON-NLS-1$
 		);
 		crlUriLabel.setLabelFor(this.crlURI);
-				
+
 		final JLabel pssdefUriLabel = new JLabel(
 			SimpleAfirmaMessages.getString("PreferencesPanelValideCerts.6") //$NON-NLS-1$
 		);
 		pssdefUriLabel.setLabelFor(this.pssdefURI);
-					
-		
+
+
 		mdefPanel.add(vaUriLabel, mdpc);
 		mdpc.gridy++;
 		mdefPanel.add(this.vaURI, mdpc);
@@ -105,7 +103,7 @@ public class PreferencesPanelValideCerts extends JPanel {
 		mdefPanel.add(pssdefUriLabel, mdpc);
 		mdpc.gridy++;
 		mdefPanel.add(this.pssdefURI, mdpc);
-		
+
 		final JPanel noMdefPanel = new JPanel(new GridBagLayout());
 		noMdefPanel.setBorder(
 			BorderFactory.createTitledBorder(
@@ -119,14 +117,14 @@ public class PreferencesPanelValideCerts extends JPanel {
 		nmdpc.gridx = 0;
 		nmdpc.gridy = 0;
 		nmdpc.insets = new Insets(5, 0, 0, 7);
-		
+
 		add(mdefPanel, gbc);
 		gbc.gridy++;
 		add(noMdefPanel, gbc);
 		gbc.gridy++;
 		gbc.weighty = 1.0;
 		add(new JPanel(), gbc);
-	
-	
+
+
 	}
 }

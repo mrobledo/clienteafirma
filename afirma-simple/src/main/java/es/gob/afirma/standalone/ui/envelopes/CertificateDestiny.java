@@ -2,6 +2,8 @@ package es.gob.afirma.standalone.ui.envelopes;
 
 import java.awt.Component;
 import java.security.cert.Certificate;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Logger;
 
 import javax.swing.JDialog;
@@ -12,7 +14,10 @@ import es.gob.afirma.core.ui.AOUIFactory;
 import es.gob.afirma.keystores.AOCertificatesNotFoundException;
 import es.gob.afirma.keystores.AOKeyStoreDialog;
 import es.gob.afirma.keystores.AOKeyStoreManager;
+import es.gob.afirma.keystores.filters.CertificateFilter;
+import es.gob.afirma.keystores.filters.CipherCertificateFilter;
 import es.gob.afirma.standalone.SimpleAfirmaMessages;
+import es.gob.afirma.standalone.ui.preferences.PreferencesManager;
 
 /** Certificado destinatario de un sobre digital. */
 public class CertificateDestiny extends JDialog {
@@ -31,7 +36,7 @@ public class CertificateDestiny extends JDialog {
     public CertificateDestiny(final AOKeyStoreManager keyStoreManager, final JDialog dialogo) {
         try {
         	// Seleccionamos un certificado
-            final Certificate[] selectedCertChain = showCerts(dialogo, keyStoreManager, false, true);
+            final Certificate[] selectedCertChain = showCerts(dialogo, keyStoreManager);
         	this.cert = selectedCertChain[0];
             this.alias = getSelectedAlias();
         }
@@ -99,15 +104,22 @@ public class CertificateDestiny extends JDialog {
 	 * @throws AOCertificatesNotFoundException Si no se encuentran certificados.
 	 * @throws AOCancelledOperationException Cuando no se selecciona ning&uacute;n certificado.
 	 */
-	public Certificate[] showCerts(final Component parentComponent, final AOKeyStoreManager ksm,
-			final boolean checkPrivateKeys, final boolean showExpiredCertificates) throws AOCertificatesNotFoundException {
+	private Certificate[] showCerts(final Component parentComponent, final AOKeyStoreManager ksm) throws AOCertificatesNotFoundException {
+
+		List<CertificateFilter> filters = null;
+		if (PreferencesManager.getBoolean(PreferencesManager.PREFERENCE_CIPHERMENT_ONLY_CYPHER_CERTS, false)) {
+			filters = new ArrayList<>();
+			filters.add(new CipherCertificateFilter());
+		}
 
 		final AOKeyStoreDialog dialog = new AOKeyStoreDialog(
 				ksm,
 				parentComponent,
-				checkPrivateKeys,
-				true,
-				showExpiredCertificates);
+				false,
+				false,
+				false,
+				filters,
+				false);
 		dialog.show();
 
 		this.selectedAlias = dialog.getSelectedAlias();

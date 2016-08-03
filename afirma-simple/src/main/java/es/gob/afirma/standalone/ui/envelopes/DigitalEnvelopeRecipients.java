@@ -59,11 +59,6 @@ final class DigitalEnvelopeRecipients extends JPanel {
 
 	final JComboBox<KeyStoreConfiguration> comboBoxRecipients = new JComboBox<>();
 
-//	private final List<CertificateDestiny> certificateList = new ArrayList<>();
-//	List<CertificateDestiny> getCertificateList() {
-//		return this.certificateList;
-//	}
-
 	private final JList<CertificateDestiny> recipientsList = new JList<>();
 	JList<CertificateDestiny> getRecipientsList() {
 		return this.recipientsList;

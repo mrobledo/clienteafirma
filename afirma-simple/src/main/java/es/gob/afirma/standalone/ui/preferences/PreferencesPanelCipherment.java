@@ -1,18 +1,5 @@
 package es.gob.afirma.standalone.ui.preferences;
 
-import static es.gob.afirma.standalone.ui.preferences.PreferencesManager.PREFERENCE_CIPHERMENT_ALGORITHM;
-import static es.gob.afirma.standalone.ui.preferences.PreferencesManager.PREFERENCE_CIPHERMENT_CRLSIGN;
-import static es.gob.afirma.standalone.ui.preferences.PreferencesManager.PREFERENCE_CIPHERMENT_DATAENCIPHERMENT;
-import static es.gob.afirma.standalone.ui.preferences.PreferencesManager.PREFERENCE_CIPHERMENT_DECIPHERONLY;
-import static es.gob.afirma.standalone.ui.preferences.PreferencesManager.PREFERENCE_CIPHERMENT_DIGITALSIGNATURE;
-import static es.gob.afirma.standalone.ui.preferences.PreferencesManager.PREFERENCE_CIPHERMENT_ENCIPHERONLY;
-import static es.gob.afirma.standalone.ui.preferences.PreferencesManager.PREFERENCE_CIPHERMENT_KEYAGREEMENT;
-import static es.gob.afirma.standalone.ui.preferences.PreferencesManager.PREFERENCE_CIPHERMENT_KEYCERTSIGN;
-import static es.gob.afirma.standalone.ui.preferences.PreferencesManager.PREFERENCE_CIPHERMENT_KEYENCHIPERMENT;
-import static es.gob.afirma.standalone.ui.preferences.PreferencesManager.PREFERENCE_CIPHERMENT_METHOD;
-import static es.gob.afirma.standalone.ui.preferences.PreferencesManager.PREFERENCE_CIPHERMENT_NONREPUDIATION;
-import static es.gob.afirma.standalone.ui.preferences.PreferencesManager.PREFERENCE_CIPHERMENT_URI;
-
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -52,50 +39,10 @@ final class PreferencesPanelCipherment extends JPanel {
 			"Metodo 3", //$NON-NLS-1$
 	};
 
-	private final JCheckBox digitalSignature = new JCheckBox(
-		SimpleAfirmaMessages.getString("PreferencesPanelCiperment.3"), //$NON-NLS-1$
-		PreferencesManager.getBoolean(PREFERENCE_CIPHERMENT_DIGITALSIGNATURE, true)
-	);
-
-	private final JCheckBox nonRepudiation = new JCheckBox(
-		SimpleAfirmaMessages.getString("PreferencesPanelCiperment.4"), //$NON-NLS-1$
-		PreferencesManager.getBoolean(PREFERENCE_CIPHERMENT_NONREPUDIATION, false)
-	);
-
-	private final JCheckBox keyEncipherment = new JCheckBox(
-		SimpleAfirmaMessages.getString("PreferencesPanelCiperment.5"), //$NON-NLS-1$
-		PreferencesManager.getBoolean(PREFERENCE_CIPHERMENT_KEYENCHIPERMENT, true)
-	);
-
-	private final JCheckBox dataEncipherment = new JCheckBox(
-		SimpleAfirmaMessages.getString("PreferencesPanelCiperment.6"), //$NON-NLS-1$
-		PreferencesManager.getBoolean(PREFERENCE_CIPHERMENT_DATAENCIPHERMENT, false)
-	);
-
-	private final JCheckBox keyAgreement = new JCheckBox(
-		SimpleAfirmaMessages.getString("PreferencesPanelCiperment.7"), //$NON-NLS-1$
-		PreferencesManager.getBoolean(PREFERENCE_CIPHERMENT_KEYAGREEMENT, false)
-	);
-
-	private final JCheckBox keyCertSign = new JCheckBox(
-		SimpleAfirmaMessages.getString("PreferencesPanelCiperment.8"), //$NON-NLS-1$
-		PreferencesManager.getBoolean(PREFERENCE_CIPHERMENT_KEYCERTSIGN, false)
-	);
-
-	private final JCheckBox cRLSign = new JCheckBox(
-		SimpleAfirmaMessages.getString("PreferencesPanelCiperment.9"), //$NON-NLS-1$
-		PreferencesManager.getBoolean(PREFERENCE_CIPHERMENT_CRLSIGN, false)
-	);
-
-	private final JCheckBox encipherOnly = new JCheckBox(
-		SimpleAfirmaMessages.getString("PreferencesPanelCiperment.10"), //$NON-NLS-1$
-		PreferencesManager.getBoolean(PREFERENCE_CIPHERMENT_ENCIPHERONLY, false)
-	);
-
-	private final JCheckBox decipherOnly = new JCheckBox(
-		SimpleAfirmaMessages.getString("PreferencesPanelCiperment.11"), //$NON-NLS-1$
-		PreferencesManager.getBoolean(PREFERENCE_CIPHERMENT_DECIPHERONLY, false)
-	);
+	private final JCheckBox onlyEncipherment = new JCheckBox(SimpleAfirmaMessages.getString("PreferencesPanelCipherment.21")); //$NON-NLS-1$
+	private boolean isOnlyEncipherment() {
+		return this.onlyEncipherment.isSelected();
+	}
 
 	private final JComboBox<String> cipherAlgorithms = new JComboBox<>(CIPHER_ALGOS);
 	String getSelectedCipherAlgorithm() {
@@ -112,7 +59,7 @@ final class PreferencesPanelCipherment extends JPanel {
 		return this.directoryURI.getText();
 	}
 
-	private final JButton checkUriButton = new JButton(SimpleAfirmaMessages.getString("PreferencesPanelCiperment.16")); //$NON-NLS-1$
+	private final JButton checkUriButton = new JButton(SimpleAfirmaMessages.getString("PreferencesPanelCipherment.16")); //$NON-NLS-1$
 
 	PreferencesPanelCipherment(final KeyListener keyListener,
 					            final ItemListener modificationListener,
@@ -121,52 +68,53 @@ final class PreferencesPanelCipherment extends JPanel {
 	}
 
 	void savePreferences() {
-		PreferencesManager.putBoolean(PREFERENCE_CIPHERMENT_DIGITALSIGNATURE, this.digitalSignature.isSelected());
-		PreferencesManager.putBoolean(PREFERENCE_CIPHERMENT_NONREPUDIATION, this.nonRepudiation.isSelected());
-		PreferencesManager.putBoolean(PREFERENCE_CIPHERMENT_KEYENCHIPERMENT, this.keyEncipherment.isSelected());
-		PreferencesManager.putBoolean(PREFERENCE_CIPHERMENT_DATAENCIPHERMENT, this.dataEncipherment.isSelected());
-		PreferencesManager.putBoolean(PREFERENCE_CIPHERMENT_KEYAGREEMENT, this.keyAgreement.isSelected());
-		PreferencesManager.putBoolean(PREFERENCE_CIPHERMENT_KEYCERTSIGN, this.keyCertSign.isSelected());
-		PreferencesManager.putBoolean(PREFERENCE_CIPHERMENT_CRLSIGN, this.cRLSign.isSelected());
-		PreferencesManager.putBoolean(PREFERENCE_CIPHERMENT_ENCIPHERONLY, this.encipherOnly.isSelected());
-		PreferencesManager.putBoolean(PREFERENCE_CIPHERMENT_DECIPHERONLY, this.decipherOnly.isSelected());
-		PreferencesManager.put(PREFERENCE_CIPHERMENT_ALGORITHM, getSelectedCipherAlgorithm());
-		PreferencesManager.put(PREFERENCE_CIPHERMENT_METHOD, getSelectedAccessMethod());
-		if (checkURI()) {
-			PreferencesManager.put(PREFERENCE_CIPHERMENT_URI, getURI());
+		PreferencesManager.putBoolean(PreferencesManager.PREFERENCE_CIPHERMENT_ONLY_CYPHER_CERTS, isOnlyEncipherment());
+		PreferencesManager.put(PreferencesManager.PREFERENCE_CIPHERMENT_ALGORITHM, getSelectedCipherAlgorithm());
+		PreferencesManager.put(PreferencesManager.PREFERENCE_CIPHERMENT_METHOD, getSelectedAccessMethod());
+		if (getURI() != null && !getURI().trim().isEmpty()) {
+			if (checkURI()) {
+				PreferencesManager.put(PreferencesManager.PREFERENCE_CIPHERMENT_URI, getURI());
+			}
+			else {
+				AOUIFactory.showErrorMessage(
+						getParent(),
+						SimpleAfirmaMessages.getString("PreferencesPanelCipherment.18"),  //$NON-NLS-1$
+						SimpleAfirmaMessages.getString("PreferencesPanelCipherment.19"), //$NON-NLS-1$
+						JOptionPane.ERROR_MESSAGE
+						);
+			}
 		}
-		else {
-			AOUIFactory.showErrorMessage(
-				getParent(),
-				SimpleAfirmaMessages.getString("PreferencesPanelCiperment.18"),  //$NON-NLS-1$
-				SimpleAfirmaMessages.getString("PreferencesPanelCiperment.19"), //$NON-NLS-1$
-				JOptionPane.ERROR_MESSAGE
-			);
-		}
-
 	}
 
 	void loadPreferences() {
+
+		this.onlyEncipherment.setSelected(
+				PreferencesManager.getBoolean(
+						PreferencesManager.PREFERENCE_CIPHERMENT_ONLY_CYPHER_CERTS,
+						false
+						)
+				);
+
 		this.cipherAlgorithms.setSelectedItem(
-			PreferencesManager.get(
-				PREFERENCE_CIPHERMENT_ALGORITHM,
-				CIPHER_ALGOS[0]
-			)
-		);
+				PreferencesManager.get(
+						PreferencesManager.PREFERENCE_CIPHERMENT_ALGORITHM,
+						CIPHER_ALGOS[0]
+						)
+				);
 
 		this.accessMethods.setSelectedItem(
-			PreferencesManager.get(
-				PREFERENCE_CIPHERMENT_METHOD,
-				ACCESS_METHODS[0]
-			)
-		);
+				PreferencesManager.get(
+						PreferencesManager.PREFERENCE_CIPHERMENT_METHOD,
+						ACCESS_METHODS[0]
+						)
+				);
 
 		this.directoryURI.setText(
-			PreferencesManager.get(
-				PREFERENCE_CIPHERMENT_URI,
-				"" //$NON-NLS-1$
-			)
-		);
+				PreferencesManager.get(
+						PreferencesManager.PREFERENCE_CIPHERMENT_URI,
+						"" //$NON-NLS-1$
+						)
+				);
 	}
 
 	boolean checkURI() {
@@ -189,7 +137,7 @@ final class PreferencesPanelCipherment extends JPanel {
 
 
 		getAccessibleContext().setAccessibleDescription(
-			SimpleAfirmaMessages.getString("PreferencesPanelCiperment.0") //$NON-NLS-1$
+			SimpleAfirmaMessages.getString("PreferencesPanelCipherment.0") //$NON-NLS-1$
 		);
 
 		setLayout(new GridBagLayout());
@@ -203,7 +151,7 @@ final class PreferencesPanelCipherment extends JPanel {
 		final JPanel cipherConfigPanel = new JPanel(new GridBagLayout());
 		cipherConfigPanel.setBorder(
 			BorderFactory.createTitledBorder(
-				BorderFactory.createTitledBorder(SimpleAfirmaMessages.getString("PreferencesPanelCiperment.1")) //$NON-NLS-1$
+				BorderFactory.createTitledBorder(SimpleAfirmaMessages.getString("PreferencesPanelCipherment.1")) //$NON-NLS-1$
 			)
 		);
 
@@ -216,7 +164,7 @@ final class PreferencesPanelCipherment extends JPanel {
 		final JPanel keyUsagesPanel = new JPanel(new GridBagLayout());
 		keyUsagesPanel.setBorder(
 			BorderFactory.createTitledBorder(
-				BorderFactory.createEmptyBorder(), SimpleAfirmaMessages.getString("PreferencesPanelCiperment.2") //$NON-NLS-1$
+				BorderFactory.createEmptyBorder(), SimpleAfirmaMessages.getString("PreferencesPanelCipherment.2") //$NON-NLS-1$
 			)
 		);
 
@@ -227,65 +175,21 @@ final class PreferencesPanelCipherment extends JPanel {
 		kupc.gridy = 0;
 		kupc.insets = new Insets(5, 0, 0, 7);
 
-		this.digitalSignature.addKeyListener(keyListener);
-		this.digitalSignature.addItemListener(modificationListener);
-		this.digitalSignature.setMnemonic('s');
-		this.digitalSignature.setEnabled(unprotected);
-		this.nonRepudiation.addKeyListener(keyListener);
-		this.nonRepudiation.addItemListener(modificationListener);
-		this.nonRepudiation.setMnemonic('n');
-		this.nonRepudiation.setEnabled(unprotected);
-		this.keyEncipherment.addKeyListener(keyListener);
-		this.keyEncipherment.addItemListener(modificationListener);
-		this.keyEncipherment.setMnemonic('k');
-		this.keyEncipherment.setEnabled(unprotected);
-		this.dataEncipherment.addKeyListener(keyListener);
-		this.dataEncipherment.addItemListener(modificationListener);
-		this.dataEncipherment.setMnemonic('d');
-		this.dataEncipherment.setEnabled(unprotected);
-		this.keyAgreement.addKeyListener(keyListener);
-		this.keyAgreement.addItemListener(modificationListener);
-		this.keyAgreement.setMnemonic('t');
-		this.keyAgreement.setEnabled(unprotected);
-		this.keyCertSign.addKeyListener(keyListener);
-		this.keyCertSign.addItemListener(modificationListener);
-		this.keyCertSign.setMnemonic('y');
-		this.keyCertSign.setEnabled(unprotected);
-		this.cRLSign.addKeyListener(keyListener);
-		this.cRLSign.addItemListener(modificationListener);
-		this.cRLSign.setMnemonic('r');
-		this.cRLSign.setEnabled(unprotected);
-		this.encipherOnly.addKeyListener(keyListener);
-		this.encipherOnly.addItemListener(modificationListener);
-		this.encipherOnly.setMnemonic('h');
-		this.encipherOnly.setEnabled(unprotected);
-		this.decipherOnly.addKeyListener(keyListener);
-		this.decipherOnly.addItemListener(modificationListener);
-		this.decipherOnly.setMnemonic('o');
-		this.decipherOnly.setEnabled(unprotected);
+		this.onlyEncipherment.getAccessibleContext().setAccessibleDescription(
+				SimpleAfirmaMessages.getString("PreferencesPanelCipherment.22") //$NON-NLS-1$
+				);
+		this.onlyEncipherment.setMnemonic('r');
+		this.onlyEncipherment.addItemListener(modificationListener);
+		this.onlyEncipherment.addKeyListener(keyListener);
+		this.onlyEncipherment.setEnabled(unprotected);
 
-		keyUsagesPanel.add(this.digitalSignature, kupc);
 		kupc.gridy++;
-		keyUsagesPanel.add(this.nonRepudiation, kupc);
-		kupc.gridy++;
-		keyUsagesPanel.add(this.keyEncipherment, kupc);
-		kupc.gridy++;
-		keyUsagesPanel.add(this.dataEncipherment, kupc);
-		kupc.gridy++;
-		keyUsagesPanel.add(this.keyAgreement, kupc);
-		kupc.gridy++;
-		keyUsagesPanel.add(this.keyCertSign, kupc);
-		kupc.gridy++;
-		keyUsagesPanel.add(this.cRLSign, kupc);
-		kupc.gridy++;
-		keyUsagesPanel.add(this.encipherOnly, kupc);
-		kupc.gridy++;
-		keyUsagesPanel.add(this.decipherOnly, kupc);
+		keyUsagesPanel.add(this.onlyEncipherment, kupc);
 
 		final JPanel algorithmPanel = new JPanel(new GridBagLayout());
 		algorithmPanel.setBorder(
 			BorderFactory.createTitledBorder(
-				BorderFactory.createEmptyBorder(), SimpleAfirmaMessages.getString("PreferencesPanelCiperment.12") //$NON-NLS-1$
+				BorderFactory.createEmptyBorder(), SimpleAfirmaMessages.getString("PreferencesPanelCipherment.12") //$NON-NLS-1$
 			)
 		);
 
@@ -306,7 +210,7 @@ final class PreferencesPanelCipherment extends JPanel {
 		final JPanel repositoryPanel = new JPanel(new GridBagLayout());
 		repositoryPanel.setBorder(
 			BorderFactory.createTitledBorder(
-				BorderFactory.createEmptyBorder(), SimpleAfirmaMessages.getString("PreferencesPanelCiperment.13") //$NON-NLS-1$
+				BorderFactory.createEmptyBorder(), SimpleAfirmaMessages.getString("PreferencesPanelCipherment.13") //$NON-NLS-1$
 			)
 		);
 
@@ -319,7 +223,7 @@ final class PreferencesPanelCipherment extends JPanel {
 		rpc.insets = new Insets(5, 5, 0, 7);
 
 		final JLabel directoryURILabel = new JLabel(
-			SimpleAfirmaMessages.getString("PreferencesPanelCiperment.14") //$NON-NLS-1$
+			SimpleAfirmaMessages.getString("PreferencesPanelCipherment.14") //$NON-NLS-1$
 		);
 		directoryURILabel.setLabelFor(this.directoryURI);
 
@@ -328,7 +232,7 @@ final class PreferencesPanelCipherment extends JPanel {
 
 		this.checkUriButton.setMnemonic('b');
 		this.checkUriButton.getAccessibleContext().setAccessibleDescription(
-			SimpleAfirmaMessages.getString("PreferencesPanelCiperment.17") //$NON-NLS-1$
+			SimpleAfirmaMessages.getString("PreferencesPanelCipherment.17") //$NON-NLS-1$
 		);
 		this.checkUriButton.addActionListener(
 			new ActionListener () {
@@ -337,16 +241,16 @@ final class PreferencesPanelCipherment extends JPanel {
 					if (checkURI()) {
 						AOUIFactory.showMessageDialog(
 							getParent(),
-							SimpleAfirmaMessages.getString("PreferencesPanelCiperment.20"),  //$NON-NLS-1$
-							SimpleAfirmaMessages.getString("PreferencesPanelCiperment.19"), //$NON-NLS-1$
+							SimpleAfirmaMessages.getString("PreferencesPanelCipherment.20"),  //$NON-NLS-1$
+							SimpleAfirmaMessages.getString("PreferencesPanelCipherment.19"), //$NON-NLS-1$
 							JOptionPane.INFORMATION_MESSAGE
 						);
 					}
 					else {
 						AOUIFactory.showErrorMessage(
 							getParent(),
-							SimpleAfirmaMessages.getString("PreferencesPanelCiperment.18"),  //$NON-NLS-1$
-							SimpleAfirmaMessages.getString("PreferencesPanelCiperment.19"), //$NON-NLS-1$
+							SimpleAfirmaMessages.getString("PreferencesPanelCipherment.18"),  //$NON-NLS-1$
+							SimpleAfirmaMessages.getString("PreferencesPanelCipherment.19"), //$NON-NLS-1$
 							JOptionPane.ERROR_MESSAGE
 						);
 					}
@@ -355,7 +259,7 @@ final class PreferencesPanelCipherment extends JPanel {
 		);
 
 		final JLabel methodLabel = new JLabel(
-			SimpleAfirmaMessages.getString("PreferencesPanelCiperment.15") //$NON-NLS-1$
+			SimpleAfirmaMessages.getString("PreferencesPanelCipherment.15") //$NON-NLS-1$
 		);
 		methodLabel.setLabelFor(this.accessMethods);
 

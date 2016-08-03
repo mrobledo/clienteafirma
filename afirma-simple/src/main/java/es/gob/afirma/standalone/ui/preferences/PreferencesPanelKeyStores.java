@@ -4,7 +4,6 @@ import static es.gob.afirma.standalone.ui.preferences.PreferencesManager.PREFERE
 import static es.gob.afirma.standalone.ui.preferences.PreferencesManager.PREFERENCE_KEYSTORE_ALIAS_ONLY_CERTS;
 import static es.gob.afirma.standalone.ui.preferences.PreferencesManager.PREFERENCE_KEYSTORE_CLOSE_KEYSTORE;
 import static es.gob.afirma.standalone.ui.preferences.PreferencesManager.PREFERENCE_KEYSTORE_CLOSE_KEYSTORE_TIMEOUT;
-import static es.gob.afirma.standalone.ui.preferences.PreferencesManager.PREFERENCE_KEYSTORE_CYPH_ONLY_CERTS;
 import static es.gob.afirma.standalone.ui.preferences.PreferencesManager.PREFERENCE_KEYSTORE_DEFAULT_STORE;
 import static es.gob.afirma.standalone.ui.preferences.PreferencesManager.PREFERENCE_KEYSTORE_PRIORITARY_STORE;
 import static es.gob.afirma.standalone.ui.preferences.PreferencesManager.PREFERENCE_KEYSTORE_SIGN_ONLY_CERTS;
@@ -61,7 +60,6 @@ final class PreferencesPanelKeyStores extends JPanel {
 
 	private final JCheckBox onlySignature = new JCheckBox(SimpleAfirmaMessages.getString("PreferencesPanelKeyStores.0")); //$NON-NLS-1$
 	private final JCheckBox onlyAlias = new JCheckBox(SimpleAfirmaMessages.getString("PreferencesPanelKeyStores.4")); //$NON-NLS-1$
-	private final JCheckBox onlyEncipherment = new JCheckBox(SimpleAfirmaMessages.getString("PreferencesPanelKeyStores.1")); //$NON-NLS-1$
 	private final JCheckBox closeKeyStore = new JCheckBox(SimpleAfirmaMessages.getString("PreferencesPanelKeyStores.21")); //$NON-NLS-1$
 
     private final JButton configureCertPoliciesButton = new JButton(SimpleAfirmaMessages.getString("PreferencesPanelKeyStores.13")); //$NON-NLS-1$
@@ -75,7 +73,7 @@ final class PreferencesPanelKeyStores extends JPanel {
 	JSpinner sizeSpinner = new JSpinner(this.sizeSpinnerModel);
 	String getSelectedTimeout() {
 		//Se obtiene en minutos y se devuelve en segundos
-		return Integer.toString((Integer.parseInt(this.sizeSpinner.getValue().toString())*60));
+		return Integer.toString(Integer.parseInt(this.sizeSpinner.getValue().toString())*60);
 	}
 	void setSizeSpinnerEnabled(final boolean enable) {
 		this.sizeSpinner.setEnabled(enable);
@@ -170,19 +168,6 @@ final class PreferencesPanelKeyStores extends JPanel {
 	    this.onlySignature.addKeyListener(keyListener);
 	    this.onlySignature.setEnabled(unprotected);
 	    keysFilerPanel.add(this.onlySignature, kfc);
-
-        kfc.gridy++;
-
-	    this.onlyEncipherment.getAccessibleContext().setAccessibleDescription(
-    		SimpleAfirmaMessages.getString("PreferencesPanelKeyStores.3") //$NON-NLS-1$
-		);
-	    this.onlyEncipherment.setMnemonic('r');
-	    this.onlyEncipherment.addItemListener(modificationListener);
-	    this.onlyEncipherment.addKeyListener(keyListener);
-	    this.onlyEncipherment.setEnabled(unprotected);
-
-        //TODO: Descomentar una vez se entregue
-	    //keysFilerPanel.add(this.onlyEncipherment, kfc);
 
         kfc.gridy++;
 
@@ -413,7 +398,6 @@ final class PreferencesPanelKeyStores extends JPanel {
 
 	void savePreferences() {
 		PreferencesManager.putBoolean(PREFERENCE_KEYSTORE_SIGN_ONLY_CERTS, this.onlySignature.isSelected());
-		PreferencesManager.putBoolean(PREFERENCE_KEYSTORE_CYPH_ONLY_CERTS, this.onlyEncipherment.isSelected());
 		PreferencesManager.putBoolean(PREFERENCE_KEYSTORE_ALIAS_ONLY_CERTS, this.onlyAlias.isSelected());
 		PreferencesManager.putBoolean(PREFERENCE_KEYSTORE_CLOSE_KEYSTORE, this.closeKeyStore.isSelected());
 		PreferencesManager.put(PREFERENCE_KEYSTORE_CLOSE_KEYSTORE_TIMEOUT, getSelectedTimeout());
@@ -430,7 +414,6 @@ final class PreferencesPanelKeyStores extends JPanel {
 	void loadPreferences() {
 		this.onlySignature.setSelected(PreferencesManager.getBoolean(PREFERENCE_KEYSTORE_SIGN_ONLY_CERTS, false));
 		this.onlyAlias.setSelected(PreferencesManager.getBoolean(PREFERENCE_KEYSTORE_ALIAS_ONLY_CERTS, false));
-		this.onlyEncipherment.setSelected(PreferencesManager.getBoolean(PREFERENCE_KEYSTORE_CYPH_ONLY_CERTS, false));
 		this.closeKeyStore.setSelected(PreferencesManager.getBoolean(PREFERENCE_KEYSTORE_CLOSE_KEYSTORE, false));
 		this.defaultStore.setSelectedItem(
 			SimpleKeyStoreManager.getDefaultKeyStoreType()

@@ -173,6 +173,11 @@ final class PreferencesPanel extends JPanel implements KeyListener, DisposableIn
 		this.preferencesPanelKeyStores.savePreferences();
 
 		//****************************************************************************
+		//**** PREFERENCIAS CIFRADO ************************************************
+		//****************************************************************************
+		this.preferencesPanelCipherment.savePreferences();
+
+		//****************************************************************************
 		//**** PREFERENCIAS FACTURAE ************************************************
 		//****************************************************************************
 		this.preferencesPanelFacturaE.savePreferences();
