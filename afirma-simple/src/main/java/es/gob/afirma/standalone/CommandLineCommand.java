@@ -21,8 +21,8 @@ enum CommandLineCommand {
 	CHECKHASH("checkdigest"), //$NON-NLS-1$
 	BATCHSIGN("batchsign"), //$NON-NLS-1$
 	CREATEENVELOPE("createenvelope"), //$NON-NLS-1$
-	OPENENVELOPE("openenvelope"), //$NON-NLS-1$
-	CIPHERANDSIGN("cipherandsign"); //$NON-NLS-1$
+	OPENENVELOPE("openenvelope"); //$NON-NLS-1$
+
 
 	private String op;
 

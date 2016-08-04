@@ -58,6 +58,7 @@ import es.gob.afirma.signers.xades.AOXAdESSigner;
 import es.gob.afirma.standalone.ui.CertValidationUi;
 import es.gob.afirma.standalone.ui.envelopes.DigitalEnvelopePresentation;
 import es.gob.afirma.standalone.ui.envelopes.DigitalEnvelopeSelectFile;
+import es.gob.afirma.standalone.ui.envelopes.EnvelopesTypeResources;
 import es.gob.afirma.standalone.ui.envelopes.OpenDigitalEnvelopeDialog;
 import es.gob.afirma.standalone.ui.hash.HashHelper;
 
@@ -152,9 +153,6 @@ final class CommandLineLauncher {
 						final String response = signByCommandLine(command, params);
 						closeApp(STATUS_SUCCESS, pw, response);
 						return;
-					case CIPHERANDSIGN:
-						cipherAndSignByGui(params);
-						break;
 					case CREATEHASH:
 						createHashByGui(params);
 						return;
@@ -207,18 +205,6 @@ final class CommandLineLauncher {
 		}
 	}
 
-	/** Realizamos el cifrado y firma de un fichero mostrando los di&aacute;logos necesarios.
-	 * @param params Par&aacute;metros de configuraci&oacute;n.
-	 * @throws CommandLineException Cuando falta algun par&aacute;metro necesario o no se puede cargar el almac&eacute;n de claves. */
-	private static void cipherAndSignByGui(final CommandLineParameters params) throws CommandLineException {
-		final File inputFile = params.getInputFile();
-		if (inputFile == null) {
-			throw new CommandLineException(CommandLineMessages.getString("CommandLineLauncher.5")); //$NON-NLS-1$
-		}
-
-		AutoFirmaUtil.sfn2lfn(inputFile).getAbsolutePath();
-	}
-
 	/** Realizamos la creaci&oacute;n de un sobre digital del fichero seleccionado mostrando los di&aacute;logos necesarios.
 	 * @param params Par&aacute;metros de configuraci&oacute;n.
 	 * @throws CommandLineException Cuando falta algun par&aacute;metro necesario o no se puede cargar el almac&eacute;n de claves. */
@@ -227,12 +213,22 @@ final class CommandLineLauncher {
 		if (inputFile == null) {
 			throw new CommandLineException(CommandLineMessages.getString("CommandLineLauncher.5")); //$NON-NLS-1$
 		}
+
+		EnvelopesTypeResources type;
+		try {
+			type = EnvelopesTypeResources.valueOf(params.getType().toUpperCase());
+		}
+		catch (final Exception e) {
+			throw new CommandLineException(CommandLineMessages.getString("CommandLineLauncher.77")); //$NON-NLS-1$
+		}
+
 		final DigitalEnvelopePresentation de = new DigitalEnvelopePresentation(null);
 		de.setSize(650, 550);
 		de.setResizable(false);
 		de.setLocationRelativeTo(null);
 		de.remove(de.getPanelCentral());
 		de.remove(de.getPanel());
+		de.getEnvelopeData().setEnvelopeType(type);
 		de.getEnvelopeData().setFilePath(AutoFirmaUtil.sfn2lfn(inputFile).getAbsolutePath());
 		de.setFilePanel(
 			new DigitalEnvelopeSelectFile(
@@ -813,6 +809,7 @@ final class CommandLineLauncher {
 		.append("  ").append(CommandLineCommand.BATCHSIGN.getOp())	     .append("\t (")  .append(CommandLineMessages.getString("CommandLineLauncher.69")).append(")\n\n")  //$NON-NLS-1$//$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
 		.append("  ").append(CommandLineCommand.CREATEHASH.getOp())	     .append("\t (")  .append(CommandLineMessages.getString("CommandLineLauncher.70")).append(")\n\n")  //$NON-NLS-1$//$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
 		.append("  ").append(CommandLineCommand.CHECKHASH.getOp())	     .append("\t (")  .append(CommandLineMessages.getString("CommandLineLauncher.71")).append(")\n\n")  //$NON-NLS-1$//$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+		.append("  ").append(CommandLineCommand.CREATEENVELOPE.getOp())	 .append(" (")  .append(CommandLineMessages.getString("CommandLineLauncher.78")).append(")\n\n")  //$NON-NLS-1$//$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
 		.append(CommandLineMessages.getString("CommandLineLauncher.30")) .append("\n\n"); //$NON-NLS-1$ //$NON-NLS-2$
 
 		return sb.toString();

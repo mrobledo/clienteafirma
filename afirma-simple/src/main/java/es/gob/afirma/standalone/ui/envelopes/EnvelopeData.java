@@ -1,13 +1,30 @@
 package es.gob.afirma.standalone.ui.envelopes;
 
+import java.security.KeyStore.PrivateKeyEntry;
 import java.util.ArrayList;
 import java.util.List;
+
+import es.gob.afirma.keystores.AOKeyStoreManager;
 
 /** Datos de configuraci&oacute;n del sobre digital.
  * @author Tom&aacute;s Garc&iacute;a-Mer&aacute;s. */
 public final class EnvelopeData {
 
 	private String filePath = null;
+
+	private EnvelopesTypeResources envelopeType = null;
+
+	private PrivateKeyEntry senderPrivateKeyEntry = null;
+
+	private AOKeyStoreManager senderKeyStoreManager = null;
+
+	private String senderCertificateAlias = null;
+
+	private String signatureAlgorithm = null;
+
+	private final List<CertificateDestiny> certificateRecipientsList = new ArrayList<>();
+
+
 	String getFilePath() {
 		return this.filePath;
 	}
@@ -18,15 +35,13 @@ public final class EnvelopeData {
 		this.filePath = path;
 	}
 
-	private EnvelopesTypeResources envelopeType = null;
 	EnvelopesTypeResources getEnvelopeType() {
 		return this.envelopeType;
 	}
-	void setEnvelopeType(final EnvelopesTypeResources type) {
+	public void setEnvelopeType(final EnvelopesTypeResources type) {
 		this.envelopeType = type;
 	}
 
-	private String signatureAlgorithm = null;
 	String getSignatureAlgorithm() {
 		return this.signatureAlgorithm;
 	}
@@ -34,7 +49,6 @@ public final class EnvelopeData {
 		this.signatureAlgorithm = algo;
 	}
 
-	private final List<CertificateDestiny> certificateRecipientsList = new ArrayList<>();
 	List<CertificateDestiny> getCertificateRecipientsList() {
 		return this.certificateRecipientsList;
 	}
@@ -45,4 +59,27 @@ public final class EnvelopeData {
 		}
 	}
 
+	public PrivateKeyEntry getSenderPrivateKeyEntry() {
+		return this.senderPrivateKeyEntry;
+	}
+
+	public void setSenderPrivateKeyEntry(final PrivateKeyEntry senderPrivateKeyEntry) {
+		this.senderPrivateKeyEntry = senderPrivateKeyEntry;
+	}
+
+	public AOKeyStoreManager getSenderKeyStoreManager() {
+		return this.senderKeyStoreManager;
+	}
+
+	public void setSenderKeyStoreManager(final AOKeyStoreManager senderKeyStoreManager) {
+		this.senderKeyStoreManager = senderKeyStoreManager;
+	}
+
+	public String getSenderCertificateAlias() {
+		return this.senderCertificateAlias;
+	}
+
+	public void setSenderCertificateAlias(final String senderCertificateAlias) {
+		this.senderCertificateAlias = senderCertificateAlias;
+	}
 }

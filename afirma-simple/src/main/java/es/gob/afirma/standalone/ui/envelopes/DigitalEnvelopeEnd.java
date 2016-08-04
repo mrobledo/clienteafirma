@@ -12,14 +12,13 @@ import java.util.logging.Logger;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
-import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 
 import es.gob.afirma.standalone.SimpleAfirmaMessages;
 
-final class DigitalEnvelopeEnd extends JDialog {
+final class DigitalEnvelopeEnd extends JPanel {
 
 	private static final long serialVersionUID = 4673856930142046569L;
 	static final Logger LOGGER = Logger.getLogger("es.gob.afirma"); //$NON-NLS-1$

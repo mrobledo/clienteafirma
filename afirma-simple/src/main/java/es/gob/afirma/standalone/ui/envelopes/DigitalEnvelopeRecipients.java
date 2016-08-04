@@ -163,7 +163,7 @@ final class DigitalEnvelopeRecipients extends JPanel {
 		);
 		this.removeButton.addActionListener(
 			ae -> {
-				removeRecipient(getRecipientsList().getSelectedIndex());
+				removeSelectRecipient();
 			}
 		);
 		this.removeButton.addKeyListener(this.dialog);
@@ -215,7 +215,9 @@ final class DigitalEnvelopeRecipients extends JPanel {
 						getDialog()
 					)
 				);
-				getDialog().add(getDialog().getSendersPanel());
+				getDialog().add(getDialog().getSendersPanel(), BorderLayout.CENTER);
+				getDialog().revalidate();
+				getDialog().repaint();
 			}
  		);
  		this.nextButton.addKeyListener(this.dialog);
@@ -239,15 +241,27 @@ final class DigitalEnvelopeRecipients extends JPanel {
  			SimpleAfirmaMessages.getString("DigitalEnvelopePresentation.8") //$NON-NLS-1$
 		);
 		this.backButton.addActionListener(e -> {
+
+			final ListModel<CertificateDestiny> model = getRecipientsList().getModel();
+			final List<CertificateDestiny> certs = new ArrayList<>();
+			for (int i = 0; i < model.getSize(); i++) {
+				certs.add(model.getElementAt(i));
+			}
+
 			getDialog().remove(getPanelCentral());
 			getDialog().remove(getPanel());
 			getDialog().remove(getDialog().getRecipientsPanel());
+
+			getDialog().getEnvelopeData().addCertificateRecipients(certs);
+
 			getDialog().setFilePanel(
 				new DigitalEnvelopeSelectFile(
 					getDialog()
 				)
 			);
-			getDialog().add(getDialog().getFilePanel());
+			getDialog().add(getDialog().getFilePanel(), BorderLayout.CENTER);
+			getDialog().revalidate();
+			getDialog().repaint();
 		});
 		this.backButton.addKeyListener(this.dialog);
 
@@ -322,7 +336,7 @@ final class DigitalEnvelopeRecipients extends JPanel {
     /** A&ntilde;ade un destinatario del tipo seleccionado. */
     void addRecipient() {
 
-    	final DefaultListModel<CertificateDestiny> modelList = (DefaultListModel<CertificateDestiny>) getRecipientsList().getModel();
+    	final ListModel<CertificateDestiny> modelList = getRecipientsList().getModel();
     	String[] filter;
     	AOKeyStoreManager keyStoreManager = null;
         final KeyStoreConfiguration kc = (KeyStoreConfiguration) this.comboBoxRecipients.getSelectedItem();
@@ -398,11 +412,24 @@ final class DigitalEnvelopeRecipients extends JPanel {
 	    // Comprobamos que el certificado es correcto
 	    if (certDest != null && certDest.getAlias() != null && !certDest.equals("")) { //$NON-NLS-1$
 
-	        if (!modelList.contains(certDest)) {
-	        	modelList.addElement(certDest);
-	            this.recipientsList.setSelectedIndex(
-	            	modelList.indexOf(certDest)
-    			);
+	    	boolean isIncluyed = false;
+	    	for (int i = 0; i < modelList.getSize() && !isIncluyed; i++) {
+	    		final CertificateDestiny listItem = modelList.getElementAt(i);
+	    		if (certDest.equals(listItem)) {
+	    			isIncluyed = true;
+	    		}
+	    	}
+
+	        if (!isIncluyed) {
+
+	        	final DefaultListModel<CertificateDestiny> newModel = new DefaultListModel<>();
+	        	for (int i = 0; i < modelList.getSize(); i++) {
+		    		newModel.addElement(modelList.getElementAt(i));
+		    	}
+	        	newModel.addElement(certDest);
+
+	        	this.recipientsList.setModel(newModel);
+	        	this.recipientsList.setSelectedIndex(modelList.getSize() - 1);
 	        }
 	        else {
 	        	LOGGER.severe("El certificado de ese usuario ya se habia agregado como destinatario"); //$NON-NLS-1$
@@ -419,18 +446,29 @@ final class DigitalEnvelopeRecipients extends JPanel {
     }
 
     /** Elimina un destintatario de la lista. */
-    void removeRecipient(final int index) {
+    void removeSelectRecipient() {
 
-    	if (index >= 0) {
-    		final DefaultListModel<CertificateDestiny> listModel = (DefaultListModel<CertificateDestiny>) getRecipientsList().getModel();
-    		listModel.remove(index);
+    	final ListModel<CertificateDestiny> listModel = this.recipientsList.getModel();
+    	final CertificateDestiny certDest = this.recipientsList.getSelectedValue();
 
-    		if (listModel.isEmpty()) {
-    			enableButtons(false);
-    		}
-    		else {
-    			this.recipientsList.setSelectedIndex(0);
-    		}
+	    // Comprobamos que el certificado es correcto
+	    if (certDest != null && certDest.getAlias() != null) {
+
+	    	final DefaultListModel<CertificateDestiny> newModel = new DefaultListModel<>();
+	    	for (int i = 0; i < listModel.getSize(); i++) {
+	    		final CertificateDestiny listItem = listModel.getElementAt(i);
+	    		if (!certDest.equals(listItem)) {
+	    			newModel.addElement(listModel.getElementAt(i));
+	    		}
+	    	}
+	    	this.recipientsList.setModel(newModel);
+	    }
+
+    	if (this.recipientsList.getModel().getSize() == 0) {
+    		enableButtons(false);
+    	}
+    	else {
+    		this.recipientsList.setSelectedIndex(0);
     	}
     }
 

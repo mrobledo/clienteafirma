@@ -32,6 +32,7 @@ final class CommandLineParameters {
 	private static final String PARAM_GUI     = "-gui"; //$NON-NLS-1$
 	private static final String PARAM_PREURL  = "-preurl"; //$NON-NLS-1$
 	private static final String PARAM_POSTURL = "-posturl"; //$NON-NLS-1$
+	private static final String PARAM_TYPE 	  = "-type"; //$NON-NLS-1$
 
 
 	public static final String FORMAT_AUTO     = "auto"; //$NON-NLS-1$
@@ -45,6 +46,10 @@ final class CommandLineParameters {
 	public static final String MASSIVE_OP_COSIGN		= "cosign"; //$NON-NLS-1$
 	public static final String MASSIVE_OP_COUNTERSIGN	= "countersign"; //$NON-NLS-1$
 	private static final String DEFAULT_MASSIVE_OP = MASSIVE_OP_SIGN;
+
+	public static final String TYPE_ENVELOP_SIMPLE			= "simple"; //$NON-NLS-1$
+	public static final String TYPE_ENVELOP_SIGNED			= "signed"; //$NON-NLS-1$
+	public static final String TYPE_ENVELOP_AUTHENTICATED	= "authenticated"; //$NON-NLS-1$
 
 	private static final String DEFAULT_ALGORITHM = "SHA512withRSA"; //$NON-NLS-1$
 
@@ -63,6 +68,7 @@ final class CommandLineParameters {
 	private final boolean help = false;
 	private URL postUrl = null;
 	private URL preUrl = null;
+	private String type = null;
 
 	public CommandLineParameters(final String[] params) throws CommandLineException {
 
@@ -198,6 +204,19 @@ final class CommandLineParameters {
 				}
 				i++;
 			}
+			else if (PARAM_TYPE.equals(params[i])) {
+				if (this.type != null) {
+					throw new CommandLineException(CommandLineMessages.getString("CommandLineLauncher.26", params[i])); //$NON-NLS-1$
+				}
+
+				this.type = params[i+1].toLowerCase();
+				if (!this.type.equals(TYPE_ENVELOP_SIMPLE) &&
+						!this.type.equals(TYPE_ENVELOP_SIGNED) &&
+						!this.type.equals(TYPE_ENVELOP_AUTHENTICATED)) {
+					throw new CommandLineException(CommandLineMessages.getString("CommandLineLauncher.72", params[i + 1])); //$NON-NLS-1$
+				}
+				i++;
+			}
 			else {
 				throw new CommandLineException(CommandLineMessages.getString("CommandLineLauncher.25", params[i])); //$NON-NLS-1$
 			}
@@ -230,6 +249,15 @@ final class CommandLineParameters {
 
 	public File getOutputFile() {
 		return this.outputFile;
+	}
+
+	/**
+	 * Recupera el tipo de operaci&oacute;n, lo que permite configurar operaciones
+	 * como la creaci&oacute;n de sobres digitales.
+	 * @return Tipo de suboperaci&oaucte;n.
+	 */
+	public String getType() {
+		return this.type;
 	}
 
 	/** Recupera el formato de firma configurado o, si no se ha indicado, el
@@ -291,6 +319,8 @@ final class CommandLineParameters {
 				return buildOperationCheckHashSyntaxError(op.getOp(), errorMessage);
 			case CREATEHASH:
 				return buildOperationCreateHashSyntaxError(op.getOp(), errorMessage);
+			case CREATEENVELOPE:
+				return buildOperationCreateEnvelopSyntaxError(op.getOp(), errorMessage);
 			default:
 				return errorMessage;
 		}
@@ -463,6 +493,29 @@ final class CommandLineParameters {
 		.append(": AutoFirma ").append(op).append(" [options...]\n\n")  //$NON-NLS-1$ //$NON-NLS-2$
 		.append("options\n\n") //$NON-NLS-1$
 		.append("  ").append(PARAM_INPUT).append(" inputfile\t (").append(CommandLineMessages.getString("CommandLineLauncher.68")).append(")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+
+		return sb.toString();
+	}
+
+	/** Construye la cadena de texto que explica la sintaxis para el uso del comando de
+	 * ensobrado digital de un fichero.
+	 * @param op Comando.
+	 * @param errorMessage Mensaje que explica el error cometido.
+	 * @return Texto con el error de sintaxis y la explicaci&oacute;n de la sintaxis correcta. */
+	private static String buildOperationCreateEnvelopSyntaxError(final String op, final String errorMessage) {
+		final StringBuilder sb = new StringBuilder();
+		if (errorMessage != null) {
+			sb.append(errorMessage).append("\n"); //$NON-NLS-1$
+		}
+		sb.append(CommandLineMessages.getString("CommandLineLauncher.7")) //$NON-NLS-1$
+		.append(": AutoFirma ").append(op).append(" [options...]\n\n")  //$NON-NLS-1$ //$NON-NLS-2$
+		.append("options\n\n") //$NON-NLS-1$
+		.append("  ").append(PARAM_INPUT).append(" inputfile\t (").append(CommandLineMessages.getString("CommandLineLauncher.68")).append(")\n") //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+		.append("  ").append(PARAM_TYPE).append("\t\t (").append(CommandLineMessages.getString("CommandLineLauncher.73")).append(")\n")  //$NON-NLS-1$//$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+		.append("  \t ").append(TYPE_ENVELOP_SIGNED).append("\t\t (").append(CommandLineMessages.getString("CommandLineLauncher.74")).append(")\n") //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+		.append("  \t ").append(TYPE_ENVELOP_AUTHENTICATED).append("\t (").append(CommandLineMessages.getString("CommandLineLauncher.75")).append(")\n") //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+		.append("  \t ").append(TYPE_ENVELOP_SIMPLE).append("\t\t (").append(CommandLineMessages.getString("CommandLineLauncher.76")).append(")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+
 
 		return sb.toString();
 	}

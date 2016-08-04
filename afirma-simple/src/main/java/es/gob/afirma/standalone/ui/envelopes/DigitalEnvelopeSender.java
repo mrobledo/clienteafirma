@@ -100,6 +100,14 @@ public class DigitalEnvelopeSender extends JPanel {
 	 * @param parent Di&aacute;logo del asistente de ensobrado. */
 	public DigitalEnvelopeSender(final DigitalEnvelopePresentation parent) {
 		this.dialog = parent;
+
+		if (this.dialog != null && this.dialog.getEnvelopeData().getFilePath() != null) {
+			this.senderKeyStoreManager = this.dialog.getEnvelopeData().getSenderKeyStoreManager();
+			this.senderPrivateKeyEntry = this.dialog.getEnvelopeData().getSenderPrivateKeyEntry();
+
+			this.senderTextField.setText(this.dialog.getEnvelopeData().getSenderCertificateAlias());
+		}
+
 		createUI();
 	}
 
@@ -195,7 +203,9 @@ public class DigitalEnvelopeSender extends JPanel {
  						getDialog().remove(panelCentral);
  						getDialog().remove(getPanel());
  						getDialog().remove(getDialog().getSendersPanel());
- 		 				getDialog().add(new DigitalEnvelopeEnd(getDialog()));
+ 		 				getDialog().add(new DigitalEnvelopeEnd(getDialog()), BorderLayout.CENTER);
+						getDialog().revalidate();
+						getDialog().repaint();
  					}
  				}
  			}
@@ -230,12 +240,19 @@ public class DigitalEnvelopeSender extends JPanel {
 				getDialog().remove(panelCentral);
 				getDialog().remove(DigitalEnvelopeSender.this.panel);
 				getDialog().remove(getDialog().getSendersPanel());
+
+				getDialog().getEnvelopeData().setSenderPrivateKeyEntry(DigitalEnvelopeSender.this.getSenderPrivateKeyEntry());
+				getDialog().getEnvelopeData().setSenderKeyStoreManager(DigitalEnvelopeSender.this.getSenderKeyStoreManager());
+				getDialog().getEnvelopeData().setSenderCertificateAlias(DigitalEnvelopeSender.this.getSenderTextField().getText());
+
 				getDialog().setRecipientsPanel(
 					new DigitalEnvelopeRecipients(
 						getDialog()
 					)
 				);
-				getDialog().add(getDialog().getRecipientsPanel());
+				getDialog().add(getDialog().getRecipientsPanel(), BorderLayout.CENTER);
+				getDialog().revalidate();
+				getDialog().repaint();
 			}
 		});
 		this.backButton.addKeyListener(this.dialog);
@@ -298,7 +315,7 @@ public class DigitalEnvelopeSender extends JPanel {
 		this.dialog.getContentPane().add(this.panel, BorderLayout.PAGE_END);
 		this.dialog.revalidate();
         this.dialog.repaint();
-        enableButtons(false);
+        enableButtons(this.senderPrivateKeyEntry != null);
 	}
 
     /** A&ntilde;ade un remitente del origen seleccionado en el desplegable. */
@@ -430,7 +447,7 @@ public class DigitalEnvelopeSender extends JPanel {
     	// Mostramos el alias del certificado
     	this.senderTextField.setText(keyStoreDialog.getSelectedAlias());
 
-        enableButtons(true);
+        enableButtons(this.senderPrivateKeyEntry != null);
     }
 
     void enableButtons(final boolean enable) {

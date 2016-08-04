@@ -39,7 +39,7 @@ public class DigitalEnvelopeSelectFile extends JPanel {
 	static final String SIGN_ALGORITHM = "SHA256withRSA"; //$NON-NLS-1$
 
 	private final JComboBox<EnvelopesTypeResources> envelopeTypes = new JComboBox<>(
-		EnvelopesTypeResources.getAllEnvelopesTypeResources()
+		EnvelopesTypeResources.values()
 	);
 	EnvelopesTypeResources getSelectedType() {
 		return (EnvelopesTypeResources) this.envelopeTypes.getSelectedItem();
@@ -89,8 +89,29 @@ public class DigitalEnvelopeSelectFile extends JPanel {
 	 * @param dl Di&aacute;logo principal del asistente. */
 	public DigitalEnvelopeSelectFile(final DigitalEnvelopePresentation dl) {
 		this.dialog = dl;
-		if (dl != null && dl.getEnvelopeData().getFilePath() != null) {
-			setSelectedFile(dl.getEnvelopeData().getFilePath());
+		if (dl != null) {
+			if (dl.getEnvelopeData().getFilePath() != null) {
+				setSelectedFile(dl.getEnvelopeData().getFilePath());
+			}
+			if (dl.getEnvelopeData().getEnvelopeType() != null) {
+				this.envelopeTypes.setSelectedItem(dl.getEnvelopeData().getEnvelopeType());
+			}
+			else {
+				final String envelopType = PreferencesManager.get(
+						PreferencesManager.PREFERENCE_ENVELOPE_TYPE,
+						EnvelopesTypeResources.SIGNED.name()
+						);
+
+				EnvelopesTypeResources type = null;
+				try {
+					type = EnvelopesTypeResources.valueOf(envelopType);
+				}
+				catch (final IllegalArgumentException e) {
+					LOGGER.warning("Tipo de sobre registrado no valido, se usara el por defecto: " + e); //$NON-NLS-1$
+					return;
+				}
+				this.envelopeTypes.setSelectedItem(type);
+			}
 		}
 		createUI();
 	}
@@ -210,26 +231,28 @@ public class DigitalEnvelopeSelectFile extends JPanel {
  			SimpleAfirmaMessages.getString("DigitalEnvelopePresentation.6") //$NON-NLS-1$
 		);
 		this.nextButton.addActionListener(
-			new ActionListener() {
-			/** {@inheritDoc} */
-			@Override
-			public void actionPerformed(final ActionEvent ae) {
-				saveConfiguration();
-				getDialog().remove(getPanelCentral());
-				getDialog().remove(getPanel());
-				getDialog().remove(getDialog().getFilePanel());
-				getDialog().getEnvelopeData().setFilePath(getSelectedFile());
-				getDialog().getEnvelopeData().setEnvelopeType(getSelectedType());
-				getDialog().getEnvelopeData().setSignatureAlgorithm(SIGN_ALGORITHM);
-				getDialog().setRecipientsPanel(
-					new DigitalEnvelopeRecipients(
-						getDialog()
-					)
-				);
-				getDialog().add(getDialog().getRecipientsPanel());
-			}
-		}
-		);
+				new ActionListener() {
+					/** {@inheritDoc} */
+					@Override
+					public void actionPerformed(final ActionEvent ae) {
+						saveConfiguration();
+
+						getDialog().remove(getPanelCentral());
+						getDialog().remove(getPanel());
+						getDialog().remove(getDialog().getFilePanel());
+						getDialog().getEnvelopeData().setFilePath(getSelectedFile());
+						getDialog().getEnvelopeData().setEnvelopeType(getSelectedType());
+						getDialog().getEnvelopeData().setSignatureAlgorithm(SIGN_ALGORITHM);
+						getDialog().setRecipientsPanel(
+							new DigitalEnvelopeRecipients(
+								getDialog()
+							)
+						);
+						getDialog().add(getDialog().getRecipientsPanel(), BorderLayout.CENTER);
+						getDialog().revalidate();
+						getDialog().repaint();
+					}
+				});
 		this.nextButton.setFocusable(false);
 		this.nextButton.addKeyListener(this.dialog);
 		if (getSelectedFile().isEmpty()) {
@@ -268,7 +291,6 @@ public class DigitalEnvelopeSelectFile extends JPanel {
 		final JPanel emptyPanel = new JPanel();
 		emptyPanel.setBackground(Color.WHITE);
 
-		loadConfiguration();
 		final GridBagConstraints c = new GridBagConstraints();
 		c.fill = GridBagConstraints.HORIZONTAL;
 		c.weightx = 1.0;
@@ -304,24 +326,10 @@ public class DigitalEnvelopeSelectFile extends JPanel {
         this.examineButton.requestFocusInWindow();
 	}
 
-	void loadConfiguration() {
-		this.envelopeTypes.setSelectedItem(
-				EnvelopesTypeResources.getName(
-				Integer.parseInt(
-					PreferencesManager.get(
-						PreferencesManager.PREFERENCE_ENVELOPE_TYPE,
-						"0" //$NON-NLS-1$
-					)
-				)
-			)
-		);
-	}
-
 	void saveConfiguration() {
 		PreferencesManager.put(
 			PreferencesManager.PREFERENCE_ENVELOPE_TYPE,
-			Integer.toString(getSelectedType().getIndex())
+			getSelectedType().name()
 		);
 	}
-
 }
