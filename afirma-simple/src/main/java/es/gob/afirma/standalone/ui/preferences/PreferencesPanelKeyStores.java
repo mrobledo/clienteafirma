@@ -54,9 +54,9 @@ final class PreferencesPanelKeyStores extends JPanel {
 	private static final long serialVersionUID = 3255071607793273334L;
 
 	private static final int MAX_WAIT_TIME = Integer.MAX_VALUE;
-	private static final int MIN_WAIT_TIME = 7200;
+	private static final int MIN_WAIT_TIME = 0;
 	private static final int STEP_WAIT_TIME = 1;
-	private static final int INIT_WAIT_TIME = 54000;
+	private static final int INIT_WAIT_TIME = 0;
 
 	private final JCheckBox onlySignature = new JCheckBox(SimpleAfirmaMessages.getString("PreferencesPanelKeyStores.0")); //$NON-NLS-1$
 	private final JCheckBox onlyAlias = new JCheckBox(SimpleAfirmaMessages.getString("PreferencesPanelKeyStores.4")); //$NON-NLS-1$
@@ -418,7 +418,14 @@ final class PreferencesPanelKeyStores extends JPanel {
 		this.defaultStore.setSelectedItem(
 			SimpleKeyStoreManager.getDefaultKeyStoreType()
 		);
-	    this.configureCertPoliciesButton.setEnabled(PreferencesManager.getBoolean(PREFERENCE_KEYSTORE_ACCEPTED_POLICIES_ONLY_CERTS, false));
+		this.prioritaryKeyStoreComboBox.setSelectedItem(
+				AOKeyStore.getKeyStore(
+			    		PreferencesManager.get(
+							PreferencesManager.PREFERENCE_KEYSTORE_PRIORITARY_STORE, null
+						)
+					).toString()
+			);
+		this.configureCertPoliciesButton.setEnabled(PreferencesManager.getBoolean(PREFERENCE_KEYSTORE_ACCEPTED_POLICIES_ONLY_CERTS, false));
 
 	}
 }

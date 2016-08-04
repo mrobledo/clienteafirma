@@ -152,7 +152,7 @@ public enum AOKeyStore {
 		null,
 		null
 	),
-	/** Directorio Ministerio de Defensa. */
+	/** Certificados frecuentemente usados. */
 	RECENTLYUSED(
 		"Usados con mayor frecuencia", //$NON-NLS-1$
 		16,

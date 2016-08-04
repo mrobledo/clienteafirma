@@ -108,8 +108,29 @@ public final class SimpleKeyStoreManager {
             	}
             }
         }
-
-        // El por defecto
+        
+        // Probamos antes si instancia el almacen prioritario, y si instancia, lo usamos directamente
+        final AOKeyStore pks = AOKeyStore.getKeyStore(
+    		PreferencesManager.get(
+				PreferencesManager.PREFERENCE_KEYSTORE_PRIORITARY_STORE, null
+			)
+		);
+        if (pks != null) {
+    		try {
+    			return getKeyStoreManager(
+    				pks,
+    				parent
+    			);
+    		}
+            catch (final Exception e) {
+            	Logger.getLogger("es.gob.afirma").warning(
+        			"No se ha podido inicializar el almacen de claves prioritario: " + e
+    			);
+            }
+        }
+        
+        // No ha funcionado el prioritario, obtenemos el por defecto
+        // El por defecto, se obtiene mirando la preferencia "Almacen por defecto"
         final AOKeyStore aoks = getDefaultKeyStoreType();
         try {
 			return getKeyStoreManager(

@@ -14,6 +14,7 @@ import javax.smartcardio.CardException;
 import javax.smartcardio.CardTerminal;
 import javax.smartcardio.TerminalFactory;
 
+import es.gob.afirma.core.misc.Platform;
 import es.gob.afirma.keystores.AOKeyStore;
 import es.gob.afirma.keystores.AOKeyStoreManager;
 import es.gob.afirma.keystores.AOKeyStoreManagerException;
@@ -189,7 +190,7 @@ public final class TemdKeyStoreManager extends AggregatedKeyStoreManager impleme
 			"Tarjeta del Ministerio de Defensa (MMAR)" //$NON-NLS-1$
 		),
 		FNMT(
-			"cardos11", //$NON-NLS-1$
+			getFNMTLibrary(),
 			new Atr(
 				new byte[] {
 					(byte)0x3B, (byte)0x7F, (byte)0x96, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x6A, (byte)0x46, (byte)0x4E, (byte)0x4D,
@@ -280,6 +281,17 @@ public final class TemdKeyStoreManager extends AggregatedKeyStoreManager impleme
 
 	private static void resetTimer() {
 		TimedPersistentCachePasswordCallback.resetTimer();
+	}
+
+	/** Obtiene la versi&oacute;n de Java para determinar el nombre de la librer&iacute;a de las tarjetas de FNMT.
+	 * @return Nombre de la librer&iacute;a para las tarjetas de FNMT.
+	 */
+	public static String getFNMTLibrary() {
+		final String javaArch = Platform.getJavaArch();
+		if ("32".equals(javaArch)) { //$NON-NLS-1$
+			return "FNMT_P11"; //$NON-NLS-1$
+		}
+		return "FNMT_P11_x64"; //$NON-NLS-1$
 	}
 
 	@Override
