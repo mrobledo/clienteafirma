@@ -200,15 +200,20 @@ Section "Programa" sPrograma
 	WriteRegStr HKEY_CLASSES_ROOT "*\shell\afirma.sign" "Icon" "$INSTDIR\AutoFirma\AutoFirma.exe"
 	WriteRegStr HKEY_CLASSES_ROOT "*\shell\afirma.sign\command" "" "$INSTDIR\AutoFirma\AutoFirma.exe sign -gui -i %1" 
 
-	;Cifrar
+	;Cifrar / Crear sobre digital simple
 	WriteRegStr HKEY_CLASSES_ROOT "*\shell\afirma.simpleenvelop" "" "Cifrar"
 	WriteRegStr HKEY_CLASSES_ROOT "*\shell\afirma.simpleenvelop" "Icon" "$INSTDIR\AutoFirma\AutoFirma.exe"
 	WriteRegStr HKEY_CLASSES_ROOT "*\shell\afirma.simpleenvelop\command" "" "$INSTDIR\AutoFirma\AutoFirma.exe createenvelope -gui -type simple -i %1" 
 	
-	;Cifrar y firmar
+	;Cifrar y firmar / Crear sobre digital firmado
 	WriteRegStr HKEY_CLASSES_ROOT "*\shell\afirma.signedenvelop" "" "Cifrar y firmar"
 	WriteRegStr HKEY_CLASSES_ROOT "*\shell\afirma.signedenvelop" "Icon" "$INSTDIR\AutoFirma\AutoFirma.exe"
 	WriteRegStr HKEY_CLASSES_ROOT "*\shell\afirma.signedenvelop\command" "" "$INSTDIR\AutoFirma\AutoFirma.exe createenvelope -gui -type signed -i %1" 
+
+	;Desifrar / Abrir sobres digitales
+ 	WriteRegStr HKEY_CLASSES_ROOT ".enveloped\shell\afirma.enveloped" "" "Descifrar"
+	WriteRegStr HKEY_CLASSES_ROOT ".enveloped\shell\afirma.enveloped" "Icon" "$INSTDIR\AutoFirma\AutoFirma.exe"
+	WriteRegStr HKEY_CLASSES_ROOT ".enveloped\shell\afirma.enveloped\command" "" "$INSTDIR\AutoFirma\AutoFirma.exe openenvelope -i %1" 
 
 	;Generar huella archivos
  	WriteRegStr HKEY_CLASSES_ROOT "*\shell\afirma.hashFile" "" "Generar huella digital con AutoFirma"
@@ -234,16 +239,6 @@ Section "Programa" sPrograma
  	WriteRegStr HKEY_CLASSES_ROOT ".hashfiles\shell\afirma.hashfiles" "" "Comprobar huella digital con AutoFirma"
 	WriteRegStr HKEY_CLASSES_ROOT ".hashfiles\shell\afirma.hashfiles" "Icon" "$INSTDIR\AutoFirma\AutoFirma.exe"
 	WriteRegStr HKEY_CLASSES_ROOT ".hashfiles\shell\afirma.hashfiles\command" "" "$INSTDIR\AutoFirma\AutoFirma.exe checkdigest -i %1" 
-
-	;Crear sobres digitales
- 	WriteRegStr HKEY_CLASSES_ROOT "*\shell\afirma.envelop" "" "Generar sobre digital con AutoFirma"
-	WriteRegStr HKEY_CLASSES_ROOT "*\shell\afirma.envelop" "Icon" "$INSTDIR\AutoFirma\AutoFirma.exe"
-	WriteRegStr HKEY_CLASSES_ROOT "*\shell\afirma.envelop\command" "" "$INSTDIR\AutoFirma\AutoFirma.exe createenvelope -i %1" 
-
-	;Abrir sobres digitales
- 	WriteRegStr HKEY_CLASSES_ROOT ".enveloped\shell\afirma.enveloped" "" "Abrir sobre digital con AutoFirma"
-	WriteRegStr HKEY_CLASSES_ROOT ".enveloped\shell\afirma.enveloped" "Icon" "$INSTDIR\AutoFirma\AutoFirma.exe"
-	WriteRegStr HKEY_CLASSES_ROOT ".enveloped\shell\afirma.enveloped\command" "" "$INSTDIR\AutoFirma\AutoFirma.exe openenvelope -i %1" 
 
 	;Verify
 	; .csig
