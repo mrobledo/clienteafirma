@@ -171,7 +171,7 @@ final class CommandLineLauncher {
 						createEnvelopeByGui(params);
 						return;
 					case OPENENVELOPE:
-						openEnvelope(params);
+						openEnvelopeByGui(params);
 						return;
 					default:
 						closeApp(
@@ -243,18 +243,18 @@ final class CommandLineLauncher {
 	/** Realizamos la apertura del sobre digital seleccionado mostrando los di&aacute;logos necesarios.
 	 * @param params Par&aacute;metros de configuraci&oacute;n.
 	 * @throws CommandLineException Cuando falta algun par&aacute;metro necesario o no se puede cargar el almac&eacute;n de claves. */
-	private static void openEnvelope(final CommandLineParameters params) throws CommandLineException {
+	private static void openEnvelopeByGui(final CommandLineParameters params) throws CommandLineException {
 		final File inputFile = params.getInputFile();
 		if (inputFile == null) {
 			throw new CommandLineException(CommandLineMessages.getString("CommandLineLauncher.5")); //$NON-NLS-1$
 		}
 		try {
-			final OpenDigitalEnvelopeDialog oed = new OpenDigitalEnvelopeDialog(
-				null,
-				getKsm(null, null),
-				AutoFirmaUtil.sfn2lfn(inputFile).getAbsolutePath()
-			);
-			oed.open();
+			OpenDigitalEnvelopeDialog.startOpenDigitalEnvelopeDialog(null, AutoFirmaUtil.sfn2lfn(inputFile).getAbsolutePath());
+//			final OpenDigitalEnvelopeDialog oed = new OpenDigitalEnvelopeDialog(
+//				null,
+//
+//			);
+//			oed.open();
 		}
 		catch (final Exception e) {
 			throw new CommandLineException(

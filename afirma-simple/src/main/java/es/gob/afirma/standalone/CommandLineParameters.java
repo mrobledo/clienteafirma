@@ -321,6 +321,8 @@ final class CommandLineParameters {
 				return buildOperationCreateHashSyntaxError(op.getOp(), errorMessage);
 			case CREATEENVELOPE:
 				return buildOperationCreateEnvelopSyntaxError(op.getOp(), errorMessage);
+			case OPENENVELOPE:
+				return buildOperationOpenEnvelopSyntaxError(op.getOp(), errorMessage);
 			default:
 				return errorMessage;
 		}
@@ -516,6 +518,24 @@ final class CommandLineParameters {
 		.append("  \t ").append(TYPE_ENVELOP_AUTHENTICATED).append("\t (").append(CommandLineMessages.getString("CommandLineLauncher.75")).append(")\n") //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
 		.append("  \t ").append(TYPE_ENVELOP_SIMPLE).append("\t\t (").append(CommandLineMessages.getString("CommandLineLauncher.76")).append(")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
 
+
+		return sb.toString();
+	}
+
+	/** Construye la cadena de texto que explica la sintaxis para el uso del comando de
+	 * desensobrado de un sobre digital.
+	 * @param op Comando.
+	 * @param errorMessage Mensaje que explica el error cometido.
+	 * @return Texto con el error de sintaxis y la explicaci&oacute;n de la sintaxis correcta. */
+	private static String buildOperationOpenEnvelopSyntaxError(final String op, final String errorMessage) {
+		final StringBuilder sb = new StringBuilder();
+		if (errorMessage != null) {
+			sb.append(errorMessage).append("\n"); //$NON-NLS-1$
+		}
+		sb.append(CommandLineMessages.getString("CommandLineLauncher.7")) //$NON-NLS-1$
+		.append(": AutoFirma ").append(op).append(" [options...]\n\n")  //$NON-NLS-1$ //$NON-NLS-2$
+		.append("options\n\n") //$NON-NLS-1$
+		.append("  ").append(PARAM_INPUT).append(" inputfile\t (").append(CommandLineMessages.getString("CommandLineLauncher.68")).append(")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$;
 
 		return sb.toString();
 	}

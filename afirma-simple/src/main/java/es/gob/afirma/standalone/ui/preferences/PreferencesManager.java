@@ -453,6 +453,9 @@ public final class PreferencesManager {
 	/** Tipo de sobre. */
 	public static final String PREFERENCE_ENVELOPE_TYPE = "envelopeType"; //$NON-NLS-1$
 
+	/** Almacen configurado para la desenvoltura de sobres. */
+	public static final String PREFERENCE_ENVELOP_PRIVATE_KEYSTORE = "unwrapkeystore"; //$NON-NLS-1$
+
 	/** Si est&aacute; establecido a <code>true</code> se pide al usuario que determine mediante di&aacute;logos
 	 * gr&aacute;ficos los par&aacute;metros de una firma visible PDF y se inserta como tal en el
 	 * documento. */
@@ -468,7 +471,6 @@ public final class PreferencesManager {
 
 	/** En el cifrado de sobres digitales, restringir que &uacute;nicamente se puedan usar certificados de cifrado. */
 	public static final String PREFERENCE_CIPHERMENT_ONLY_CYPHER_CERTS = "useOnlyEnciphermentCertificates"; //$NON-NLS-1$
-
 
 	/** Agoritmo de cifrado. */
 	public static final String PREFERENCE_CIPHERMENT_ALGORITHM = "ciphermentAlgorithm"; //$NON-NLS-1$

@@ -291,9 +291,9 @@ public final class MainMenu extends JMenuBar {
         }
 
         this.add(menuArchivo);
-        // TODO: Descomentar una vez se entregue
+
         toolsMenu.add(new MenuValidation(this.parent));
-        toolsMenu.add(new MenuDigitalEnvelope(this.parent, this.saf));
+        toolsMenu.add(new MenuDigitalEnvelope(this.parent));
         toolsMenu.add(huellaMenu);
         toolsMenu.add(cipherMenu);
         this.add(toolsMenu);

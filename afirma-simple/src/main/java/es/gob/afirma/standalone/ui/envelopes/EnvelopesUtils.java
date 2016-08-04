@@ -46,7 +46,7 @@ public final class EnvelopesUtils {
         stores.add(new KeyStoreConfiguration(AOKeyStore.DNIEJAVA, null, null));
         stores.add(new KeyStoreConfiguration(AOKeyStore.PKCS12, null, null));
 
-        return stores.toArray(new KeyStoreConfiguration[0]);
+        return stores.toArray(new KeyStoreConfiguration[stores.size()]);
     }
 
     /** Recupera los almacenes compatibles con el sistema y preparados
@@ -62,7 +62,28 @@ public final class EnvelopesUtils {
         stores.add(new KeyStoreConfiguration(AOKeyStore.PKCS12, null, null));
         stores.add(new KeyStoreConfiguration(AOKeyStore.PKCS11, null, null));
 
-        return stores.toArray(new KeyStoreConfiguration[0]);
+        return stores.toArray(new KeyStoreConfiguration[stores.size()]);
+    }
+
+	/** Recupera los almacenes compatibles con el sistema y preparados
+     * para contener los certificados para la apertura de sobres.
+     * @return Listado de almacenes. */
+    public static KeyStoreConfiguration[] getKeyStoresToUnwrap() {
+
+        final List<KeyStoreConfiguration> stores = new ArrayList<>();
+
+        if (Platform.getOS().equals(Platform.OS.WINDOWS)) {
+            stores.add(new KeyStoreConfiguration(AOKeyStore.WINDOWS, null, null));
+        }
+        if (Platform.getOS().equals(Platform.OS.MACOSX)) {
+            stores.add(new KeyStoreConfiguration(AOKeyStore.APPLE, null, null));
+        }
+
+        stores.add(new KeyStoreConfiguration(AOKeyStore.MOZ_UNI, null, null));
+        stores.add(new KeyStoreConfiguration(AOKeyStore.DNIEJAVA, null, null));
+        stores.add(new KeyStoreConfiguration(AOKeyStore.PKCS12, null, null));
+
+        return stores.toArray(new KeyStoreConfiguration[stores.size()]);
     }
 
     /** Obtiene el fichero elegido por el usuario dependiendo de la extension que haya elegido en el combobox.

@@ -406,7 +406,7 @@ public class DigitalEnvelopeSender extends JPanel {
         	this.senderKeyStoreManager = keyStoreManager;
     	}
     	catch (final UnrecoverableEntryException e) {
-        	LOGGER.warning("Error de constasena: " + e); //$NON-NLS-1$
+        	LOGGER.warning("Error de contrasena: " + e); //$NON-NLS-1$
             // Control de la excepcion generada al introducir mal la contrasena para el certificado
             AOUIFactory.showMessageDialog(
         		this.dialog,
@@ -435,7 +435,7 @@ public class DigitalEnvelopeSender extends JPanel {
         	// Control de la excepcion generada al introducir mal la contrasena para el certificado
             AOUIFactory.showMessageDialog(
         		this.dialog,
-        		SimpleAfirmaMessages.getString("DigitalEnvelopeSender.22"), //$NON-NLS-1$
+        		SimpleAfirmaMessages.getString("DigitalEnvelopeSender.38"), //$NON-NLS-1$
         		SimpleAfirmaMessages.getString("DigitalEnvelopeSender.25"),  //$NON-NLS-1$
                 JOptionPane.ERROR_MESSAGE
             );

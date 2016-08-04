@@ -12,7 +12,6 @@ import javax.swing.JMenuItem;
 import javax.swing.KeyStroke;
 
 import es.gob.afirma.core.misc.Platform;
-import es.gob.afirma.standalone.SimpleAfirma;
 import es.gob.afirma.standalone.SimpleAfirmaMessages;
 
 /** Men&uacute; de creaaci&oacute;n y apertura de sobre digital.
@@ -22,16 +21,14 @@ public final class MenuDigitalEnvelope extends JMenu {
 	private static final long serialVersionUID = -2837810688321728252L;
 	protected static final Logger LOGGER = Logger.getLogger("es.gob.afirma"); //$NON-NLS-1$
 	private final Frame parent;
-    private final SimpleAfirma saf;
 
 	/**
 	 * Crea el men&uacute; de creaaci&oacute;n de un sobre digital.
 	 * @param parent Componente padre.
 	 * @param sa Instancia de SimpleAfirma para utilizar el almac&eacute;n de la aplicaci&oacute;n.
 	 */
-	public MenuDigitalEnvelope(final Frame parent, final SimpleAfirma sa) {
+	public MenuDigitalEnvelope(final Frame parent) {
 		this.parent = parent;
-		this.saf = sa;
 		createUI();
 	}
 
@@ -99,6 +96,6 @@ public final class MenuDigitalEnvelope extends JMenu {
 	 * Abre los sobres digitales que esten ya creados.
 	 */
 	void openDigitalEnvelope() {
-		OpenDigitalEnvelopeDialog.startOpenDigitalEnvelopeDialog(this.parent, this.saf.getAOKeyStoreManager(), null);
+		OpenDigitalEnvelopeDialog.startOpenDigitalEnvelopeDialog(this.parent, null);
 	}
 }
