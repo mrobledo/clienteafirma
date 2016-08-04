@@ -201,11 +201,16 @@ Section "Programa" sPrograma
 	WriteRegStr HKEY_CLASSES_ROOT "*\shell\afirma.sign" "Icon" "$INSTDIR\AutoFirma\AutoFirma.exe"
 	WriteRegStr HKEY_CLASSES_ROOT "*\shell\afirma.sign\command" "" "$INSTDIR\AutoFirma\AutoFirma.exe sign -gui -i %1" 
 
-	;Cifrar y firmar
-	WriteRegStr HKEY_CLASSES_ROOT "*\shell\afirma.ciphersign" "" "Cifrar y firmar con AutoFirma"
-	WriteRegStr HKEY_CLASSES_ROOT "*\shell\afirma.ciphersign" "Icon" "$INSTDIR\AutoFirma\AutoFirma.exe"
-	WriteRegStr HKEY_CLASSES_ROOT "*\shell\afirma.ciphersign\command" "" "$INSTDIR\AutoFirma\AutoFirma.exe cipherandsign -gui -i %1" 
+	;Cifrar
+	WriteRegStr HKEY_CLASSES_ROOT "*\shell\afirma.simpleenvelop" "" "Cifrar"
+	WriteRegStr HKEY_CLASSES_ROOT "*\shell\afirma.simpleenvelop" "Icon" "$INSTDIR\AutoFirma\AutoFirma.exe"
+	WriteRegStr HKEY_CLASSES_ROOT "*\shell\afirma.simpleenvelop\command" "" "$INSTDIR\AutoFirma\AutoFirma.exe createenvelope -gui -type simple -i %1" 
 	
+	;Cifrar y firmar
+	WriteRegStr HKEY_CLASSES_ROOT "*\shell\afirma.signedenvelop" "" "Cifrar y firmar"
+	WriteRegStr HKEY_CLASSES_ROOT "*\shell\afirma.signedenvelop" "Icon" "$INSTDIR\AutoFirma\AutoFirma.exe"
+	WriteRegStr HKEY_CLASSES_ROOT "*\shell\afirma.signedenvelop\command" "" "$INSTDIR\AutoFirma\AutoFirma.exe createenvelope -gui -type signed -i %1" 
+
 	;Generar huella archivos
  	WriteRegStr HKEY_CLASSES_ROOT "*\shell\afirma.hashFile" "" "Generar huella digital con AutoFirma"
 	WriteRegStr HKEY_CLASSES_ROOT "*\shell\afirma.hashFile" "Icon" "$INSTDIR\AutoFirma\AutoFirma.exe"
