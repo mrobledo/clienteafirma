@@ -418,13 +418,15 @@ final class PreferencesPanelKeyStores extends JPanel {
 		this.defaultStore.setSelectedItem(
 			SimpleKeyStoreManager.getDefaultKeyStoreType()
 		);
-		this.prioritaryKeyStoreComboBox.setSelectedItem(
-				AOKeyStore.getKeyStore(
-			    		PreferencesManager.get(
-							PreferencesManager.PREFERENCE_KEYSTORE_PRIORITARY_STORE, null
-						)
-					).toString()
+
+		final AOKeyStore ks = AOKeyStore.getKeyStore(
+	    		PreferencesManager.get(
+					PreferencesManager.PREFERENCE_KEYSTORE_PRIORITARY_STORE, null
+				)
 			);
+		if (ks != null) {
+			this.prioritaryKeyStoreComboBox.setSelectedItem(ks.toString());
+		}
 		this.configureCertPoliciesButton.setEnabled(PreferencesManager.getBoolean(PREFERENCE_KEYSTORE_ACCEPTED_POLICIES_ONLY_CERTS, false));
 
 	}
