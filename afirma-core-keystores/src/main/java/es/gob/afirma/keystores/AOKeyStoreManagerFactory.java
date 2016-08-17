@@ -14,7 +14,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.security.cert.CertificateEncodingException;
 import java.util.logging.Logger;
+import java.util.zip.CRC32;
 
 import javax.security.auth.callback.PasswordCallback;
 
@@ -32,7 +34,7 @@ import es.gob.afirma.keystores.temd.TemdKeyStoreManager;
 public final class AOKeyStoreManagerFactory {
 
 	private static final Logger LOGGER = Logger.getLogger("es.gob.afirma"); //$NON-NLS-1$
-
+	
     private AOKeyStoreManagerFactory() {
         // No permitimos la instanciacion
     }
@@ -84,7 +86,17 @@ public final class AOKeyStoreManagerFactory {
 
     	// Almacen PKCS#12, en cualquier sistema operativo
     	if (AOKeyStore.PKCS12.equals(store)) {
-    		return new AggregatedKeyStoreManager(getPkcs12KeyStoreManager(lib, pssCallback, forceReset, parentComponent));
+    		AggregatedKeyStoreManager aksm = new AggregatedKeyStoreManager(getPkcs12KeyStoreManager(lib, pssCallback, forceReset, parentComponent));
+    		CRC32 crc = new CRC32();
+    		if(aksm.getAliases().length > 0) {
+	    		try {
+					crc.update(aksm.getCertificate(aksm.getAliases()[0]).getEncoded());
+					String.valueOf(crc.getValue());
+				} catch (CertificateEncodingException e) {
+					LOGGER.warning("El certificado no se ha podido guardar como certificado frecuente" + e); //$NON-NLS-1$
+				}
+    		}
+    		return aksm;
     	}
 
     	// Almacen JKS, en cualquier sistema operativo
@@ -143,9 +155,43 @@ public final class AOKeyStoreManagerFactory {
         	return new AggregatedKeyStoreManager(getCeresJavaKeyStoreManager(pssCallback, forceReset, parentComponent));
         }
 
-     // Driver Java para TEMD
+        // Driver Java para TEMD
         if (Platform.getOS().equals(Platform.OS.WINDOWS) && AOKeyStore.TEMD.equals(store)) {
         	return new TemdKeyStoreManager();
+        }
+        
+        // Directorio de certificados frecuentes
+        if (AOKeyStore.FRECUENTCERTS.equals(store)) {
+        	// Se recorre el directorio y se obtiene cada uno de los certificados
+        	String[] ficheros = new File(lib).list();
+        	if (ficheros == null) {
+        		LOGGER.info("No existen certificados frecuentes"); //$NON-NLS-1$
+        		return null;
+        	}
+			AggregatedKeyStoreManager aks = new AggregatedKeyStoreManager();
+			 for (int x = 0; x < ficheros.length; x++) {
+				 String extension = ""; //$NON-NLS-1$
+				 // Se obtiene la extension del certificado
+				 int i = ficheros[x].lastIndexOf('.');
+				 if (i > 0) {
+				     extension = ficheros[x].substring(i+1);
+				 }
+				 
+				 if("p12".equals(extension) || "pfx".equals(extension)) { //$NON-NLS-1$ //$NON-NLS-2$
+					 aks.addKeyStoreManager(getPkcs12KeyStoreManager(ficheros[x], pssCallback, forceReset, parentComponent));
+				 }
+				 else if("dll".equals(extension) || "so".equals(extension)) { //$NON-NLS-1$ //$NON-NLS-2$
+					 aks.addKeyStoreManager(getPkcs11KeyStoreManager(ficheros[x], description, pssCallback, forceReset, parentComponent));
+				 }
+				 else if("jceks".equals(extension) || "jks".equals(extension)) { //$NON-NLS-1$ //$NON-NLS-2$
+					 aks.addKeyStoreManager(getFileKeyStoreManager(AOKeyStore.JCEKS, lib + ficheros[x], pssCallback, forceReset, parentComponent));
+				 } else if("jce".equals(extension)) { //$NON-NLS-1$
+					 aks.addKeyStoreManager(getFileKeyStoreManager(AOKeyStore.JAVACE, lib + ficheros[x], pssCallback, forceReset, parentComponent));
+				 } else if("pem".equals(extension) || "crt".equals(extension) || "cer".equals(extension) || "p7b".equals(extension) || "p7s".equals(extension)) { //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
+					 aks.addKeyStoreManager(getFileKeyStoreManager(AOKeyStore.SINGLE, lib + ficheros[x], pssCallback, forceReset, parentComponent));
+				 }
+			 }
+			 return aks;
         }
 
         throw new AOKeystoreAlternativeException(
@@ -290,7 +336,7 @@ public final class AOKeyStoreManagerFactory {
             String[] exts = null;
             if (store == AOKeyStore.SINGLE) {
                 exts = new String[] {
-                        "cer", "p7b" //$NON-NLS-1$ //$NON-NLS-2$
+                        "cer", "p7b", "crt", "pem" //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
                 };
                 desc = KeyStoreMessages.getString("AOKeyStoreManagerFactory.2"); //$NON-NLS-1$
             }
