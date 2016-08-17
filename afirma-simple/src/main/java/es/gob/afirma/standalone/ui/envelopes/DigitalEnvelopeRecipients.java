@@ -10,12 +10,23 @@ import java.awt.Insets;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
+import java.util.zip.CRC32;
 
 import javax.swing.BorderFactory;
 import javax.swing.DefaultComboBoxModel;
@@ -43,6 +54,7 @@ import es.gob.afirma.keystores.AOKeyStoreManagerFactory;
 import es.gob.afirma.keystores.KeyStoreConfiguration;
 import es.gob.afirma.standalone.SimpleAfirmaMessages;
 import es.gob.afirma.standalone.ui.CertificateUtils;
+import es.gob.afirma.standalone.ui.preferences.PreferencesManager;
 
 /** Panel para seleccionar los destinatarios que se quieren incluir en el sobre digital.
  * @author Juliana Marulanda. */
@@ -50,6 +62,7 @@ final class DigitalEnvelopeRecipients extends JPanel {
 
 	private static final long serialVersionUID = 8190414784696825608L;
 	private static final Logger LOGGER = Logger.getLogger("es.gob.afirma"); //$NON-NLS-1$
+	private static final String FREC_CERTS_PATH = "%h/.afirma/frec_certs/"; //$NON-NLS-1$
 
 	private final JButton nextButton = new JButton(SimpleAfirmaMessages.getString("DigitalEnvelopePresentation.3")); //$NON-NLS-1$
 	private final JButton cancelButton = new JButton(SimpleAfirmaMessages.getString("DigitalEnvelopePresentation.4")); //$NON-NLS-1$
@@ -342,6 +355,8 @@ final class DigitalEnvelopeRecipients extends JPanel {
         final KeyStoreConfiguration kc = (KeyStoreConfiguration) this.comboBoxRecipients.getSelectedItem();
 
         CertificateDestiny certDest = null;
+        final AOKeyStore ao = kc.getType();
+        
         if (kc.getType().equals(AOKeyStore.LDAPMDEF)) {
         	final X509Certificate cert = DefenseDirectoryDialog.startDefenseDirectoryDialog(
         		(JFrame) SwingUtilities.getAncestorOfClass(JFrame.class, getDialog())
@@ -352,29 +367,69 @@ final class DigitalEnvelopeRecipients extends JPanel {
         }
         else {
 	        try {
-	            final AOKeyStore ao = kc.getType();
-	            String lib = null;
-	            if (ao == AOKeyStore.PKCS12 || ao == AOKeyStore.SINGLE) {
-	                if (ao == AOKeyStore.PKCS12) {
-	                    filter = new String[] { "p12", "pfx" };  //$NON-NLS-1$//$NON-NLS-2$
-	                }
-	                else {
-	                    filter = new String[] { "cer", "p7b", "p7s" }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-	                }
-	                final File keystorePath = EnvelopesUtils.addFileSelected(filter, this.comboBoxRecipients, getDialog());
-	                if (keystorePath == null) {
-	                    throw new AOCancelledOperationException();
-	                }
-	                lib = keystorePath.getAbsolutePath();
-	            }
-	            else if (ao == AOKeyStore.PKCS11) {
-	                filter = new String[] {"dll", "so"};  //$NON-NLS-1$//$NON-NLS-2$
-	                final File keystorePath = EnvelopesUtils.addFileSelected(filter, this.comboBoxRecipients, getDialog());
-	                if (keystorePath == null) {
-	                    throw new AOCancelledOperationException();
-	                }
-	                lib = keystorePath.getAbsolutePath();
-	            }
+	        	// Definimos la ruta en la que se guardan los certificados frecuentes
+	        	String frec_certs_dir = FREC_CERTS_PATH.replace("%h", Platform.getUserHome()); //$NON-NLS-1$
+	        	String lib = null;
+	        	
+	        	if (ao == AOKeyStore.FRECUENTCERTS) {
+	        		lib = frec_certs_dir;
+	        	}
+	        	else
+	        	{
+		            if (ao == AOKeyStore.PKCS12 || ao == AOKeyStore.SINGLE) {
+		                if (ao == AOKeyStore.PKCS12) {
+		                    filter = new String[] { "p12", "pfx" };  //$NON-NLS-1$//$NON-NLS-2$
+		                }
+		                else {
+		                    filter = new String[] { "cer", "p7b", "p7s" }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+		                }
+		                final File keystorePath = EnvelopesUtils.addFileSelected(filter, this.comboBoxRecipients, getDialog());
+		                if (keystorePath == null) {
+		                    throw new AOCancelledOperationException();
+		                }
+		                lib = keystorePath.getAbsolutePath();
+		                //Guarda el certificado como frecuentemente usado
+		                CertificateFactory cf = CertificateFactory.getInstance("X.509"); //$NON-NLS-1$
+	                    Certificate cert = cf.generateCertificate(new FileInputStream(lib));
+	                    CRC32 crc = new CRC32();
+	                    try {
+	    					crc.update(cert.getEncoded());
+	    				} catch (CertificateEncodingException e) {
+	    					LOGGER.warning("El certificado no se ha podido guardar como certificado frecuente" + e); //$NON-NLS-1$
+	    				}
+	                    String numberOfUses = PreferencesManager.get(String.valueOf(crc.getValue()), null);
+		                //Si el certificado ya ha sido usado se le suma uno al contador. En caso contrario se inicializa
+	                    if(numberOfUses != null) {
+		                	PreferencesManager.put(
+		                			String.valueOf(crc.getValue()), 
+		                			String.valueOf((Integer.parseInt(numberOfUses)) + 1)
+		                		);
+		                }
+		                else {
+		                	PreferencesManager.put(
+		                			String.valueOf(crc.getValue()), 
+		                			"1" //$NON-NLS-1$
+		                		);
+		                }
+		                //Se guarda una copia del certificado en el directorio .afirma en el que se guardan los logs
+	                    //Se obtiene el original del certificado
+	                    String[] dirs = lib.split("\\\\"); //$NON-NLS-1$
+	                    String file_name = dirs[dirs.length - 1];
+	                    File dest_cert_path = new File(frec_certs_dir);
+	                    if (!dest_cert_path.exists()) {
+	                    	dest_cert_path.mkdirs();
+	            		}
+	                    Files.copy(new File(lib).toPath(), new File(frec_certs_dir + file_name).toPath(), StandardCopyOption.REPLACE_EXISTING);
+		            }
+		            else if (ao == AOKeyStore.PKCS11) {
+		                filter = new String[] {"dll", "so"};  //$NON-NLS-1$//$NON-NLS-2$
+		                final File keystorePath = EnvelopesUtils.addFileSelected(filter, this.comboBoxRecipients, getDialog());
+		                if (keystorePath == null) {
+		                    throw new AOCancelledOperationException();
+		                }
+		                lib = keystorePath.getAbsolutePath();
+		            }
+	        	}
 	            keyStoreManager = AOKeyStoreManagerFactory.getAOKeyStoreManager(
 	        		ao,
 	        		lib,
