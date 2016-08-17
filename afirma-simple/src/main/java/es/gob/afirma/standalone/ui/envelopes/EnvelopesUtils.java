@@ -61,6 +61,7 @@ public final class EnvelopesUtils {
         stores.add(new KeyStoreConfiguration(AOKeyStore.SINGLE, null, null));
         stores.add(new KeyStoreConfiguration(AOKeyStore.PKCS12, null, null));
         stores.add(new KeyStoreConfiguration(AOKeyStore.PKCS11, null, null));
+        stores.add(new KeyStoreConfiguration(AOKeyStore.FRECUENTCERTS, null, null));
 
         return stores.toArray(new KeyStoreConfiguration[stores.size()]);
     }
