@@ -153,10 +153,10 @@ public enum AOKeyStore {
 		null
 	),
 	/** Certificados frecuentemente usados. */
-	RECENTLYUSED(
-		"Usados con mayor frecuencia", //$NON-NLS-1$
+	FRECUENTCERTS(
+		"Certificados frecuentes", //$NON-NLS-1$
 		16,
-		"RECENTLYUSED", //$NON-NLS-1$
+		"FRECUENTCERTS", //$NON-NLS-1$
 		null,
 		null
 	);
