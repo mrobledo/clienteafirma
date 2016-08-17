@@ -381,7 +381,7 @@ final class DigitalEnvelopeRecipients extends JPanel {
 		                    filter = new String[] { "p12", "pfx" };  //$NON-NLS-1$//$NON-NLS-2$
 		                }
 		                else {
-		                    filter = new String[] { "cer", "p7b", "p7s" }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+		                    filter = new String[] { "cer", "p7b", "p7s", "crt", "pem" }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
 		                }
 		                final File keystorePath = EnvelopesUtils.addFileSelected(filter, this.comboBoxRecipients, getDialog());
 		                if (keystorePath == null) {
