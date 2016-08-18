@@ -17,14 +17,17 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
+import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.TreeMap;
 import java.util.logging.Logger;
 import java.util.zip.CRC32;
 
@@ -63,7 +66,10 @@ final class DigitalEnvelopeRecipients extends JPanel {
 	private static final long serialVersionUID = 8190414784696825608L;
 	private static final Logger LOGGER = Logger.getLogger("es.gob.afirma"); //$NON-NLS-1$
 	private static final String FREC_CERTS_PATH = "%h/.afirma/frec_certs/"; //$NON-NLS-1$
-
+	// Numero minimo de usos de un certificado para preguntar al usuario si desea anadirlo como certificado frecuente
+	private static final int MIN_FREC_CERT_USES = 5;
+	// Numero maximo de certificados frecuentes que se pueden tener
+	private static final int MAX_FREC_CERTS_IN_DIR = 5;
 	private final JButton nextButton = new JButton(SimpleAfirmaMessages.getString("DigitalEnvelopePresentation.3")); //$NON-NLS-1$
 	private final JButton cancelButton = new JButton(SimpleAfirmaMessages.getString("DigitalEnvelopePresentation.4")); //$NON-NLS-1$
 	private final JButton backButton = new JButton(SimpleAfirmaMessages.getString("DigitalEnvelopePresentation.5") ); //$NON-NLS-1$
@@ -135,7 +141,7 @@ final class DigitalEnvelopeRecipients extends JPanel {
 				// Solo abriremos el certificado en caso de estar en Windows
 				if (e.getClickCount() == 2 && Platform.OS.WINDOWS == Platform.getOS()) {
 					if (e.getComponent() instanceof JList) {
-						final Object item = ((JList) e.getComponent()).getSelectedValue();
+						final Object item = ((JList<?>) e.getComponent()).getSelectedValue();
 						if (item instanceof CertificateDestiny) {
 							final Certificate cert = ((CertificateDestiny) item).getCertificate();
 							CertificateUtils.openCertificate((X509Certificate) cert, DigitalEnvelopeRecipients.this);
@@ -146,7 +152,12 @@ final class DigitalEnvelopeRecipients extends JPanel {
 		});
 
 		// ComboBox con los tipos de certificado a elegir
-		this.comboBoxRecipients.setModel(new DefaultComboBoxModel<>(EnvelopesUtils.getKeyStoresToWrap()));
+		if(hasFrecuentCerts()) {
+			this.comboBoxRecipients.setModel(new DefaultComboBoxModel<>(EnvelopesUtils.getKeyStoresToWrapFirstFrecuentCerts()));
+		}
+		else {
+			this.comboBoxRecipients.setModel(new DefaultComboBoxModel<>(EnvelopesUtils.getKeyStoresToWrap()));
+		}
 		this.comboBoxRecipients.setToolTipText(SimpleAfirmaMessages.getString("DigitalEnvelopeRecipients.12")); //$NON-NLS-1$);
 		this.comboBoxRecipients.addKeyListener(this.dialog);
 
@@ -345,7 +356,169 @@ final class DigitalEnvelopeRecipients extends JPanel {
         this.dialog.repaint();
 		enableButtons(this.recipientsList.getModel().getSize() > 0);
 	}
+	// Devuelve true si se existen certificados frecuentes
+	private boolean hasFrecuentCerts() {
+		// Definimos la ruta en la que se guardan los certificados frecuentes
+    	String frec_certs_dir = FREC_CERTS_PATH.replace("%h", Platform.getUserHome()); //$NON-NLS-1$
+		// Se crea el directorio si aun no esta creado
+        File dest_cert_path = new File(frec_certs_dir);
+        if (dest_cert_path.exists()) {
+        	File[] dirList = new File(frec_certs_dir).listFiles();
+        	if(dirList.length > 0) {
+        		return true;
+        	}
+    	}
+        return false;
+	}
+	private void manageFrecuentCertificates(byte[] cert) throws CertificateException {
+		
+		// Definimos la ruta en la que se guardan los certificados frecuentes
+    	String frec_certs_dir = FREC_CERTS_PATH.replace("%h", Platform.getUserHome()); //$NON-NLS-1$
+    	
+		//Guarda el certificado como frecuentemente usado
+        CertificateFactory cf = CertificateFactory.getInstance("X.509"); //$NON-NLS-1$
+        CRC32 crc = new CRC32();
+        crc.update(cert);
+        String numberOfUses = PreferencesManager.get(String.valueOf(crc.getValue()), null);
+        //Si el certificado ya ha sido usado se le suma uno al contador. En caso contrario se inicializa
+        if(numberOfUses != null) {
+            // Se guarda una copia del certificado en el directorio .afirma en el que se guardan los logs 
+    		// si se usa 5 veces el mismo certificado
+        	if(Integer.parseInt(numberOfUses) + 1 == MIN_FREC_CERT_USES) {
+        		//Preguntamos al usuario si desea guardarlo como certificado frecuente
+        		if(AOUIFactory.showConfirmDialog(
+        				this,
+        				SimpleAfirmaMessages.getString("DigitalEnvelopeRecipients.35"), //$NON-NLS-1$
+        				SimpleAfirmaMessages.getString("DigitalEnvelopeRecipients.36"), //$NON-NLS-1$
+        				JOptionPane.YES_NO_OPTION,
+        				JOptionPane.WARNING_MESSAGE
+        			) == 0) {
+	                
+					// Se crea el directorio si aun no esta creado
+	                File dest_cert_path = new File(frec_certs_dir);
+	                if (!dest_cert_path.exists()) {
+	                	dest_cert_path.mkdirs();
+	            	}
+	                    
+	                // Se guarda una copia del certificado en el directorio .afirma en el que se guardan los logs
+	                File[] dirList = new File(frec_certs_dir).listFiles();
+	                try (FileOutputStream os = new FileOutputStream(frec_certs_dir + "frec_cert" + dirList.length + ".cer")) { //$NON-NLS-1$ //$NON-NLS-2$
+		                os.write(cert);
+		                Writer wr = new OutputStreamWriter(os, Charset.forName("UTF-8")); //$NON-NLS-1$
+		                wr.write(new sun.misc.BASE64Encoder().encode(cert));
+		                wr.flush();
+	                }
+	                catch (IOException e) {
+	                	LOGGER.warning("No es posible crear el fichero " + frec_certs_dir + "frec_cert" + dirList.length + ": "  + e); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+    				}
 
+	                // Por un lado se guarda la ultima fecha de uso y por el otro el numero de usos
+	                SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS"); //$NON-NLS-1$
+	                Date now = new Date();
+	                
+	                PreferencesManager.put(
+	                		String.valueOf(crc.getValue()) + "_last_used",  //$NON-NLS-1$
+	                		format.format(now)
+	                    ); 
+	                PreferencesManager.put(
+	                		String.valueOf(crc.getValue()), 
+	                		String.valueOf((Integer.parseInt(numberOfUses) + 1))
+	                	);
+	                // Se recorre el directorio para identificar el certficado que mayor tiempo
+                    // ha pasado sin usarse y se borra para nunca contar con mas de 5 certificados frecuentes
+	                File[] frec_cert_files = new File(frec_certs_dir).listFiles();
+	                    
+	                if(frec_cert_files.length > MAX_FREC_CERTS_IN_DIR) {
+	                	// Se usa un TreeMap para ordenar los certificados por fecha de uso
+	                    TreeMap<String, String> allCerts = new TreeMap<>();
+	                    for(int i = 0; i < frec_cert_files.length; i++) {
+		                    cf = CertificateFactory.getInstance("X.509"); //$NON-NLS-1$
+			                crc = new CRC32();
+			                try (FileInputStream fis = new FileInputStream(frec_cert_files[i])) {
+			                	Certificate certToCheck = cf.generateCertificate(fis);
+			                	crc.update(certToCheck.getEncoded());
+			                }
+			                catch (IOException e) {
+			                	LOGGER.warning("No es posible acceder al fichero " + frec_cert_files[i] + ": "  + e); //$NON-NLS-1$ //$NON-NLS-2$
+		    				} catch (CertificateEncodingException e) {
+		    					LOGGER.warning("El certificado no se ha podido guardar como certificado frecuente" + e); //$NON-NLS-1$
+		    				}
+			                // En caso de que no tengan fecha (se han copiado a mano en el directorio) se define 
+			                // un valor muy bajo para que sean los primeros en ser eliminados
+			                Date minValue = new Date(i);
+			                String lastUsed = PreferencesManager.get(String.valueOf(crc.getValue()) + "_last_used", format.format(minValue)); //$NON-NLS-1$
+			                
+			                // Se guarda la ultima fecha de uso junto con la ruta del certificado
+			                allCerts.put(lastUsed, frec_cert_files[i].getPath());
+	                    }
+	                    while(allCerts.size() > MAX_FREC_CERTS_IN_DIR) {
+		                    // Obtenemos la ruta del certificado con fecha mas nueva 
+		                    // (el primero puesto que la fecha se guarda en formato YYYY-MM-DD)
+		                    String firstKey = allCerts.firstKey();
+		                    String pathToDelete = allCerts.get(firstKey);
+		                    
+		                    //Reseteamos el contador antes de eliminar el certificado del directorio de frecuentes
+		                    cf = CertificateFactory.getInstance("X.509"); //$NON-NLS-1$
+			                crc = new CRC32();
+			                try (FileInputStream fis = new FileInputStream(new File(pathToDelete))) {
+			                	Certificate certToDelete = cf.generateCertificate(fis);
+			                	crc.update(certToDelete.getEncoded());
+			                }
+			                catch (IOException e) {
+			                	LOGGER.warning("No es posible acceder al fichero " + pathToDelete + ": "  + e); //$NON-NLS-1$ //$NON-NLS-2$
+		    				} catch (CertificateEncodingException e) {
+		    					LOGGER.warning("El certificado no se ha podido guardar como certificado frecuente" + e); //$NON-NLS-1$
+		    				}
+			                    
+		                    PreferencesManager.put(
+			                	String.valueOf(crc.getValue()), 
+			                	String.valueOf(0)
+			                	);
+		                    
+		                    // Si no se puede eliminar continuamos en el bucle
+		                    try {
+		                    	Files.delete(new File(pathToDelete).toPath());
+		                    }
+		                    catch (final IOException e) {
+		        				LOGGER.info("El fichero esta siendo usado por otro proceso: "  + e); //$NON-NLS-1$
+		        		    }
+		                    allCerts.remove(firstKey);
+	                    }
+	                }
+        		}
+        		// Si el usuario dice que no, se resetea el contador de usos 
+        		// para volverlo a preguntar mas adelante
+        		else {
+        			PreferencesManager.put(
+        					String.valueOf(crc.getValue()), 
+	                		String.valueOf(0)
+	                	);
+        		}
+        	}
+        	// Si ya se anadio con anterioridad como frecuente se actualiza la ultima fecha de uso
+        	else if(Integer.parseInt(numberOfUses) + 1 > MIN_FREC_CERT_USES) {
+        		SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS"); //$NON-NLS-1$
+			    Date now = new Date();
+            	PreferencesManager.put(
+            			String.valueOf(crc.getValue()) + "_last_used",  //$NON-NLS-1$
+	                    format.format(now)
+	                );
+        	}
+        	else {
+            	// Si aun no se anadio se suma uno al contador de usos
+	            PreferencesManager.put(
+	            		String.valueOf(crc.getValue()), 
+	             		String.valueOf((Integer.parseInt(numberOfUses) + 1))
+	            	);
+        	}
+        }
+        else {
+        	PreferencesManager.put(
+        			String.valueOf(crc.getValue()), 
+        			"1" //$NON-NLS-1$
+        		);
+        }
+	}
     /** A&ntilde;ade un destinatario del tipo seleccionado. */
     void addRecipient() {
 
@@ -362,7 +535,12 @@ final class DigitalEnvelopeRecipients extends JPanel {
         		(JFrame) SwingUtilities.getAncestorOfClass(JFrame.class, getDialog())
         	);
         	if (cert != null) {
-        		certDest = new CertificateDestiny(AOUtil.getCN(cert), cert);
+	        	try {
+					manageFrecuentCertificates(cert.getEncoded());
+				} catch (CertificateException e) {
+					LOGGER.severe("No se ha podido gestionar el certificado como certificado frecuente: " + e); //$NON-NLS-1$
+				}
+	        	certDest = new CertificateDestiny(AOUtil.getCN(cert), cert);
         	}
         }
         else {
@@ -378,7 +556,7 @@ final class DigitalEnvelopeRecipients extends JPanel {
 	        	{
 		            if (ao == AOKeyStore.PKCS12 || ao == AOKeyStore.SINGLE) {
 		                if (ao == AOKeyStore.PKCS12) {
-		                    filter = new String[] { "p12", "pfx" };  //$NON-NLS-1$//$NON-NLS-2$
+		                    filter = new String[] { "p12", "pfx" };  //$NON-NLS-1$ //$NON-NLS-2$
 		                }
 		                else {
 		                    filter = new String[] { "cer", "p7b", "p7s", "crt", "pem" }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
@@ -388,38 +566,7 @@ final class DigitalEnvelopeRecipients extends JPanel {
 		                    throw new AOCancelledOperationException();
 		                }
 		                lib = keystorePath.getAbsolutePath();
-		                //Guarda el certificado como frecuentemente usado
-		                CertificateFactory cf = CertificateFactory.getInstance("X.509"); //$NON-NLS-1$
-	                    Certificate cert = cf.generateCertificate(new FileInputStream(lib));
-	                    CRC32 crc = new CRC32();
-	                    try {
-	    					crc.update(cert.getEncoded());
-	    				} catch (CertificateEncodingException e) {
-	    					LOGGER.warning("El certificado no se ha podido guardar como certificado frecuente" + e); //$NON-NLS-1$
-	    				}
-	                    String numberOfUses = PreferencesManager.get(String.valueOf(crc.getValue()), null);
-		                //Si el certificado ya ha sido usado se le suma uno al contador. En caso contrario se inicializa
-	                    if(numberOfUses != null) {
-		                	PreferencesManager.put(
-		                			String.valueOf(crc.getValue()), 
-		                			String.valueOf((Integer.parseInt(numberOfUses)) + 1)
-		                		);
-		                }
-		                else {
-		                	PreferencesManager.put(
-		                			String.valueOf(crc.getValue()), 
-		                			"1" //$NON-NLS-1$
-		                		);
-		                }
-		                //Se guarda una copia del certificado en el directorio .afirma en el que se guardan los logs
-	                    //Se obtiene el original del certificado
-	                    String[] dirs = lib.split("\\\\"); //$NON-NLS-1$
-	                    String file_name = dirs[dirs.length - 1];
-	                    File dest_cert_path = new File(frec_certs_dir);
-	                    if (!dest_cert_path.exists()) {
-	                    	dest_cert_path.mkdirs();
-	            		}
-	                    Files.copy(new File(lib).toPath(), new File(frec_certs_dir + file_name).toPath(), StandardCopyOption.REPLACE_EXISTING);
+		                
 		            }
 		            else if (ao == AOKeyStore.PKCS11) {
 		                filter = new String[] {"dll", "so"};  //$NON-NLS-1$//$NON-NLS-2$
@@ -430,6 +577,7 @@ final class DigitalEnvelopeRecipients extends JPanel {
 		                lib = keystorePath.getAbsolutePath();
 		            }
 	        	}
+	        	
 	            keyStoreManager = AOKeyStoreManagerFactory.getAOKeyStoreManager(
 	        		ao,
 	        		lib,
@@ -437,6 +585,8 @@ final class DigitalEnvelopeRecipients extends JPanel {
 	        		ao.getStorePasswordCallback(getDialog()),
 	        		getDialog()
 	            );
+	            
+	            manageFrecuentCertificates(keyStoreManager.getCertificate(keyStoreManager.getAliases()[0]).getEncoded());
 	        }
 	        catch (final AOCancelledOperationException e) {
 	            LOGGER.info("Operacion cancelada por el usuario: " + e); //$NON-NLS-1$

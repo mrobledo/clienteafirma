@@ -101,14 +101,14 @@ public class DigitalEnvelopeSelectFile extends JPanel {
 						PreferencesManager.PREFERENCE_ENVELOPE_TYPE,
 						EnvelopesTypeResources.SIGNED.name()
 						);
-
+				
 				EnvelopesTypeResources type = null;
 				try {
 					type = EnvelopesTypeResources.valueOf(envelopType);
 				}
 				catch (final IllegalArgumentException e) {
 					LOGGER.warning("Tipo de sobre registrado no valido, se usara el por defecto: " + e); //$NON-NLS-1$
-					return;
+					type = EnvelopesTypeResources.SIGNED;
 				}
 				this.envelopeTypes.setSelectedItem(type);
 			}

@@ -61,11 +61,27 @@ public final class EnvelopesUtils {
         stores.add(new KeyStoreConfiguration(AOKeyStore.SINGLE, null, null));
         stores.add(new KeyStoreConfiguration(AOKeyStore.PKCS12, null, null));
         stores.add(new KeyStoreConfiguration(AOKeyStore.PKCS11, null, null));
-        stores.add(new KeyStoreConfiguration(AOKeyStore.FRECUENTCERTS, null, null));
 
         return stores.toArray(new KeyStoreConfiguration[stores.size()]);
     }
 
+    /** Recupera los almacenes compatibles con el sistema y preparados
+     * para contener certificados para envoltura de datos. El almac&eacute;n por defecto ser&aacute;
+     * @param enableLDAPMDEF <code>true</code> para habilitar el directorio del Ministerio de Defensa.
+     * @return Listado de almacenes. */
+    public static KeyStoreConfiguration[] getKeyStoresToWrapFirstFrecuentCerts() {
+
+        final List<KeyStoreConfiguration> stores = new ArrayList<>();
+
+        stores.add(new KeyStoreConfiguration(AOKeyStore.FRECUENTCERTS, null, null));
+        stores.add(new KeyStoreConfiguration(AOKeyStore.LDAPMDEF, null, null));
+        stores.add(new KeyStoreConfiguration(AOKeyStore.SINGLE, null, null));
+        stores.add(new KeyStoreConfiguration(AOKeyStore.PKCS12, null, null));
+        stores.add(new KeyStoreConfiguration(AOKeyStore.PKCS11, null, null));
+
+        return stores.toArray(new KeyStoreConfiguration[stores.size()]);
+    }
+    
 	/** Recupera los almacenes compatibles con el sistema y preparados
      * para contener los certificados para la apertura de sobres.
      * @return Listado de almacenes. */
