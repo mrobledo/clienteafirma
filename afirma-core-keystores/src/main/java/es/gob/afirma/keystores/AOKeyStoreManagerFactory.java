@@ -93,7 +93,7 @@ public final class AOKeyStoreManagerFactory {
 					crc.update(aksm.getCertificate(aksm.getAliases()[0]).getEncoded());
 					String.valueOf(crc.getValue());
 				} catch (CertificateEncodingException e) {
-					LOGGER.warning("El certificado no se ha podido guardar como certificado frecuente" + e); //$NON-NLS-1$
+					LOGGER.warning("Error al abrir el certificado: " + e); //$NON-NLS-1$
 				}
     		}
     		return aksm;
