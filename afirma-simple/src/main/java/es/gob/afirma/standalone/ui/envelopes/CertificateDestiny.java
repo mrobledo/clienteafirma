@@ -58,6 +58,7 @@ public class CertificateDestiny extends JDialog {
  				SimpleAfirmaMessages.getString("DigitalEnvelopeRecipients.20"), //$NON-NLS-1$
  				JOptionPane.ERROR_MESSAGE
  			);
+            return;
         }
         catch (final Exception e) {
             LOGGER.severe("No se ha podido recuperar el certificado seleccionado: " + e); //$NON-NLS-1$
