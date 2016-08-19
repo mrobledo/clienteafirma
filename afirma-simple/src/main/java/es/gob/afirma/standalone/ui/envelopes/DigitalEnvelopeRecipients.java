@@ -67,7 +67,7 @@ final class DigitalEnvelopeRecipients extends JPanel {
 	private static final Logger LOGGER = Logger.getLogger("es.gob.afirma"); //$NON-NLS-1$
 	private static final String FREC_CERTS_PATH = "%h/.afirma/frec_certs/"; //$NON-NLS-1$
 	// Numero minimo de usos de un certificado para preguntar al usuario si desea anadirlo como certificado frecuente
-	private static final int MIN_FREC_CERT_USES = 5;
+	private static final int MIN_FREC_CERT_USES = 7;
 	// Numero maximo de certificados frecuentes que se pueden tener
 	private static final int MAX_FREC_CERTS_IN_DIR = 5;
 	private final JButton nextButton = new JButton(SimpleAfirmaMessages.getString("DigitalEnvelopePresentation.3")); //$NON-NLS-1$
@@ -536,11 +536,11 @@ final class DigitalEnvelopeRecipients extends JPanel {
         	);
         	if (cert != null) {
 	        	try {
-					manageFrecuentCertificates(cert.getEncoded());
+	        		certDest = new CertificateDestiny(AOUtil.getCN(cert), cert);
+					manageFrecuentCertificates(certDest.getCertificate().getEncoded());
 				} catch (CertificateException e) {
 					LOGGER.severe("No se ha podido gestionar el certificado como certificado frecuente: " + e); //$NON-NLS-1$
 				}
-	        	certDest = new CertificateDestiny(AOUtil.getCN(cert), cert);
         	}
         }
         else {
@@ -585,8 +585,8 @@ final class DigitalEnvelopeRecipients extends JPanel {
 	        		ao.getStorePasswordCallback(getDialog()),
 	        		getDialog()
 	            );
-	            
-	            manageFrecuentCertificates(keyStoreManager.getCertificate(keyStoreManager.getAliases()[0]).getEncoded());
+	            certDest = new CertificateDestiny(keyStoreManager, this.dialog);
+	            manageFrecuentCertificates(certDest.getCertificate().getEncoded());
 	        }
 	        catch (final AOCancelledOperationException e) {
 	            LOGGER.info("Operacion cancelada por el usuario: " + e); //$NON-NLS-1$
@@ -612,7 +612,6 @@ final class DigitalEnvelopeRecipients extends JPanel {
 				);
 		        return;
 		    }
-	        certDest = new CertificateDestiny(keyStoreManager, this.dialog);
         }
 	    // Comprobamos que el certificado es correcto
 	    if (certDest != null && certDest.getAlias() != null && !certDest.equals("")) { //$NON-NLS-1$

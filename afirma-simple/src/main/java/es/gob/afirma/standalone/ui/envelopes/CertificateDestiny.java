@@ -42,6 +42,7 @@ public class CertificateDestiny extends JDialog {
         }
         catch (final AOCancelledOperationException e) {
             LOGGER.info("Operacion cancelada por el usuario: " + e); //$NON-NLS-1$
+            throw new AOCancelledOperationException();
         }
         catch (final java.security.ProviderException e) {
         	// Comprobacion especifica para el proveedor Java de DNIe
