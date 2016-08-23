@@ -390,6 +390,10 @@ public class OpenDigitalEnvelopeDialog extends JDialog implements KeyListener {
                 JOptionPane.ERROR_MESSAGE
             );
 		}
+		catch (final AOCancelledOperationException e) {
+			LOGGER.info("Operacion de almacenamiento del fichero descifrado cancelada por el usuario: " + e); //$NON-NLS-1$
+			return false;
+		}
 		return true;
 	}
 
