@@ -10,7 +10,7 @@ import javax.imageio.ImageIO;
 
 import es.gob.afirma.core.misc.Base64;
 
-enum ColorResource {
+public enum ColorResource {
 
 	BLACK(
 		SignPdfUiMessages.getString("ColorResource.0"), //$NON-NLS-1$
