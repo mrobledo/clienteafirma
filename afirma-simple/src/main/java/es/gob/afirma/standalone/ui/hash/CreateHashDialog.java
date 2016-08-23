@@ -243,12 +243,12 @@ public final class CreateHashDialog extends JDialog implements KeyListener{
 
 		// En Mac OS X el orden de los botones es distinto
 		if (Platform.OS.MACOSX.equals(Platform.getOS())) {
-			panel.add(generateButton);
 			panel.add(exitButton);
+			panel.add(generateButton);
 		}
 		else {
-			panel.add(exitButton);
 			panel.add(generateButton);
+			panel.add(exitButton);
 		}
 
 		c.add(fileTextFieldLabel, gbc);

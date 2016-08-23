@@ -343,12 +343,12 @@ public final class CheckHashFiles extends JDialog {
 
 		// En Mac OS X el orden de los botones es distinto
 		if (Platform.OS.MACOSX.equals(Platform.getOS())) {
-			panel.add(checkButton);
 			panel.add(exitButton);
+			panel.add(checkButton);
 		}
 		else {
-			panel.add(exitButton);
 			panel.add(checkButton);
+			panel.add(exitButton);
 		}
 
 		final JLabel directoryLabel = new JLabel(

@@ -254,12 +254,12 @@ public final class CheckHashDialog extends JDialog implements KeyListener {
 
 		// En Mac OS X el orden de los botones es distinto
 		if (Platform.OS.MACOSX.equals(Platform.getOS())) {
-			panel.add(checkButton);
 			panel.add(exitButton);
+			panel.add(checkButton);
 		}
 		else {
-			panel.add(exitButton);
 			panel.add(checkButton);
+			panel.add(exitButton);
 		}
 
 		c.add(textFieldDataLabel, gbc);

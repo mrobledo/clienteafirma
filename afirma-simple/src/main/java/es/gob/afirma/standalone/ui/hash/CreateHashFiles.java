@@ -238,12 +238,12 @@ public final class CreateHashFiles extends JDialog {
 
 		// En Mac OS X el orden de los botones es distinto
 		if (Platform.OS.MACOSX.equals(Platform.getOS())) {
-			panel.add(this.generateButton);
 			panel.add(exitButton);
+			panel.add(this.generateButton);
 		}
 		else {
-			panel.add(exitButton);
 			panel.add(this.generateButton);
+			panel.add(exitButton);
 		}
 
 		add(label, gbc);
