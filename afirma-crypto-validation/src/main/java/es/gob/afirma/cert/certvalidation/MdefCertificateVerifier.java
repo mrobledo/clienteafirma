@@ -7,15 +7,14 @@ import java.security.cert.X509Certificate;
 public class MdefCertificateVerifier extends CertificateVerifier {
 
 	@Override
-	public ValidationResult verifyRevocation(X509Certificate cert) {
+	public ValidationResult verifyRevocation(final X509Certificate cert) {
 		// TODO verificar con servicio web
 		return ValidationResult.REVOKED;
 	}
-	
+
 	@Override
 	public ValidationResult validateCertificate(final X509Certificate cert) {
 		return ValidationResult.VALID;
-		
 	}
 
 }
