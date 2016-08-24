@@ -9,6 +9,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.security.InvalidKeyException;
@@ -16,6 +17,8 @@ import java.security.KeyStore.PrivateKeyEntry;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableEntryException;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -42,6 +45,7 @@ import es.gob.afirma.keystores.AOKeyStoreManagerFactory;
 import es.gob.afirma.keystores.AOKeystoreAlternativeException;
 import es.gob.afirma.keystores.KeyStoreConfiguration;
 import es.gob.afirma.standalone.AutoFirmaUtil;
+import es.gob.afirma.standalone.LookAndFeelManager;
 import es.gob.afirma.standalone.SimpleAfirmaMessages;
 import es.gob.afirma.standalone.ui.preferences.PreferencesManager;
 
@@ -70,6 +74,13 @@ public class OpenDigitalEnvelopeDialog extends JDialog implements KeyListener {
 	private final JButton cancelButton = new JButton(SimpleAfirmaMessages.getString("OpenDigitalEnvelope.4")); //$NON-NLS-1$
 
 	private boolean certificateDialogOpenned = false;
+
+	/** XXX: Hay que reorganizar todo el codigo para obtener el envelopType de forma mas elegante */
+	private String envelopType = null;
+
+	/** XXX: Hay que reorganizar todo el codigo para obtener el certificado de firma de forma mas elegante */
+	private X509Certificate signingCert = null;
+
 
 	/** Crea el di&aacute;logo y lo hace visible.
 	 * @param parent Frame padre del di&aacute;logo.
@@ -105,6 +116,10 @@ public class OpenDigitalEnvelopeDialog extends JDialog implements KeyListener {
 		getAccessibleContext().setAccessibleDescription(
 			SimpleAfirmaMessages.getString("OpenDigitalEnvelope.2") //$NON-NLS-1$
 		);
+
+		if (!LookAndFeelManager.HIGH_CONTRAST) {
+            setBackground(LookAndFeelManager.WINDOW_COLOR);
+        }
 
 		// Icono de la ventana
 		setIconImage(AutoFirmaUtil.getDefaultDialogsIcon());
@@ -179,6 +194,13 @@ public class OpenDigitalEnvelopeDialog extends JDialog implements KeyListener {
 					if (open()) {
 						setVisible(false);
 						dispose();
+
+						if (AOCMSEnveloper.CMS_CONTENTTYPE_SIGNEDANDENVELOPEDDATA == OpenDigitalEnvelopeDialog.this.getEnvelopType()) {
+							new OpenDigitalEnvelopeInfoDialog(
+									OpenDigitalEnvelopeDialog.this.getOwner(),
+									OpenDigitalEnvelopeDialog.this.getSigningCert()
+							).setVisible(true);
+						}
 					}
 				}
 			}
@@ -394,6 +416,28 @@ public class OpenDigitalEnvelopeDialog extends JDialog implements KeyListener {
 			LOGGER.info("Operacion de almacenamiento del fichero descifrado cancelada por el usuario: " + e); //$NON-NLS-1$
 			return false;
 		}
+
+		this.envelopType = enveloper.getProcessedEnvelopType();
+
+		final byte[] certEncoded = enveloper.getSignerCert();
+		if (certEncoded != null) {
+			try {
+				this.signingCert =
+						(X509Certificate) CertificateFactory.getInstance("X509").generateCertificate( //$NON-NLS-1$
+								new ByteArrayInputStream(certEncoded));
+			}
+			catch(final Exception e) {
+				LOGGER.severe("No se pudo decodificar el certificado de firma del sobre electronico: " + e); //$NON-NLS-1$
+				AOUIFactory.showErrorMessage(
+		                this,
+		                SimpleAfirmaMessages.getString("OpenDigitalEnvelope.24"), //$NON-NLS-1$
+		                SimpleAfirmaMessages.getString("OpenDigitalEnvelope.15"), //$NON-NLS-1$
+		                JOptionPane.ERROR_MESSAGE
+		            );
+				return false;
+			}
+		}
+
 		return true;
 	}
 
@@ -523,7 +567,19 @@ public class OpenDigitalEnvelopeDialog extends JDialog implements KeyListener {
 		}
 	}
 
-	public static void main(final String[] args) {
-		OpenDigitalEnvelopeDialog.startOpenDigitalEnvelopeDialog(null, null);
+	/**
+	 * Recupera el tipo de envoltorio.
+	 * @return Tipo de envoltorio.
+	 */
+	String getEnvelopType() {
+		return this.envelopType;
+	}
+
+	/**
+	 * Recupera el certificado de firma.
+	 * @return Certificado de firma codificado.
+	 */
+	public X509Certificate getSigningCert() {
+		return this.signingCert;
 	}
 }

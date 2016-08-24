@@ -14,7 +14,7 @@ import javax.swing.JPanel;
 
 /** Panel que redimensiona su imagen de fondo (manteniendo la relaci&oacute;n de aspecto) cuando
  * este es redimensionado. */
-final class ScalablePane extends JPanel {
+public final class ScalablePane extends JPanel {
 
     /** Serial Id. */
 	private static final long serialVersionUID = 2907355327204790682L;
@@ -23,7 +23,7 @@ final class ScalablePane extends JPanel {
     private boolean toFit;
     private Image scaled;
 
-    ScalablePane(final Image master) {
+   public ScalablePane(final Image master) {
         this(master, true);
     }
 
