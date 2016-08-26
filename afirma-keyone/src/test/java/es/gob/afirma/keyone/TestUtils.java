@@ -7,6 +7,9 @@ import java.nio.file.Paths;
 import org.junit.Assert;
 import org.junit.Test;
 
+import es.gob.afirma.api.KeyOneUtil;
+import es.gob.afirma.api.PdfException;
+
 public final class TestUtils {
 
 	@Test
