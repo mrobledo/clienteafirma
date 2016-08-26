@@ -46,6 +46,7 @@ import es.gob.afirma.keystores.AggregatedKeyStoreManager;
 import es.gob.afirma.keystores.SmartCardException;
 import es.gob.afirma.keystores.filters.CertificateFilter;
 import es.gob.afirma.keystores.filters.PolicyIdFilter;
+import es.gob.afirma.local.BatchSigner;
 import es.gob.afirma.signers.pades.BadPdfPasswordException;
 import es.gob.afirma.signers.pades.PdfHasUnregisteredSignaturesException;
 import es.gob.afirma.signers.pades.PdfIsCertifiedException;

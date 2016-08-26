@@ -17,6 +17,11 @@
 
 	<dependencies>
 		<dependency>
+			<groupId>es.gob.afirma.local</groupId>
+			<artifactId>afirma-local-batch-sign</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
 			<groupId>es.gob.afirma</groupId>
 			<artifactId>afirma-ui-simpleafirma</artifactId>
 			<version>${project.version}</version>
