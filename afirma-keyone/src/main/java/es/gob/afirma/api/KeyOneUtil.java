@@ -18,6 +18,8 @@ import java.util.List;
 import java.util.Properties;
 import java.util.logging.Logger;
 
+import javax.swing.JOptionPane;
+
 import com.aowagie.text.DocumentException;
 import com.aowagie.text.Rectangle;
 import com.aowagie.text.pdf.PdfAnnotation;
@@ -35,6 +37,7 @@ import es.gob.afirma.core.misc.Base64;
 import es.gob.afirma.core.signers.AOSignConstants;
 import es.gob.afirma.core.signers.AOSigner;
 import es.gob.afirma.core.signers.AOSignerFactory;
+import es.gob.afirma.core.ui.AOUIFactory;
 import es.gob.afirma.keystores.AOCertificatesNotFoundException;
 import es.gob.afirma.keystores.AOKeyStore;
 import es.gob.afirma.keystores.AOKeyStoreDialog;
@@ -52,6 +55,7 @@ import es.gob.afirma.signers.pades.PdfHasUnregisteredSignaturesException;
 import es.gob.afirma.signers.pades.PdfIsCertifiedException;
 import es.gob.afirma.signers.pades.PdfUtil;
 import es.gob.afirma.signers.pades.PdfUtil.SignatureField;
+import es.gob.afirma.standalone.SimpleAfirmaMessages;
 import es.gob.afirma.standalone.SimpleKeyStoreManager;
 import es.gob.afirma.standalone.ui.preferences.PreferencesManager;
 
@@ -158,15 +162,23 @@ public final class KeyOneUtil {
 					 null
 					);
 			 
-			 //Se obtiene la clave privada del almacen
-			 PrivateKeyEntry pke = aksm.getKeyEntry(alias);
+			 if(AOUIFactory.showConfirmDialog(
+     				null,
+     				SimpleAfirmaMessages.getString("Api.1"), //$NON-NLS-1$
+     				SimpleAfirmaMessages.getString("Api.0"), //$NON-NLS-1$
+     				JOptionPane.YES_NO_OPTION,
+     				JOptionPane.WARNING_MESSAGE
+     			) == 0) {
+				 //Se obtiene la clave privada del almacen
+				 PrivateKeyEntry pke = aksm.getKeyEntry(alias);
 			 
-			 //Se firma con la clave privada
-			 return BatchSigner.sign(
-					Base64.encode(xmlBytes), 
-					pke.getCertificateChain(), 
-					pke.getPrivateKey()
-				);
+				 //Se firma con la clave privada
+				 return BatchSigner.sign(
+						Base64.encode(xmlBytes), 
+						pke.getCertificateChain(), 
+						pke.getPrivateKey()
+					);
+			 }
 		} catch (CertificateEncodingException | AOException e) {
 			LOGGER.severe("Error durante la firma por lotes: " + e); //$NON-NLS-1$
 			throw e;
@@ -179,6 +191,7 @@ public final class KeyOneUtil {
 			LOGGER.severe("No de ha podido inicializar el almacen de windows: " + e); //$NON-NLS-1$
 			throw e;
 		}
+		throw new AOCancelledOperationException("Acceso a la clave privada no permitido"); //$NON-NLS-1$
 	}
 
 	/** Firma del fichero pdf.
