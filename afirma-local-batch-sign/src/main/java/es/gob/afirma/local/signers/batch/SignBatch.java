@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.logging.Logger;
 
+import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.w3c.dom.DOMException;
@@ -109,7 +110,10 @@ public abstract class SignBatch {
 		try (
 				final InputStream is = new ByteArrayInputStream(xml)
 				){
-			doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(is);
+			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+		    factory.setNamespaceAware(true);
+		    DocumentBuilder builder = factory.newDocumentBuilder();
+		    doc = builder.parse(is);
 		}
 		catch (final Exception e) {
 			Logger.getLogger("es.gob.afirma").severe( //$NON-NLS-1$
