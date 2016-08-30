@@ -42,19 +42,19 @@ final class BatchServerUtil {
 		);
 	}
 
-	static SignBatch getSignBatch(final String xmlAsUrlSafeBase64) throws IOException {
-		if (xmlAsUrlSafeBase64 == null) {
+	static SignBatch getSignBatch(final String xml) throws IOException {
+		if (xml == null) {
 			throw new IllegalArgumentException(
 				"La definicion de lote no puede ser nula" //$NON-NLS-1$
 			);
 		}
-		final byte[] xml = Base64.isBase64(xmlAsUrlSafeBase64.getBytes()) ?
-			Base64.decode(unDoUrlSafe(xmlAsUrlSafeBase64)) :
-				xmlAsUrlSafeBase64.getBytes();
+		final byte[] xmlBytes =  Base64.isBase64(xml.getBytes()) ?
+			Base64.decode(unDoUrlSafe(xml)) :
+			xml.getBytes();
 		if (CONCURRENT) {
-			return new SignBatchConcurrent(xml);
+			return new SignBatchConcurrent(xmlBytes);
 		}
-		return new SignBatchSerial(xml);
+		return new SignBatchSerial(xmlBytes);
 	}
 
 	static X509Certificate[] getCertificates(final String certListUrlSafeBase64) throws CertificateException,
