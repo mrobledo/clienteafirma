@@ -1,6 +1,5 @@
 package es.gob.afirma.api;
 
-import java.io.File;
 import java.net.URL;
 
 import org.junit.Test;
@@ -16,7 +15,7 @@ public final class TestApi {
 		// Se obtiene el xml de la carpeta resources
 		URL xmlURL = this.getClass().getResource("/xml/batch-with-countersign.xml"); //$NON-NLS-1$
 
-		//Se cambia el %20 por espacio
+		// Se cambia el %20 por espacio
 		String filePath = xmlURL.getPath().replace("%20", " "); //$NON-NLS-1$ //$NON-NLS-2$
 		
 		// Alias y contrasena para firmar con el certificado autofirma.pfx
