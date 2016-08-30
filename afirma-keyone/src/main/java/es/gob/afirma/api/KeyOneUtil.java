@@ -141,7 +141,6 @@ public final class KeyOneUtil {
 				){
 			
 			fis.read(xmlBytes);  
-	
 			if (xmlBytes.length < 1) {
 				throw new IllegalArgumentException(
 					"El XML de definicion de lote de firmas no puede ser nulo ni vacio" //$NON-NLS-1$
