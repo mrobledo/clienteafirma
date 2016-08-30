@@ -1,9 +1,7 @@
 package es.gob.afirma.api;
 
 import java.io.File;
-
-import javax.swing.JDialog;
-import javax.swing.JFileChooser;
+import java.net.URL;
 
 import org.junit.Test;
 
@@ -14,15 +12,15 @@ public final class TestApi {
 	/** 
 	 * @throws Exception En cualquier error. */
 	@Test
-	public static void testBatchSignWithInterface() throws Exception {
-		//Se elige el xml
-		final JFileChooser fc = new JFileChooser();
-		int returnVal = fc.showOpenDialog(new JDialog());
-		File file;
-        if (returnVal == JFileChooser.APPROVE_OPTION) {
-            file = fc.getSelectedFile();
-            String ret = KeyOneUtil.doBatchSign(file.getAbsolutePath(), "socketautofirma", "654321");  //$NON-NLS-1$ //$NON-NLS-2$
-            System.out.println(ret);
-        }
+	public void testBatchSignWithInterface() throws Exception {
+		// Se obtiene el xml de la carpeta resources
+		URL xmlURL = this.getClass().getResource("/xml/batch-with-countersign.xml"); //$NON-NLS-1$
+
+		//Se cambia el %20 por espacio
+		String filePath = xmlURL.getPath().replace("%20", " "); //$NON-NLS-1$ //$NON-NLS-2$
+		
+		// Alias y contrasena para firmar con el certificado autofirma.pfx
+		String ret = KeyOneUtil.doBatchSign(filePath, "socketautofirma", "654321");  //$NON-NLS-1$ //$NON-NLS-2$
+        System.out.println(ret);
 	}
 }
