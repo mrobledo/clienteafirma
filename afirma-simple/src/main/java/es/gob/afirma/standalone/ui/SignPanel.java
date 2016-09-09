@@ -633,7 +633,7 @@ public final class SignPanel extends JPanel {
 
     static List<? extends CertificateFilter> getCertFilters() {
     	final List<CertificateFilter> filters = new ArrayList<>();
-    	if (PreferencesManager.getBoolean(PreferencesManager.PREFERENCE_KEYSTORE_SIGN_ONLY_CERTS, false)) {
+    	if (PreferencesManager.getBoolean(PreferencesManager.PREFERENCE_KEYSTORE_SIGN_ONLY_CERTS, true)) {
     		filters.add(new KeyUsageFilter(KeyUsageFilter.SIGN_CERT_USAGE));
     	}
     	if (PreferencesManager.getBoolean(PreferencesManager.PREFERENCE_KEYSTORE_ALIAS_ONLY_CERTS, false)) {

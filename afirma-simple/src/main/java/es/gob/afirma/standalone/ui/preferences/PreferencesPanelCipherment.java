@@ -91,7 +91,7 @@ final class PreferencesPanelCipherment extends JPanel {
 		this.onlyEncipherment.setSelected(
 				PreferencesManager.getBoolean(
 						PreferencesManager.PREFERENCE_CIPHERMENT_ONLY_CYPHER_CERTS,
-						false
+						true
 						)
 				);
 

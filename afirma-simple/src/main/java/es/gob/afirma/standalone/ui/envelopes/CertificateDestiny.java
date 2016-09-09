@@ -109,7 +109,7 @@ public class CertificateDestiny extends JDialog {
 	private Certificate[] showCerts(final Component parentComponent, final AOKeyStoreManager ksm) throws AOCertificatesNotFoundException {
 
 		List<CertificateFilter> filters = null;
-		if (PreferencesManager.getBoolean(PreferencesManager.PREFERENCE_CIPHERMENT_ONLY_CYPHER_CERTS, false)) {
+		if (PreferencesManager.getBoolean(PreferencesManager.PREFERENCE_CIPHERMENT_ONLY_CYPHER_CERTS, true)) {
 			filters = new ArrayList<>();
 			filters.add(new CipherCertificateFilter());
 		}

@@ -412,7 +412,7 @@ final class PreferencesPanelKeyStores extends JPanel {
 	}
 
 	void loadPreferences() {
-		this.onlySignature.setSelected(PreferencesManager.getBoolean(PREFERENCE_KEYSTORE_SIGN_ONLY_CERTS, false));
+		this.onlySignature.setSelected(PreferencesManager.getBoolean(PREFERENCE_KEYSTORE_SIGN_ONLY_CERTS, true));
 		this.onlyAlias.setSelected(PreferencesManager.getBoolean(PREFERENCE_KEYSTORE_ALIAS_ONLY_CERTS, false));
 		this.closeKeyStore.setSelected(PreferencesManager.getBoolean(PREFERENCE_KEYSTORE_CLOSE_KEYSTORE, false));
 		this.defaultStore.setSelectedItem(
