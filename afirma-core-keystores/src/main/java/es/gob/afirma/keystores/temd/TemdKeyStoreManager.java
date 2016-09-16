@@ -28,6 +28,9 @@ import es.gob.afirma.keystores.KeyStoreUtilities;
  * @author Tom&aacute;s Garc&iacute;a-Mer&aacute;s. */
 public final class TemdKeyStoreManager extends AggregatedKeyStoreManager implements AutoCloseableStore {
 
+    /** Tiempo (en segundos) que se mantiene abierto el almacen de la TEMD. */
+    private static final int DEFAULT_TIME_TO_CLOSE_KEYSTORE = 24 * 3600; // 1 dia
+
 	static Logger getLogger() {
 		return LOGGER;
 	}
@@ -38,7 +41,7 @@ public final class TemdKeyStoreManager extends AggregatedKeyStoreManager impleme
 		this.pwc.setParent(p);
 	}
 
-	private final TimedPersistentCachePasswordCallback pwc = new TimedPersistentCachePasswordCallback(1, null);
+	private final TimedPersistentCachePasswordCallback pwc = new TimedPersistentCachePasswordCallback(DEFAULT_TIME_TO_CLOSE_KEYSTORE, null);
 
 	private AOKeyStoreManager getTemdPkcs11KeyStoreManager() throws AOKeyStoreManagerException {
 
@@ -302,6 +305,23 @@ public final class TemdKeyStoreManager extends AggregatedKeyStoreManager impleme
 			);
 		}
 		this.pwc.setSecondsToClose(seconds);
+	}
+
+	@Override
+	public void close() {
+		this.pwc.clearPassword();
+	}
+
+	/**
+	 * Cierra la instancia unica que puede existir de este almac&eacute;n.
+	 */
+	public static void closeKeyStore() {
+		TimedPersistentCachePasswordCallback.clear();
+	}
+
+	@Override
+	public boolean isOpen() {
+		return !this.pwc.isObjectExpired();
 	}
 
     private static TEMD_CARD getInsertedTemd() {

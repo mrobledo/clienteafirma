@@ -48,21 +48,36 @@ final class TimedPersistentCachePasswordCallback extends PasswordCallback {
 	@Override
 	public void clearPassword() {
 		super.clearPassword();
-		preferences.remove(KEY_TEMD_OBJ);
+		clear();
 	}
 
-	private boolean isObjectExpired() {
+	/**
+	 * Elimina el PIN del almacen y el registro de la &uacute;ltima
+	 * hora en la que se us&oacute;.
+	 */
+	public static void clear() {
+		preferences.remove(KEY_TEMD_OBJ);
+		preferences.remove(KEY_TEMD_LASTTIME);
+	}
+
+	public boolean isObjectExpired() {
 		final long lasttime = preferences.getLong(KEY_TEMD_LASTTIME, -1);
 		if (lasttime == -1) {
 			return true;
 		}
-		return System.currentTimeMillis() > lasttime + this.milisecondsToClose;
+
+		final boolean expired = System.currentTimeMillis() > lasttime + this.milisecondsToClose;
+		if (expired) {
+			clearPassword();
+		}
+		return expired;
 	}
 
 	@Override
 	public char[] getPassword() {
 		final String pin = preferences.get(KEY_TEMD_OBJ, null);
-		if (pin != null && (!isObjectExpired())) {
+		if (pin != null && !isObjectExpired()) {
+			resetTimer();
 			return pin.toCharArray();
 		}
 		final char[] newpin = AOKeyStore.TEMD.getStorePasswordCallback(this.parent).getPassword();
@@ -77,13 +92,10 @@ final class TimedPersistentCachePasswordCallback extends PasswordCallback {
 
 	@Override
 	public void setPassword(final char[] password) {
-		if (password != null && (!(password.length < 1))) {
+		if (password != null && !(password.length < 1)) {
 			super.setPassword(password);
 			preferences.put(KEY_TEMD_OBJ, new String(password));
 			resetTimer();
 		}
 	}
-
-
-
 }
