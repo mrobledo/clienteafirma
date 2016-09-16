@@ -148,7 +148,7 @@ public class OpenDigitalEnvelopeDialog extends JDialog implements KeyListener {
 							SimpleAfirmaMessages.getString("OpenDigitalEnvelope.11"), //$NON-NLS-1$
 							null,
 							null,
-							new String[] {SimpleAfirmaMessages.getString("OpenDigitalEnvelope.8")}, //$NON-NLS-1$
+							new String[] { "enveloped" }, //$NON-NLS-1$
 							SimpleAfirmaMessages.getString("OpenDigitalEnvelope.8"), //$NON-NLS-1$
 							false,
 							false,
@@ -371,8 +371,8 @@ public class OpenDigitalEnvelopeDialog extends JDialog implements KeyListener {
 				pke
 			);
 		}
-        catch (final InvalidKeyException e1) {
-			LOGGER.severe("La clave indicada no pertenece a ninguno de los destinatarios del envoltorio" + e1); //$NON-NLS-1$
+        catch (final InvalidKeyException e) {
+			LOGGER.log(Level.SEVERE, "La clave indicada no pertenece a ninguno de los destinatarios del envoltorio: " + e, e); //$NON-NLS-1$
         	AOUIFactory.showErrorMessage(
                 this,
                 SimpleAfirmaMessages.getString("OpenDigitalEnvelope.17"), //$NON-NLS-1$
@@ -381,8 +381,8 @@ public class OpenDigitalEnvelopeDialog extends JDialog implements KeyListener {
             );
         	return false;
 		}
-        catch (final Exception e1) {
-			LOGGER.severe("Error desensobrando el fichero: " + e1); //$NON-NLS-1$
+        catch (final Exception e) {
+			LOGGER.log(Level.SEVERE, "Error desensobrando el fichero: " + e, e); //$NON-NLS-1$
         	AOUIFactory.showErrorMessage(
                 this,
                 SimpleAfirmaMessages.getString("OpenDigitalEnvelope.18"), //$NON-NLS-1$
@@ -484,7 +484,7 @@ public class OpenDigitalEnvelopeDialog extends JDialog implements KeyListener {
     	}
 
     	try {
-    	keyStoreManager = AOKeyStoreManagerFactory.getAOKeyStoreManager(
+    		keyStoreManager = AOKeyStoreManagerFactory.getAOKeyStoreManager(
     			ao,
     			lib,
     			"default", //$NON-NLS-1$

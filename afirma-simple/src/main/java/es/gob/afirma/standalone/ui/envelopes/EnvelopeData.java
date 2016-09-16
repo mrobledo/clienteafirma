@@ -52,11 +52,8 @@ public final class EnvelopeData {
 	List<CertificateDestiny> getCertificateRecipientsList() {
 		return this.certificateRecipientsList;
 	}
-	void addCertificateRecipients(final List<CertificateDestiny> newRecipients) {
-		if (newRecipients != null) {
-			this.certificateRecipientsList.clear();
-			this.certificateRecipientsList.addAll(newRecipients);
-		}
+	void clearCertificateRecipientsList() {
+		this.certificateRecipientsList.clear();
 	}
 
 	public PrivateKeyEntry getSenderPrivateKeyEntry() {

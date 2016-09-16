@@ -38,7 +38,6 @@ public class DigitalEnvelopWrapper {
 			throw new InvalidKeyException("Error en la especificacion de la clave", e); //$NON-NLS-1$
 		}
 
-
 		final EnvelopInfo info = new EnvelopInfo(getWrapType(enveloper.getProcessedEnvelopType()));
 		info.setData(data);
 

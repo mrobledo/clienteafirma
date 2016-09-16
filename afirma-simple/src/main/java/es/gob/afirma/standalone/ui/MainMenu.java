@@ -40,6 +40,7 @@ import es.gob.afirma.standalone.ui.hash.CheckHashFiles;
 import es.gob.afirma.standalone.ui.hash.CreateHashDialog;
 import es.gob.afirma.standalone.ui.hash.CreateHashFiles;
 import es.gob.afirma.standalone.ui.preferences.PreferencesDialog;
+import es.gob.afirma.standalone.ui.preferences.PreferencesManager;
 
 /** Barra de men&uacute; para toda la aplicaci&oacute;n.
  * @author Tom&aacute;s Garc&iacute;a-Mer&aacute;s */
@@ -294,8 +295,10 @@ public final class MainMenu extends JMenuBar {
 
         toolsMenu.add(new MenuValidation(this.parent));
         toolsMenu.add(new MenuDigitalEnvelope(this.parent));
+        if (PreferencesManager.getBoolean(PreferencesManager.PREFERENCE_ADMIN_SHOW_SYMETRIC_CIPHER, false)) {
+        	toolsMenu.add(cipherMenu);
+        }
         toolsMenu.add(huellaMenu);
-        toolsMenu.add(cipherMenu);
         this.add(toolsMenu);
 
 

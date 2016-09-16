@@ -1,9 +1,5 @@
 package es.gob.afirma.standalone.ui.preferences;
 
-import static es.gob.afirma.standalone.ui.preferences.PreferencesManager.PREFERENCE_CADES_TIMESTAMP_CERT_REQUIRED;
-import static es.gob.afirma.standalone.ui.preferences.PreferencesManager.PREFERENCE_CADES_TIMESTAMP_CONFIGURE;
-import static es.gob.afirma.standalone.ui.preferences.PreferencesManager.PREFERENCE_CADES_TIMESTAMP_OID_CRITICAL;
-
 import java.awt.Container;
 import java.awt.FlowLayout;
 import java.awt.Frame;
@@ -49,7 +45,7 @@ final class TimeStampCadesDialog extends JDialog {
 		SimpleAfirmaMessages.getString("PreferencesPanelTimeStamps.2") //$NON-NLS-1$
 	);
 
-	private final JCheckBox timeStampCheckBox = new JCheckBox(
+	final JCheckBox timeStampCheckBox = new JCheckBox(
 		SimpleAfirmaMessages.getString("PreferencesPanel.118") //$NON-NLS-1$
 	);
 	boolean isTimeStampCheckBoxSelected() {
@@ -134,7 +130,7 @@ final class TimeStampCadesDialog extends JDialog {
 	private void loadConfiguration() {
 		setTimeStampCheckBoxSelected(
 			PreferencesManager.getBoolean(
-				PREFERENCE_CADES_TIMESTAMP_CONFIGURE,
+				PreferencesManager.PREFERENCE_CADES_TIMESTAMP_CONFIGURE,
 				this.timeStampCheckBox.isSelected()
 			)
 		);
@@ -164,7 +160,7 @@ final class TimeStampCadesDialog extends JDialog {
 		}
 
 		this.certRequiredCheckBox.setSelected(
-			PreferencesManager.getBoolean(PREFERENCE_CADES_TIMESTAMP_CERT_REQUIRED, true)
+			PreferencesManager.getBoolean(PreferencesManager.PREFERENCE_CADES_TIMESTAMP_CERT_REQUIRED, true)
 		);
 
 		final String usr = PreferencesManager.get(
@@ -200,14 +196,14 @@ final class TimeStampCadesDialog extends JDialog {
 		}
 
 		this.extensionCriticalCheckBox.setSelected(
-			PreferencesManager.getBoolean(PREFERENCE_CADES_TIMESTAMP_OID_CRITICAL, false)
+			PreferencesManager.getBoolean(PreferencesManager.PREFERENCE_CADES_TIMESTAMP_OID_CRITICAL, false)
 		);
 
 		enableFields(isTimeStampCheckBoxSelected());
 	}
 
-	void SaveConfiguration() {
-		PreferencesManager.putBoolean(PREFERENCE_CADES_TIMESTAMP_CONFIGURE, this.timeStampCheckBox.isSelected());
+	void saveConfiguration() {
+		PreferencesManager.putBoolean(PreferencesManager.PREFERENCE_CADES_TIMESTAMP_CONFIGURE, this.timeStampCheckBox.isSelected());
 
 		PreferencesManager.put(
 			PreferencesManager.PREFERENCE_CADES_TIMESTAMP_HASHALGORITHM,
@@ -283,6 +279,22 @@ final class TimeStampCadesDialog extends JDialog {
 			PreferencesManager.PREFERENCE_CADES_TIMESTAMP_OID_CRITICAL,
 			isExtensionCriticalCheckBoxSelected()
 		);
+	}
+
+	static void removeConfiguration() {
+		PreferencesManager.remove(PreferencesManager.PREFERENCE_CADES_TIMESTAMP_CONFIGURE);
+
+		PreferencesManager.remove(PreferencesManager.PREFERENCE_CADES_TIMESTAMP_HASHALGORITHM);
+
+		PreferencesManager.remove(PreferencesManager.PREFERENCE_CADES_TIMESTAMP_TSA_URL);
+		PreferencesManager.remove(PreferencesManager.PREFERENCE_CADES_TIMESTAMP_STAMP_POLICY);
+		PreferencesManager.remove(PreferencesManager.PREFERENCE_CADES_TIMESTAMP_CERT_REQUIRED);
+		PreferencesManager.remove(PreferencesManager.PREFERENCE_CADES_TIMESTAMP_TSA_USR);
+		PreferencesManager.remove(PreferencesManager.PREFERENCE_CADES_TIMESTAMP_TSA_PWD);
+		PreferencesManager.remove(PreferencesManager.PREFERENCE_CADES_TIMESTAMP_EXTENSION_OID);
+		PreferencesManager.remove(PreferencesManager.PREFERENCE_CADES_TIMESTAMP_EXTENSION_VALUE);
+
+		PreferencesManager.remove(PreferencesManager.PREFERENCE_CADES_TIMESTAMP_OID_CRITICAL);
 	}
 
 	void enableFields(final boolean enable) {
@@ -443,15 +455,23 @@ final class TimeStampCadesDialog extends JDialog {
 			new ActionListener() {
 				@Override
 				public void actionPerformed(final ActionEvent e) {
+
+					if (!TimeStampCadesDialog.this.timeStampCheckBox.isSelected()) {
+						removeConfiguration();
+						TimeStampCadesDialog.this.setVisible(false);
+						TimeStampCadesDialog.this.dispose();
+						return;
+					}
+
 					if (isValidUrl()) {
 						try {
 							checkOid();
-							SaveConfiguration();
+							saveConfiguration();
 							TimeStampCadesDialog.this.setVisible(false);
 							TimeStampCadesDialog.this.dispose();
 						}
 						catch(final GSSException eGss) {
-							Logger.getLogger("es.gob.afirma").info("Oid erróneo: " + eGss); //$NON-NLS-1$ //$NON-NLS-2$
+							Logger.getLogger("es.gob.afirma").info("Oid erroneo: " + eGss); //$NON-NLS-1$ //$NON-NLS-2$
 							AOUIFactory.showMessageDialog(
 									TimeStampCadesDialog.this,
 									SimpleAfirmaMessages.getString("PreferencesPanelTimeStamps.15"),  //$NON-NLS-1$

@@ -481,6 +481,14 @@ public final class PreferencesManager {
 	/** URI de acceso repositorio. */
 	public static final String PREFERENCE_CIPHERMENT_URI = "repositoryURI"; //$NON-NLS-1$
 
+
+	// ********************************************************************************************
+	// ******************* PREFERENCIAS CONFIGURABLES SOLO POR EL ADMINISTRADOR *******************
+	// ********************************************************************************************
+
+	/** Preferencia solo. */
+	public static final String PREFERENCE_ADMIN_SHOW_SYMETRIC_CIPHER = "adminShowSymetricCipher"; //$NON-NLS-1$
+
 	/** Recupera el valor de una cadena de texto almacenada entre las preferencias de la
 	 * aplicaci&oacute;n.
 	 * @param key Clave del valor que queremos recuperar.

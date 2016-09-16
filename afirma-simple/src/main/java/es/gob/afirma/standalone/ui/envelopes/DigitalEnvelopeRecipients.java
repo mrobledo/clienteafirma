@@ -63,7 +63,7 @@ final class DigitalEnvelopeRecipients extends JPanel {
 	private static final Logger LOGGER = Logger.getLogger("es.gob.afirma"); //$NON-NLS-1$
 	private static final String FREC_CERTS_PATH = "%h/.afirma/frec_certs/"; //$NON-NLS-1$
 	// Numero minimo de usos de un certificado para preguntar al usuario si desea anadirlo como certificado frecuente
-	private static final int MIN_FREC_CERT_USES = 7;
+	private static final int MIN_FREC_CERT_USES = 5;
 	// Numero maximo de certificados frecuentes que se pueden tener
 	private static final int MAX_FREC_CERTS_IN_DIR = 5;
 	private final JButton nextButton = new JButton(SimpleAfirmaMessages.getString("DigitalEnvelopePresentation.3")); //$NON-NLS-1$
@@ -229,7 +229,8 @@ final class DigitalEnvelopeRecipients extends JPanel {
 				getDialog().remove(getPanelCentral());
 				getDialog().remove(getPanel());
 				getDialog().remove(getDialog().getRecipientsPanel());
-				getDialog().getEnvelopeData().addCertificateRecipients(certs);
+				getDialog().getEnvelopeData().clearCertificateRecipientsList();
+				getDialog().getEnvelopeData().getCertificateRecipientsList().addAll(certs);
 				getDialog().setSendersPanel(
 					new DigitalEnvelopeSender(
 						getDialog()
@@ -272,7 +273,8 @@ final class DigitalEnvelopeRecipients extends JPanel {
 			getDialog().remove(getPanel());
 			getDialog().remove(getDialog().getRecipientsPanel());
 
-			getDialog().getEnvelopeData().addCertificateRecipients(certs);
+			getDialog().getEnvelopeData().clearCertificateRecipientsList();
+			getDialog().getEnvelopeData().getCertificateRecipientsList().addAll(certs);
 
 			getDialog().setFilePanel(
 				new DigitalEnvelopeSelectFile(
@@ -358,11 +360,10 @@ final class DigitalEnvelopeRecipients extends JPanel {
 	private static boolean hasFrecuentCerts() {
 		// Definimos la ruta en la que se guardan los certificados frecuentes
     	final String frec_certs_dir = FREC_CERTS_PATH.replace("%h", Platform.getUserHome()); //$NON-NLS-1$
-		// Se crea el directorio si aun no esta creado
         final File dest_cert_path = new File(frec_certs_dir);
         if (dest_cert_path.exists()) {
         	final File[] dirList = new File(frec_certs_dir).listFiles();
-        	if(dirList.length > 0) {
+        	if(dirList != null && dirList.length > 0) {
         		return true;
         	}
     	}
@@ -380,10 +381,10 @@ final class DigitalEnvelopeRecipients extends JPanel {
         crc.update(cert);
         final String numberOfUses = PreferencesManager.get(String.valueOf(crc.getValue()), null);
         //Si el certificado ya ha sido usado se le suma uno al contador. En caso contrario se inicializa
-        if(numberOfUses != null) {
+        if (numberOfUses != null) {
             // Se guarda una copia del certificado en el directorio .afirma en el que se guardan los logs
     		// si se usa 5 veces el mismo certificado
-        	if(Integer.parseInt(numberOfUses) + 1 == MIN_FREC_CERT_USES) {
+        	if(Integer.parseInt(numberOfUses) + 1 >= MIN_FREC_CERT_USES) {
         		//Preguntamos al usuario si desea guardarlo como certificado frecuente
         		if(AOUIFactory.showConfirmDialog(
         				this,
@@ -391,7 +392,7 @@ final class DigitalEnvelopeRecipients extends JPanel {
         				SimpleAfirmaMessages.getString("DigitalEnvelopeRecipients.36"), //$NON-NLS-1$
         				JOptionPane.YES_NO_OPTION,
         				JOptionPane.WARNING_MESSAGE
-        			) == 0) {
+        			) == JOptionPane.OK_OPTION) {
 
 					// Se crea el directorio si aun no esta creado
 	                final File dest_cert_path = new File(frec_certs_dir);
@@ -486,10 +487,7 @@ final class DigitalEnvelopeRecipients extends JPanel {
         		// Si el usuario dice que no, se resetea el contador de usos
         		// para volverlo a preguntar mas adelante
         		else {
-        			PreferencesManager.put(
-        					String.valueOf(crc.getValue()),
-	                		String.valueOf(0)
-	                	);
+        			PreferencesManager.remove(String.valueOf(crc.getValue()));
         		}
         	}
         	// Si ya se anadio con anterioridad como frecuente se actualiza la ultima fecha de uso
@@ -525,9 +523,9 @@ final class DigitalEnvelopeRecipients extends JPanel {
         final KeyStoreConfiguration kc = (KeyStoreConfiguration) this.comboBoxRecipients.getSelectedItem();
 
         CertificateDestiny certDest = null;
-        final AOKeyStore ao = kc.getType();
+        final AOKeyStore ks = kc.getType();
 
-        if (kc.getType().equals(AOKeyStore.LDAPMDEF)) {
+        if (ks.equals(AOKeyStore.LDAPMDEF)) {
         	final X509Certificate cert = DefenseDirectoryDialog.startDefenseDirectoryDialog(
         		(JFrame) SwingUtilities.getAncestorOfClass(JFrame.class, getDialog())
         	);
@@ -546,13 +544,13 @@ final class DigitalEnvelopeRecipients extends JPanel {
 	        	final String frec_certs_dir = FREC_CERTS_PATH.replace("%h", Platform.getUserHome()); //$NON-NLS-1$
 	        	String lib = null;
 
-	        	if (ao == AOKeyStore.FRECUENTCERTS) {
+	        	if (ks == AOKeyStore.FRECUENTCERTS) {
 	        		lib = frec_certs_dir;
 	        	}
 	        	else
 	        	{
-		            if (ao == AOKeyStore.PKCS12 || ao == AOKeyStore.SINGLE) {
-		                if (ao == AOKeyStore.PKCS12) {
+		            if (ks == AOKeyStore.PKCS12 || ks == AOKeyStore.SINGLE) {
+		                if (ks == AOKeyStore.PKCS12) {
 		                    filter = new String[] { "p12", "pfx" };  //$NON-NLS-1$ //$NON-NLS-2$
 		                }
 		                else {
@@ -565,7 +563,7 @@ final class DigitalEnvelopeRecipients extends JPanel {
 		                lib = keystorePath.getAbsolutePath();
 
 		            }
-		            else if (ao == AOKeyStore.PKCS11) {
+		            else if (ks == AOKeyStore.PKCS11) {
 		                filter = new String[] {"dll", "so"};  //$NON-NLS-1$//$NON-NLS-2$
 		                final File keystorePath = EnvelopesUtils.addFileSelected(filter, this.comboBoxRecipients, getDialog());
 		                if (keystorePath == null) {
@@ -576,14 +574,19 @@ final class DigitalEnvelopeRecipients extends JPanel {
 	        	}
 
 	            keyStoreManager = AOKeyStoreManagerFactory.getAOKeyStoreManager(
-	        		ao,
+	        		ks,
 	        		lib,
 	        		"default", //$NON-NLS-1$
-	        		ao.getStorePasswordCallback(getDialog()),
+	        		ks.getStorePasswordCallback(getDialog()),
 	        		getDialog()
 	            );
 	            certDest = new CertificateDestiny(keyStoreManager, this.dialog);
-	            manageFrecuentCertificates(certDest.getCertificate().getEncoded());
+
+	            // Si el almacen es distinto del de certificados frecuentes, se
+	            // valora el incluirlos en ese almacen
+	            if (ks != AOKeyStore.FRECUENTCERTS) {
+	            	manageFrecuentCertificates(certDest.getCertificate().getEncoded());
+	            }
 	        }
 	        catch (final AOCancelledOperationException e) {
 	            LOGGER.info("Operacion cancelada por el usuario: " + e); //$NON-NLS-1$

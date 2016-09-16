@@ -49,7 +49,7 @@ final class TimeStampPadesDialog extends JDialog  {
 		SimpleAfirmaMessages.getString("PreferencesPanelTimeStamps.2") //$NON-NLS-1$
 	);
 
-	private final JCheckBox timeStampCheckBox = new JCheckBox(
+	final JCheckBox timeStampCheckBox = new JCheckBox(
 		SimpleAfirmaMessages.getString("PreferencesPanel.122") //$NON-NLS-1$
 	);
 	void setTimeStampCheckBoxSelected(final boolean selected) {
@@ -221,7 +221,7 @@ final class TimeStampPadesDialog extends JDialog  {
 		enableFields(isTimeStampCheckBoxSelected());
 	}
 
-	void SaveConfiguration() {
+	void saveConfiguration() {
 		PreferencesManager.putBoolean(PREFERENCE_PADES_TIMESTAMP_CONFIGURE, this.timeStampCheckBox.isSelected());
 
 		PreferencesManager.put(
@@ -304,6 +304,21 @@ final class TimeStampPadesDialog extends JDialog  {
 			PreferencesManager.PREFERENCE_PADES_TIMESTAMP_OID_CRITICAL,
 			isExtensionCriticalCheckBoxSelected()
 		);
+	}
+
+	static void removeConfiguration() {
+		PreferencesManager.remove(PREFERENCE_PADES_TIMESTAMP_CONFIGURE);
+
+		PreferencesManager.remove(PreferencesManager.PREFERENCE_PADES_TIMESTAMP_STAMP_TYPE);
+		PreferencesManager.remove(PreferencesManager.PREFERENCE_PADES_TIMESTAMP_HASHALGORITHM);
+		PreferencesManager.remove(PreferencesManager.PREFERENCE_PADES_TIMESTAMP_TSA_URL);
+		PreferencesManager.remove(PreferencesManager.PREFERENCE_PADES_TIMESTAMP_STAMP_POLICY);
+		PreferencesManager.remove(PreferencesManager.PREFERENCE_PADES_TIMESTAMP_CERT_REQUIRED);
+		PreferencesManager.remove(PreferencesManager.PREFERENCE_PADES_TIMESTAMP_TSA_USR);
+		PreferencesManager.remove(PreferencesManager.PREFERENCE_PADES_TIMESTAMP_TSA_PWD);
+		PreferencesManager.remove(PreferencesManager.PREFERENCE_PADES_TIMESTAMP_EXTENSION_OID);
+		PreferencesManager.remove(PreferencesManager.PREFERENCE_PADES_TIMESTAMP_EXTENSION_VALUE);
+		PreferencesManager.remove(PreferencesManager.PREFERENCE_PADES_TIMESTAMP_OID_CRITICAL);
 	}
 
 	void enableFields(final boolean enable) {
@@ -471,10 +486,18 @@ final class TimeStampPadesDialog extends JDialog  {
 			new ActionListener() {
 				@Override
 				public void actionPerformed(final ActionEvent e) {
+
+					if (!TimeStampPadesDialog.this.timeStampCheckBox.isSelected()) {
+						removeConfiguration();
+						TimeStampPadesDialog.this.setVisible(false);
+						TimeStampPadesDialog.this.dispose();
+						return;
+					}
+
 					if (isValidUrl()) {
 						try {
 							checkOid();
-							SaveConfiguration();
+							saveConfiguration();
 							TimeStampPadesDialog.this.setVisible(false);
 							TimeStampPadesDialog.this.dispose();
 						}

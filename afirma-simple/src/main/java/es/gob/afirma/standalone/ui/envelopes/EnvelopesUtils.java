@@ -35,6 +35,8 @@ public final class EnvelopesUtils {
 
         final List<KeyStoreConfiguration> stores = new ArrayList<>();
 
+        stores.add(new KeyStoreConfiguration(AOKeyStore.TEMD, null, null));
+
         if (Platform.getOS().equals(Platform.OS.WINDOWS)) {
             stores.add(new KeyStoreConfiguration(AOKeyStore.WINDOWS, null, null));
         }
@@ -81,13 +83,15 @@ public final class EnvelopesUtils {
 
         return stores.toArray(new KeyStoreConfiguration[stores.size()]);
     }
-    
+
 	/** Recupera los almacenes compatibles con el sistema y preparados
      * para contener los certificados para la apertura de sobres.
      * @return Listado de almacenes. */
     public static KeyStoreConfiguration[] getKeyStoresToUnwrap() {
 
         final List<KeyStoreConfiguration> stores = new ArrayList<>();
+
+        stores.add(new KeyStoreConfiguration(AOKeyStore.TEMD, null, null));
 
         if (Platform.getOS().equals(Platform.OS.WINDOWS)) {
             stores.add(new KeyStoreConfiguration(AOKeyStore.WINDOWS, null, null));

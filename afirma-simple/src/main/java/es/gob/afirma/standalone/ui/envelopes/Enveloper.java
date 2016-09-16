@@ -3,12 +3,10 @@ package es.gob.afirma.standalone.ui.envelopes;
 import java.io.File;
 import java.io.IOException;
 import java.security.KeyStore.PrivateKeyEntry;
-import java.security.NoSuchAlgorithmException;
 import java.security.cert.X509Certificate;
-import java.util.Collections;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.crypto.Cipher;
 import javax.swing.JOptionPane;
 
 import es.gob.afirma.core.AOCancelledOperationException;
@@ -25,7 +23,7 @@ import es.gob.afirma.standalone.SimpleAfirmaMessages;
 final class Enveloper {
 
 	private static final Logger LOGGER = Logger.getLogger("es.gob.afirma"); //$NON-NLS-1$
-	private static final Integer AES_MAX_KEY_SIZE = Integer.valueOf(256);
+	private static final Integer AES_KEY_SIZE = Integer.valueOf(256);
 
 	private Enveloper() {
 		// No instanciable
@@ -47,14 +45,12 @@ final class Enveloper {
 		}
 
 		// Primero anadimos como destinatario al propio remitente
-		dialog.getEnvelopeData().addCertificateRecipients(
-			Collections.singletonList(
-				new CertificateDestiny(
-					"Remitente", //$NON-NLS-1$
-					getPublicCipherCert(
-						senderKeyStoreManager,
-						(X509Certificate) senderPrivateKeyEntry.getCertificate()
-					)
+		dialog.getEnvelopeData().getCertificateRecipientsList().add(
+			new CertificateDestiny(
+				"Remitente", //$NON-NLS-1$
+				getPublicCipherCert(
+					senderKeyStoreManager,
+					(X509Certificate) senderPrivateKeyEntry.getCertificate()
 				)
 			)
 		);
@@ -93,48 +89,27 @@ final class Enveloper {
         	return false;
 		}
 
-        Integer keySize = null;
-        final int aesMaxKeySize;
-		try {
-			aesMaxKeySize = Cipher.getMaxAllowedKeyLength(AOCipherAlgorithm.AES.getName());
-			 if (aesMaxKeySize == Integer.MAX_VALUE && AOUIFactory.showConfirmDialog(
-				dialog,
-				SimpleAfirmaMessages.getString("DigitalEnvelopeSender.35"), //$NON-NLS-1$
-				SimpleAfirmaMessages.getString("DigitalEnvelopeSender.36"), //$NON-NLS-1$
-				JOptionPane.YES_NO_OPTION,
-				JOptionPane.WARNING_MESSAGE
-			) == 0) {
-	    		LOGGER.info("Se ha establecido la clave AES a " + Integer.toString(aesMaxKeySize) + " bits"); //$NON-NLS-1$ //$NON-NLS-2$
-	    		keySize = AES_MAX_KEY_SIZE;
-	        }
-		}
-		catch (final NoSuchAlgorithmException e1) {
-			LOGGER.info("Error obteniendo el tamano maximo AES: " + e1); //$NON-NLS-1$
-		}
 
         final X509Certificate[] certs = new X509Certificate[dialog.getEnvelopeData().getCertificateRecipientsList().size()];
         for (int i = 0; i < dialog.getEnvelopeData().getCertificateRecipientsList().size(); i++) {
             certs[i] = (X509Certificate) dialog.getEnvelopeData().getCertificateRecipientsList().get(i).getCertificate();
+
+            System.out.println("CN: " + AOUtil.getCN(certs[i]));
+            for (final boolean b : certs[i].getKeyUsage()) {
+            	System.out.print(", " + b);
+            }
+            System.out.println();
         }
 
-       	try {
+        try {
        		switch(dialog.getEnvelopeData().getEnvelopeType()) {
-       			case AUTHENTICATED:
-       				envelopedData = enveloper.createCMSAuthenticatedEnvelopedData(
-   						contentData,
-   						senderPrivateKeyEntry,
-   						cipherConfig,
-   						certs,
-   						keySize
-   					);
-       				break;
        			case SIGNED:
        				envelopedData = enveloper.createCMSSignedAndEnvelopedData(
    						contentData,
    						senderPrivateKeyEntry,
    						cipherConfig,
    						certs,
-   						keySize
+   						AES_KEY_SIZE
    					);
        				break;
        			case SIMPLE:
@@ -143,7 +118,7 @@ final class Enveloper {
    						senderPrivateKeyEntry,
    						cipherConfig,
    						certs,
-   						keySize
+   						AES_KEY_SIZE
    					);
        				break;
    				default:
@@ -153,7 +128,7 @@ final class Enveloper {
        		}
        	}
         catch (final Exception e) {
-			LOGGER.severe("No se ha posido crear el sobre: " + e); //$NON-NLS-1$
+			LOGGER.log(Level.SEVERE, "No se ha posido crear el sobre: " + e, e); //$NON-NLS-1$
 			AOUIFactory.showMessageDialog(
         		dialog,
         		SimpleAfirmaMessages.getString("DigitalEnvelopeSender.30"), //$NON-NLS-1$
@@ -197,6 +172,13 @@ final class Enveloper {
 		return true;
 	}
 
+	/**
+	 * Obtiene del almac&eacute;n del certificado de firma el certificado parejo de cifrado.
+	 * @param ksm Almacen de claves.
+	 * @param signingCert Certificado de firma.
+	 * @return Certificado de cifrado asociado al de firma o el propio certificado de firma
+	 * si no se encuentra.
+	 */
 	private static X509Certificate getPublicCipherCert(final AOKeyStoreManager ksm, final X509Certificate signingCert) {
 		final CertificateFilter ccf = new CipherCertificateFilter();
 		if (ccf.matches(signingCert)) {

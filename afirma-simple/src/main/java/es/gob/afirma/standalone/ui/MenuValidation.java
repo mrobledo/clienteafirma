@@ -98,7 +98,7 @@ final class MenuValidation extends JMenu {
 				SimpleAfirmaMessages.getString("MenuValidation.16"), //$NON-NLS-1$
 				null,
 				null,
-				null,
+				new String[] { "csig", "xsig", "p7s" }, //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 				SimpleAfirmaMessages.getString("MenuValidation.17"), //$NON-NLS-1$
 				false,
 				false,

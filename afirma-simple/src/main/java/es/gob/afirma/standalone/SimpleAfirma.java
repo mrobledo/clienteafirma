@@ -139,6 +139,7 @@ public final class SimpleAfirma implements PropertyChangeListener, WindowListene
         if (ksm != null) {
             LOGGER.info("Establecido KeyStoreManager: " + ksm); //$NON-NLS-1$
             this.ksManager = ksm;
+
             if (this.currentPanel instanceof SignPanel) {
                 ((SignPanel) this.currentPanel).notifyStoreReady();
             }
@@ -162,7 +163,9 @@ public final class SimpleAfirma implements PropertyChangeListener, WindowListene
         // Una excepcion en un constructor no siempre deriva en un objeto nulo,
         // por eso usamos un booleano para ver si fallo, en vez de una comprobacion
         // de igualdad a null
-        boolean showDNIeScreen = preSelectedFile == null && !PreferencesManager.getBoolean(PreferencesManager.PREFERENCE_GENERAL_HIDE_DNIE_START_SCREEN, false);
+        //boolean showDNIeScreen = preSelectedFile == null && !PreferencesManager.getBoolean(PreferencesManager.PREFERENCE_GENERAL_HIDE_DNIE_START_SCREEN, false);
+        boolean showDNIeScreen = false;
+
         if (showDNIeScreen) {
 	        try {
 	        	if (javax.smartcardio.TerminalFactory.getDefault().terminals().list().isEmpty()) {
@@ -177,12 +180,12 @@ public final class SimpleAfirma implements PropertyChangeListener, WindowListene
 
         this.window.setTitle(SimpleAfirmaMessages.getString("SimpleAfirma.10", getVersion())); //$NON-NLS-1$
 
-        if (showDNIeScreen) {
-           	this.currentPanel = new DNIeWaitPanel(this);
-           	((MainScreen) this.window).showMainScreen(this, this.currentPanel, DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT);
-            this.container = this.window;
-        }
-        else {
+//        if (showDNIeScreen) {
+//           	this.currentPanel = new DNIeWaitPanel(this);
+//           	((MainScreen) this.window).showMainScreen(this, this.currentPanel, DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT);
+//            this.container = this.window;
+//        }
+//        else {
         	this.currentPanel = new SignPanel(this.window, this);
         	((MainScreen) this.window).showMainScreen(this, this.currentPanel, DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT);
         	this.container = this.window;
@@ -193,7 +196,7 @@ public final class SimpleAfirma implements PropertyChangeListener, WindowListene
         	if (preSelectedFile != null) {
         		loadFileToSign(preSelectedFile);
         	}
-        }
+//        }
     }
 
 	private void configureMenuBar() {
