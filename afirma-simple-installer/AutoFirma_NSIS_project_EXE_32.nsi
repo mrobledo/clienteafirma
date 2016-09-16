@@ -159,7 +159,9 @@ Section "Programa" sPrograma
 
 	;Incluimos todos los ficheros que componen nuestra aplicacion
 	File  AutoFirma.exe
+	File  AutoFirmaCommandLine.exe
 	File  AutoFirmaConfigurador.exe
+	File  AutoFirmaTrayIcon.exe
 	File  licencia.txt
 	File  ic_firmar.ico
 
@@ -174,8 +176,11 @@ Section "Programa" sPrograma
 	;Menu items
 	CreateDirectory "$SMPROGRAMS\AutoFirma"
 	CreateShortCut "$SMPROGRAMS\AutoFirma\AutoFirma.lnk" "$INSTDIR\AutoFirma\AutoFirma.exe"
+	CreateShortCut "$SMPROGRAMS\AutoFirma\AutoFirma TryIcon.lnk" "$INSTDIR\AutoFirma\AutoFirmaTryIcon.exe"
 	;CreateShortCut "$SMPROGRAMS\AutoFirma\Desinstalar AutoFirma.lnk" "$INSTDIR\uninstall.exe"
 
+	;Anade el TrayIcon al registro para que se inicie con Windows
+	WriteRegStr HKEY_LOCAL_MACHINE "Software\Microsoft\Windows\CurrentVersion\Run" "AutoFirma" "$INSTDIR\AutoFirma\AutoFirmaTrayIcon.exe"
 	
 	;Anade una entrada en la lista de "Program and Features"
 		WriteRegStr HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\$PATH\" "DisplayName" "AutoFirma"
@@ -210,35 +215,10 @@ Section "Programa" sPrograma
 	WriteRegStr HKEY_CLASSES_ROOT "*\shell\afirma.signedenvelop" "Icon" "$INSTDIR\AutoFirma\AutoFirma.exe"
 	WriteRegStr HKEY_CLASSES_ROOT "*\shell\afirma.signedenvelop\command" "" "$INSTDIR\AutoFirma\AutoFirma.exe createenvelope -gui -type signed -i %1" 
 
-	;Desifrar / Abrir sobres digitales
+	;Descifrar / Abrir sobres digitales
  	WriteRegStr HKEY_CLASSES_ROOT ".enveloped\shell\afirma.enveloped" "" "Descifrar"
 	WriteRegStr HKEY_CLASSES_ROOT ".enveloped\shell\afirma.enveloped" "Icon" "$INSTDIR\AutoFirma\AutoFirma.exe"
 	WriteRegStr HKEY_CLASSES_ROOT ".enveloped\shell\afirma.enveloped\command" "" "$INSTDIR\AutoFirma\AutoFirma.exe openenvelope -i %1" 
-
-	;Generar huella archivos
- 	WriteRegStr HKEY_CLASSES_ROOT "*\shell\afirma.hashFile" "" "Generar huella digital con AutoFirma"
-	WriteRegStr HKEY_CLASSES_ROOT "*\shell\afirma.hashFile" "Icon" "$INSTDIR\AutoFirma\AutoFirma.exe"
-	WriteRegStr HKEY_CLASSES_ROOT "*\shell\afirma.hashFile\command" "" "$INSTDIR\AutoFirma\AutoFirma.exe createdigest -i %1" 
-
-	;Generar huella directorios
-	WriteRegStr HKEY_CLASSES_ROOT "Directory\shell\afirma.hashDirectory" "" "Generar huella digital con AutoFirma"
-	WriteRegStr HKEY_CLASSES_ROOT "Directory\shell\afirma.hashDirectory" "Icon" "$INSTDIR\AutoFirma\AutoFirma.exe"
-	WriteRegStr HKEY_CLASSES_ROOT "Directory\shell\afirma.hashDirectory\command" "" "$INSTDIR\AutoFirma\AutoFirma.exe createdigest -i %1" 
-
-	;Comprobar huella .hash
- 	WriteRegStr HKEY_CLASSES_ROOT ".hash\shell\afirma.hash" "" "Comprobar huella digital con AutoFirma"
-	WriteRegStr HKEY_CLASSES_ROOT ".hash\shell\afirma.hash" "Icon" "$INSTDIR\AutoFirma\AutoFirma.exe"
-	WriteRegStr HKEY_CLASSES_ROOT ".hash\shell\afirma.hash\command" "" "$INSTDIR\AutoFirma\AutoFirma.exe checkdigest -i %1" 
-
-	;Comprobar huella .hashb64
- 	WriteRegStr HKEY_CLASSES_ROOT ".hashb64\shell\afirma.hasbh64" "" "Comprobar huella digital con AutoFirma"
-	WriteRegStr HKEY_CLASSES_ROOT ".hashb64\shell\afirma.hasbh64" "Icon" "$INSTDIR\AutoFirma\AutoFirma.exe"
-	WriteRegStr HKEY_CLASSES_ROOT ".hashb64\shell\afirma.hasbh64\command" "" "$INSTDIR\AutoFirma\AutoFirma.exe checkdigest -i %1" 
-	
-	;Comprobar huella .hashfiles
- 	WriteRegStr HKEY_CLASSES_ROOT ".hashfiles\shell\afirma.hashfiles" "" "Comprobar huella digital con AutoFirma"
-	WriteRegStr HKEY_CLASSES_ROOT ".hashfiles\shell\afirma.hashfiles" "Icon" "$INSTDIR\AutoFirma\AutoFirma.exe"
-	WriteRegStr HKEY_CLASSES_ROOT ".hashfiles\shell\afirma.hashfiles\command" "" "$INSTDIR\AutoFirma\AutoFirma.exe checkdigest -i %1" 
 
 	;Verify
 	; .csig
@@ -259,7 +239,7 @@ Section "Programa" sPrograma
 	WriteRegStr HKEY_CLASSES_ROOT "afirma" "" "URL:Afirma Protocol"
 	WriteRegStr HKEY_CLASSES_ROOT "afirma\DefaultIcon" "" "$INSTDIR\AutoFirma\ic_firmar.ico"
 	WriteRegStr HKEY_CLASSES_ROOT "afirma" "URL Protocol" ""
-	WriteRegStr HKEY_CLASSES_ROOT "afirma\shell\open\command" "" "\""$INSTDIR\AutoFirma\AutoFirma.exe\" \"%1\""
+	WriteRegStr HKEY_CLASSES_ROOT "afirma\shell\open\command" "" "$INSTDIR\AutoFirma\AutoFirma.exe %1"	
 	
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; Instalacion de la JRE
@@ -270,6 +250,7 @@ Section "Programa" sPrograma
 
 	StrCpy $PATH "AutoFirma\JRE"
 	File /r "jre32b"
+	Rename "$INSTDIR\AutoFirma\jre32b" "$INSTDIR\AutoFirma\jre"
 
 	; Eliminamos los certificados generados en caso de que existan por una instalacion previa
 	IfFileExists "$INSTDIR\AutoFirma\AutoFirma_ROOT.cer" 0 +1
@@ -666,11 +647,6 @@ Section "uninstall"
 	DeleteRegKey HKEY_CLASSES_ROOT "*\shell\afirma.simpleenvelop"
 	DeleteRegKey HKEY_CLASSES_ROOT "*\shell\afirma.signedenvelop"
 	DeleteRegKey HKEY_CLASSES_ROOT "*\shell\afirma.enveloped"
-	DeleteRegKey HKEY_CLASSES_ROOT "*\shell\afirma.hashFile"
-	DeleteRegKey HKEY_CLASSES_ROOT "Directory\shell\afirma.hashDirectory"
-	DeleteRegKey HKEY_CLASSES_ROOT ".hash\shell\afirma.hash"
-	DeleteRegKey HKEY_CLASSES_ROOT ".hashb64\shell\afirma.hasbh64"
-	DeleteRegKey HKEY_CLASSES_ROOT ".hashfiles\shell\afirma.hashfiles"
 	DeleteRegKey HKEY_CLASSES_ROOT ".enveloped\shell\afirma.enveloped"
 	DeleteRegKey HKEY_CLASSES_ROOT "*\shell\afirma.verify"
 

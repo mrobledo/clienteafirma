@@ -118,7 +118,9 @@ Section "Programa" sPrograma
 
 	;Incluimos todos los ficheros que componen nuestra aplicacion
 	File  AutoFirma.exe
+	File  AutoFirmaCommandLine.exe
 	File  AutoFirmaConfigurador.exe
+	File  AutoFirmaTrayIcon.exe
 	File  licencia.txt
 	File  ic_firmar.ico
 
@@ -133,8 +135,11 @@ Section "Programa" sPrograma
 	;Menu items
 	CreateDirectory "$SMPROGRAMS\AutoFirma"
 	CreateShortCut "$SMPROGRAMS\AutoFirma\AutoFirma.lnk" "$INSTDIR\AutoFirma\AutoFirma.exe"
+	CreateShortCut "$SMPROGRAMS\AutoFirma\AutoFirma TryIcon.lnk" "$INSTDIR\AutoFirma\AutoFirmaTryIcon.exe"
 	;CreateShortCut "$SMPROGRAMS\AutoFirma\Desinstalar AutoFirma.lnk" "$INSTDIR\uninstall.exe"
 
+	;Anade el TrayIcon al registro para que se inicie con Windows
+	WriteRegStr HKEY_LOCAL_MACHINE "Software\Microsoft\Windows\CurrentVersion\Run" "AutoFirma" "$INSTDIR\AutoFirma\AutoFirmaTrayIcon.exe"
 	
 	;Anade una entrada en la lista de "Program and Features"
 		;WriteRegStr HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\$PATH_ID\" "DisplayName" "AutoFirma"
@@ -223,7 +228,7 @@ Section "Programa" sPrograma
 	WriteRegStr HKEY_CLASSES_ROOT "afirma" "" "URL:Afirma Protocol"
 	WriteRegStr HKEY_CLASSES_ROOT "afirma\DefaultIcon" "" "$INSTDIR\AutoFirma\ic_firmar.ico"
 	WriteRegStr HKEY_CLASSES_ROOT "afirma" "URL Protocol" ""
-	WriteRegStr HKEY_CLASSES_ROOT "afirma\shell\open\command" "" "\""$INSTDIR\AutoFirma\AutoFirma.exe\" \"%1\""	
+	WriteRegStr HKEY_CLASSES_ROOT "afirma\shell\open\command" "" "$INSTDIR\AutoFirma\AutoFirma.exe %1"	
 	
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; Instalacion de la JRE y de los certificados
@@ -234,6 +239,7 @@ Section "Programa" sPrograma
 
 	StrCpy $PATH "AutoFirma\JRE"
 	File /r "jre64b"
+	Rename "$INSTDIR\AutoFirma\jre64b" "$INSTDIR\AutoFirma\jre"
 
 	; Eliminamos los certificados generados en caso de que existan por una instalacion previa
 	IfFileExists "$INSTDIR\AutoFirma\AutoFirma_ROOT.cer" 0 +1
