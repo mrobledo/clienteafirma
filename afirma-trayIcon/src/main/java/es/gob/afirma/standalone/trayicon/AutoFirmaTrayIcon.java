@@ -14,9 +14,9 @@ import java.awt.Toolkit;
 import java.awt.TrayIcon;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
+import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.channels.FileLock;
 import java.util.ArrayList;
@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Properties;
 import java.util.logging.Logger;
 
-import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
@@ -34,11 +33,12 @@ import es.gob.afirma.keystores.AOKeyStore;
 import es.gob.afirma.keystores.AOKeyStoreDialog;
 import es.gob.afirma.keystores.AOKeyStoreManager;
 import es.gob.afirma.keystores.AOKeyStoreManagerFactory;
+import es.gob.afirma.keystores.temd.TemdKeyStoreManager;
 import es.gob.afirma.standalone.AutoFirmaUtil;
 import es.gob.afirma.standalone.LookAndFeelManager;
 import es.gob.afirma.standalone.SimpleAfirma;
-import es.gob.afirma.standalone.SimpleAfirmaMessages;
 import es.gob.afirma.standalone.SimpleKeyStoreManager;
+import es.gob.afirma.standalone.ui.MainMenu;
 import es.gob.afirma.standalone.ui.preferences.PreferencesDialog;
 import es.gob.afirma.standalone.ui.preferences.PreferencesManager;
 import es.gob.afirma.ui.core.jse.certificateselection.CertificateSelectionDialog;
@@ -47,22 +47,8 @@ import es.gob.afirma.ui.core.jse.certificateselection.CertificateSelectionDialog
 public final class AutoFirmaTrayIcon {
 
 	static final Logger LOGGER = Logger.getLogger("es.gob.afirma"); //$NON-NLS-1$
-	private static final String TRAY_ICON_0 = "TrayIcon.0"; //$NON-NLS-1$
-	private static final String TRAY_ICON_1 = "TrayIcon.1"; //$NON-NLS-1$
-	private static final String TRAY_ICON_2 = "TrayIcon.2"; //$NON-NLS-1$
-	private static final String TRAY_ICON_3 = "TrayIcon.3"; //$NON-NLS-1$
-	private static final String TRAY_ICON_5 = "TrayIcon.5"; //$NON-NLS-1$
-	private static final String TRAY_ICON_6 = "TrayIcon.6"; //$NON-NLS-1$
-	private static final String TRAY_ICON_7 = "TrayIcon.7"; //$NON-NLS-1$
-	private static final String TRAY_ICON_9 = "TrayIcon.9"; //$NON-NLS-1$
-	private static final String TRAY_ICON_10 = "TrayIcon.10"; //$NON-NLS-1$
-	private static final String TRAY_ICON_11 = "TrayIcon.11"; //$NON-NLS-1$
-	private static final String TRAY_ICON_12 = "TrayIcon.12"; //$NON-NLS-1$
-	private static final String TRAY_ICON_13 = "TrayIcon.13"; //$NON-NLS-1$
-	private static final String TRAY_ICON_16 = "TrayIcon.16"; //$NON-NLS-1$
-	private static final String TRAY_ICON_17 = "TrayIcon.17"; //$NON-NLS-1$
-	private static final String MAINMENU_14 = "MainMenu.14"; //$NON-NLS-1$
-	private static final String MAINMENU_15 = "MainMenu.15"; //$NON-NLS-1$
+
+	private static final String AUTOFIRMA_APPLICATION_FILENAME = "Autofirma.exe"; //$NON-NLS-1$
 
 	/** Directorio de datos de la aplicaci&oacute;n. */
 	public static final String APPLICATION_HOME = Platform.getUserHome() + File.separator + ".afirma" + File.separator + "AutoFirmaTray"; //$NON-NLS-1$ //$NON-NLS-2$
@@ -98,9 +84,10 @@ public final class AutoFirmaTrayIcon {
 	}
 
 	static final String[] PRIORITY_STORES = {
-			SimpleAfirmaMessages.getString("PreferencesPanelKeyStores.20"), // Ninguno //$NON-NLS-1$
+			AOKeyStore.TEMD.toString(),
 			AOKeyStore.DNIEJAVA.toString(),
-			AOKeyStore.CERES.toString()
+			AOKeyStore.CERES.toString(),
+			TrayIconMessages.getString("AutoFirmaTrayIcon.3") // Ninguno //$NON-NLS-1$
 	};
 
 	static final Frame HIDDEN_FRAME = new JFrame();
@@ -111,60 +98,56 @@ public final class AutoFirmaTrayIcon {
 
 	/** Muestra el panel de "acerca de AutoFirma". */
 	static void aboutAutofirma(){
-		AOUIFactory.showMessageDialog(
-			HIDDEN_FRAME,
-			SimpleAfirmaMessages.getString(MAINMENU_14, SimpleAfirma.getVersion(), System.getProperty("java.version")), //$NON-NLS-1$ ,
-			SimpleAfirmaMessages.getString(MAINMENU_15),
-			JOptionPane.INFORMATION_MESSAGE,
-			new ImageIcon(ICON)
-		);
+		MainMenu.showAbout(null);
 	}
 
 	/** Genera el PopupMenu del TrayIcon.
 	 * @return Men&uacute; del TrayIcon. */
 	private static PopupMenu createMenu(){
 		final PopupMenu menu = new PopupMenu();
-		menu.getAccessibleContext().setAccessibleDescription(SimpleAfirmaMessages.getString(TRAY_ICON_0));
+		menu.getAccessibleContext().setAccessibleDescription(TrayIconMessages.getString("TrayIcon.0")); //$NON-NLS-1$
 
 		// create menu item for the default action
-		final MenuItem messageItem = new MenuItem(SimpleAfirmaMessages.getString(TRAY_ICON_5));
+		final MenuItem messageItem = new MenuItem(TrayIconMessages.getString("TrayIcon.5")); //$NON-NLS-1$
 		messageItem.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(final ActionEvent e) {
 				 PreferencesDialog.show(HIDDEN_FRAME, true);
 			}
 		});
-		messageItem.getAccessibleContext().setAccessibleDescription(SimpleAfirmaMessages.getString(TRAY_ICON_1));
 
-		final MenuItem closeItem = new MenuItem(SimpleAfirmaMessages.getString(TRAY_ICON_6));
+		messageItem.getAccessibleContext().setAccessibleDescription(TrayIconMessages.getString("TrayIcon.1")); //$NON-NLS-1$
+
+		final MenuItem closeItem = new MenuItem(TrayIconMessages.getString("TrayIcon.6")); //$NON-NLS-1$
 		closeItem.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(final ActionEvent e) {
 				System.exit(0);
 			}
 		});
-		closeItem.getAccessibleContext().setAccessibleDescription(SimpleAfirmaMessages.getString(TRAY_ICON_2));
+		closeItem.getAccessibleContext().setAccessibleDescription(TrayIconMessages.getString("TrayIcon.2")); //$NON-NLS-1$
 
 
-		final MenuItem about = new MenuItem(SimpleAfirmaMessages.getString(TRAY_ICON_7));
+		final MenuItem about = new MenuItem(TrayIconMessages.getString("TrayIcon.7")); //$NON-NLS-1$
 		about.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(final ActionEvent e) {
 				aboutAutofirma();
 			}
 		});
-		about.getAccessibleContext().setAccessibleDescription(SimpleAfirmaMessages.getString(TRAY_ICON_3));
+		about.getAccessibleContext().setAccessibleDescription(TrayIconMessages.getString("TrayIcon.3")); //$NON-NLS-1$
 
-		final Menu displayMenu = new Menu(SimpleAfirmaMessages.getString(TRAY_ICON_9));
+		final Menu displayMenu = new Menu(TrayIconMessages.getString("TrayIcon.9")); //$NON-NLS-1$
 
-		final MenuItem selecPriotityCertificate = new MenuItem(SimpleAfirmaMessages.getString(TRAY_ICON_10));
-		selecPriotityCertificate.addActionListener(new ActionListener() {
+		final MenuItem selectPriorityKeyStore = new MenuItem(TrayIconMessages.getString("TrayIcon.10")); //$NON-NLS-1$
+		selectPriorityKeyStore.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(final ActionEvent e) {
+
 				final String keyStore = (String) AOUIFactory.showInputDialog(
 					HIDDEN_FRAME,
-    				SimpleAfirmaMessages.getString("TrayIcon.22"), //$NON-NLS-1$
-    				SimpleAfirmaMessages.getString("TrayIcon.21"), //$NON-NLS-1$
+    				TrayIconMessages.getString("TrayIcon.22"), //$NON-NLS-1$
+    				TrayIconMessages.getString("TrayIcon.21"), //$NON-NLS-1$
     				JOptionPane.QUESTION_MESSAGE,
     				AutoFirmaUtil.getDefaultDialogsIcon(),
     				PRIORITY_STORES,
@@ -178,17 +161,18 @@ public final class AutoFirmaTrayIcon {
 				}
 			}
 		});
-		selecPriotityCertificate.getAccessibleContext().setAccessibleDescription(SimpleAfirmaMessages.getString(TRAY_ICON_11));
+		selectPriorityKeyStore.getAccessibleContext().setAccessibleDescription(TrayIconMessages.getString("TrayIcon.11")); //$NON-NLS-1$
 
-		final MenuItem selecDefaultCertificate = new MenuItem(SimpleAfirmaMessages.getString(TRAY_ICON_16));
-		selecDefaultCertificate.addActionListener(
+		final MenuItem selecDefaultKeyStore = new MenuItem(TrayIconMessages.getString("TrayIcon.16")); //$NON-NLS-1$
+		selecDefaultKeyStore.addActionListener(
 			new ActionListener() {
 				@Override
 				public void actionPerformed(final ActionEvent e) {
+
 					final AOKeyStore keyStore = (AOKeyStore) AOUIFactory.showInputDialog(
 						HIDDEN_FRAME,
 	    				null,
-	    				SimpleAfirmaMessages.getString("TrayIcon.20"), //$NON-NLS-1$
+	    				TrayIconMessages.getString("TrayIcon.20"), //$NON-NLS-1$
 	    				JOptionPane.QUESTION_MESSAGE,
 	    				AutoFirmaUtil.getDefaultDialogsIcon(),
 	    				DEFAULT_STORES,
@@ -203,9 +187,9 @@ public final class AutoFirmaTrayIcon {
 				}
 			}
 		);
-		selecDefaultCertificate.getAccessibleContext().setAccessibleDescription(SimpleAfirmaMessages.getString(TRAY_ICON_17));
+		selecDefaultKeyStore.getAccessibleContext().setAccessibleDescription(TrayIconMessages.getString("TrayIcon.17")); //$NON-NLS-1$
 
-		final MenuItem showCertificates = new MenuItem(SimpleAfirmaMessages.getString(TRAY_ICON_12));
+		final MenuItem showCertificates = new MenuItem(TrayIconMessages.getString("TrayIcon.12")); //$NON-NLS-1$
 		showCertificates.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(final ActionEvent e) {
@@ -228,12 +212,12 @@ public final class AutoFirmaTrayIcon {
 							true,
 							false
 						),
-						SimpleAfirmaMessages.getString(
-							"PreferencesPanelKeyStores.10", //$NON-NLS-1$
+						TrayIconMessages.getString(
+							"AutoFirmaTrayIcon.0", //$NON-NLS-1$
 							SimpleKeyStoreManager.getDefaultKeyStoreType().toString()
 						),
-						SimpleAfirmaMessages.getString(
-							"PreferencesPanelKeyStores.15", //$NON-NLS-1$
+						TrayIconMessages.getString(
+							"AutoFirmaTrayIcon.2", //$NON-NLS-1$
 							SimpleKeyStoreManager.getDefaultKeyStoreType().toString()
 						),
 						false,
@@ -244,8 +228,8 @@ public final class AutoFirmaTrayIcon {
 				catch (final Exception e1) {
 					AOUIFactory.showErrorMessage(
 						this,
-						SimpleAfirmaMessages.getString("PreferencesPanelKeyStores.11"), //$NON-NLS-1$
-						SimpleAfirmaMessages.getString("PreferencesPanelKeyStores.10", SimpleKeyStoreManager.getDefaultKeyStoreType().toString()), //$NON-NLS-1$
+						TrayIconMessages.getString("AutoFirmaTrayIcon.1"), //$NON-NLS-1$
+						TrayIconMessages.getString("AutoFirmaTrayIcon.0", SimpleKeyStoreManager.getDefaultKeyStoreType().toString()), //$NON-NLS-1$
 						JOptionPane.ERROR_MESSAGE
 					);
 					Logger.getLogger("es.gob.afirma").warning("Error al recuperar el almacen por defecto seleccionado: " + e1); //$NON-NLS-1$ //$NON-NLS-2$
@@ -253,13 +237,25 @@ public final class AutoFirmaTrayIcon {
 
 			}
 		});
-		showCertificates.getAccessibleContext().setAccessibleDescription(SimpleAfirmaMessages.getString(TRAY_ICON_13));
+		showCertificates.getAccessibleContext().setAccessibleDescription(TrayIconMessages.getString("TrayIcon.13")); //$NON-NLS-1$
+
+		// Menu para el cierre del almacen en tarjeta
+		final MenuItem closeKeyStoreMenuItem = new MenuItem(TrayIconMessages.getString("AutoFirmaTrayIcon.7")); //$NON-NLS-1$
+		closeKeyStoreMenuItem.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(final ActionEvent e) {
+				TemdKeyStoreManager.closeKeyStore();
+			}
+		});
+		closeKeyStoreMenuItem.getAccessibleContext().setAccessibleDescription(TrayIconMessages.getString("AutoFirmaTrayIcon.9")); //$NON-NLS-1$
 
 		// add menu items to menu
-		menu.add(displayMenu);
-		displayMenu.add(selecPriotityCertificate);
-		displayMenu.add(selecDefaultCertificate);
+		displayMenu.add(selectPriorityKeyStore);
+		displayMenu.add(selecDefaultKeyStore);
 		displayMenu.add(showCertificates);
+		displayMenu.add(closeKeyStoreMenuItem);
+
+		menu.add(displayMenu);
 		menu.addSeparator();
 		menu.add(messageItem);
 		menu.addSeparator();
@@ -286,21 +282,52 @@ public final class AutoFirmaTrayIcon {
 
 		icon.setImageAutoSize(true);
 
-		// si se pulsa en el TrayIcon muestra la pantalla acerca de.
-		icon.addMouseListener(
-			new MouseAdapter() {
-				@Override
-				public void mouseClicked(final MouseEvent e) {
-					if (e != null) {
-						// clic izquierdo
-						if (e.getButton() == 1) {
-							aboutAutofirma();
-						}
+		// Si se se hace clic sobre el TrayIcon, se muestra la pantalla
+		// acerca de. Si se hace doble clic, se abre la aplicacion.
+		icon.addMouseListener(new ClickListener() {
 
-					}
+			@Override
+			public void doubleClick(final MouseEvent e) {
+
+				// Ejecutamos AutoFirma
+
+				final File appDir;
+				try {
+					appDir = new File(AutoFirmaTrayIcon.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath()).getParentFile();
+				}
+				catch (final Exception ex) {
+					LOGGER.severe("Error al identificar el directorio de la aplicacion: " + e); //$NON-NLS-1$
+					AOUIFactory.showMessageDialog(
+							null,
+							TrayIconMessages.getString("AutoFirmaTrayIcon.4"), //$NON-NLS-1$
+							TrayIconMessages.getString("AutoFirmaTrayIcon.5"), //$NON-NLS-1$
+							JOptionPane.ERROR_MESSAGE);
+					return;
+				}
+
+				final File appFile = new File(appDir, AUTOFIRMA_APPLICATION_FILENAME);
+				if (!appFile.exists() || !appFile.isFile() || !appFile.canExecute()) {
+					LOGGER.severe("No se encuentra o no se tienen permisos de ejecucion sobre AutoFirma: " + e); //$NON-NLS-1$
+					AOUIFactory.showMessageDialog(
+							null,
+							TrayIconMessages.getString("AutoFirmaTrayIcon.6"), //$NON-NLS-1$
+							TrayIconMessages.getString("AutoFirmaTrayIcon.5"), //$NON-NLS-1$
+							JOptionPane.ERROR_MESSAGE);
+					return;
+				}
+
+				try {
+					new ProcessBuilder(appFile.getAbsolutePath()).start();
+				} catch (final IOException e1) {
+					LOGGER.severe("Error al ejecutar AutoFirma desde el TrayIcon: " + e); //$NON-NLS-1$
+					AOUIFactory.showMessageDialog(
+							null,
+							TrayIconMessages.getString("AutoFirmaTrayIcon.8"), //$NON-NLS-1$
+							TrayIconMessages.getString("AutoFirmaTrayIcon.5"), //$NON-NLS-1$
+							JOptionPane.ERROR_MESSAGE);
 				}
 			}
-		);
+		});
 
 		try {
 			systemTray.add(icon);
