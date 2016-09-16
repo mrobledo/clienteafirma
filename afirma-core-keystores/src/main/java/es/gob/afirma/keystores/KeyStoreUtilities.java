@@ -11,7 +11,6 @@
 package es.gob.afirma.keystores;
 
 import java.io.File;
-import java.io.IOException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.Provider;
@@ -36,7 +35,6 @@ import es.gob.afirma.core.misc.AOUtil;
 import es.gob.afirma.core.misc.Platform;
 import es.gob.afirma.core.ui.AOUIFactory;
 import es.gob.afirma.keystores.filters.CertificateFilter;
-import es.gob.afirma.keystores.temd.WindowsRegistry;
 
 /** Utilidades para le manejo de almacenes de claves y certificados. */
 public final class KeyStoreUtilities {
@@ -312,58 +310,6 @@ public final class KeyStoreUtilities {
 				LOGGER.warning("No se ha podido inicializar el controlador DNIe 100% Java: " + ex); //$NON-NLS-1$
 			}
 		}
-
-		// Anadimos el controlador Java de CERES SIEMPRE a menos que:
-		// -Se indique "es.gob.afirma.keystores.mozilla.disableCeresNativeDriver=true"
-		// -El sistema sea Linux
-		if (!Boolean.getBoolean("es.gob.afirma.keystores.mozilla.disableCeresNativeDriver") && !Platform.OS.LINUX.equals(Platform.getOS())) { //$NON-NLS-1$
-			try {
-				aksm.addKeyStoreManager(getCeres(parentComponent));
-				return; // Si instancia CERES no pruebo otras tarjetas, no deberia haber varias tarjetas instaladas
-			}
-			catch (final Exception ex) {
-				LOGGER.warning("No se ha podido inicializar la tarjeta CERES: " + ex); //$NON-NLS-1$
-			}
-		}
-		
-		// Anadimos el controlador Java de CERES SIEMPRE a menos que:
-		// -Se indique "es.gob.afirma.keystores.mozilla.disableTemdNativeDriver=true"
-		// -El sistema sea Linux
-		if (!Boolean.getBoolean("es.gob.afirma.keystores.mozilla.disableTemdNativeDriver") && !Platform.OS.LINUX.equals(Platform.getOS())) { //$NON-NLS-1$
-			try {
-				aksm.addKeyStoreManager(getTemd(parentComponent));
-				return; // Si instancia TEMD no pruebo otras tarjetas, no deberia haber varias tarjetas instaladas
-			}
-			catch (final Exception ex) {
-				LOGGER.warning("No se ha podido inicializar la tarjeta TEMD: " + ex); //$NON-NLS-1$
-			}
-		}
-	}
-
-	private static AOKeyStoreManager getCeres(final Object parentComponent) throws AOKeystoreAlternativeException, IOException, AOKeyStoreManagerException {
-		final AOKeyStoreManager tmpKsm = AOKeyStoreManagerFactory.getAOKeyStoreManager(
-			AOKeyStore.CERES, // Store
-			null,             // Lib (null)
-			null,             // Description (null)
-			null,             // PasswordCallback (no hay en la carga, hay en la firma
-			parentComponent   // Parent
-		);
-		LOGGER.info("La tarjeta CERES ha podido inicializarse, se anadiran sus entradas"); //$NON-NLS-1$
-		tmpKsm.setPreferred(true);
-		return tmpKsm;
-	}
-	
-	private static AOKeyStoreManager getTemd(final Object parentComponent) throws AOKeystoreAlternativeException, IOException, AOKeyStoreManagerException {
-		final AOKeyStoreManager tmpKsm = AOKeyStoreManagerFactory.getAOKeyStoreManager(
-			AOKeyStore.TEMD, // Store
-			null,             // Lib (null)
-			null,             // Description (null)
-			null,             // PasswordCallback (no hay en la carga, hay en la firma
-			parentComponent   // Parent
-		);
-		LOGGER.info("La tarjeta TEMD ha podido inicializarse, se anadiran sus entradas"); //$NON-NLS-1$
-		tmpKsm.setPreferred(true);
-		return tmpKsm;
 	}
 
     /** Obtiene un almac&eacute;n de claves agregando un gestor de <i>callbacks</i> gen&eacute;rico.
