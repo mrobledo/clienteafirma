@@ -15,8 +15,11 @@ public final class TimedPersistentCachePasswordCallback extends PasswordCallback
 	private long milisecondsToClose;
 	private Component parent;
 
+	public static final int INFINITE = -1;
+
 	private static final String KEY_TEMD_OBJ = "temd-obj"; //$NON-NLS-1$
 	private static final String KEY_TEMD_LASTTIME = "temd-lasttime"; //$NON-NLS-1$
+
 
 	/** Objecto general de preferencias donde se guarda la configuraci&oacute;n de la
 	 * aplicaci&oacute;n. */
@@ -28,7 +31,7 @@ public final class TimedPersistentCachePasswordCallback extends PasswordCallback
 	public TimedPersistentCachePasswordCallback(final String dialogMsg, final Object p) {
 		super("dummy", false); //$NON-NLS-1$
 		this.dialogMsg = dialogMsg;
-		this.milisecondsToClose = 0;
+		this.milisecondsToClose = INFINITE;
 		if (p instanceof Component) {
 			this.parent = (Component) p;
 		}
@@ -76,9 +79,15 @@ public final class TimedPersistentCachePasswordCallback extends PasswordCallback
 	}
 
 	public boolean isObjectExpired() {
+
 		final long lasttime = preferences.getLong(KEY_TEMD_LASTTIME, -1);
 		if (lasttime == -1) {
 			return true;
+		}
+
+		// Si el tiempo de caducidad es menor que 0, se considera que no hay caducidad
+		if (this.milisecondsToClose < 0) {
+			return false;
 		}
 
 		final boolean expired = System.currentTimeMillis() > lasttime + this.milisecondsToClose;
@@ -96,20 +105,26 @@ public final class TimedPersistentCachePasswordCallback extends PasswordCallback
 			return pin.toCharArray();
 		}
 		final char[] newpin = new UIPasswordCallback(this.dialogMsg, this.parent).getPassword();
-		preferences.put(KEY_TEMD_OBJ, new String(newpin));
+		if (this.milisecondsToClose != 0) {
+			preferences.put(KEY_TEMD_OBJ, new String(newpin));
+		}
 		resetTimer();
 		return newpin;
 	}
 
-	static void resetTimer() {
-		preferences.putLong(KEY_TEMD_LASTTIME, System.currentTimeMillis());
+	void resetTimer() {
+		if (this.milisecondsToClose != 0) {
+			preferences.putLong(KEY_TEMD_LASTTIME, System.currentTimeMillis());
+		}
 	}
 
 	@Override
 	public void setPassword(final char[] password) {
 		if (password != null && !(password.length < 1)) {
 			super.setPassword(password);
-			preferences.put(KEY_TEMD_OBJ, new String(password));
+			if (this.milisecondsToClose != 0) {
+				preferences.put(KEY_TEMD_OBJ, new String(password));
+			}
 			resetTimer();
 		}
 	}

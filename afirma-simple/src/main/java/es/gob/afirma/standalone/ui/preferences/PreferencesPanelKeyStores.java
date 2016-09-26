@@ -400,7 +400,13 @@ final class PreferencesPanelKeyStores extends JPanel {
 		PreferencesManager.putBoolean(PREFERENCE_KEYSTORE_SIGN_ONLY_CERTS, this.onlySignature.isSelected());
 		PreferencesManager.putBoolean(PREFERENCE_KEYSTORE_ALIAS_ONLY_CERTS, this.onlyAlias.isSelected());
 		PreferencesManager.putBoolean(PREFERENCE_KEYSTORE_CLOSE_KEYSTORE, this.closeKeyStore.isSelected());
-		PreferencesManager.put(PREFERENCE_KEYSTORE_CLOSE_KEYSTORE_TIMEOUT, this.sizeSpinner.getValue().toString());
+		// Si no se ha indicado que se cierre el almacen, no se guarda el tiempo de cierre para que se configure a infinito
+		if (!this.closeKeyStore.isSelected()) {
+			PreferencesManager.remove(PREFERENCE_KEYSTORE_CLOSE_KEYSTORE_TIMEOUT);
+		}
+		else {
+			PreferencesManager.put(PREFERENCE_KEYSTORE_CLOSE_KEYSTORE_TIMEOUT, this.sizeSpinner.getValue().toString());
+		}
 		PreferencesManager.put(
 			PREFERENCE_KEYSTORE_DEFAULT_STORE,
 			getDefaultStore().name()

@@ -155,10 +155,11 @@ public final class SimpleKeyStoreManager {
     	final PasswordCallback psc = aoks.getStorePasswordCallback(parent);
     	if (psc instanceof TimedPersistentCachePasswordCallback) {
     		((TimedPersistentCachePasswordCallback) psc).setSecondsToClose(
+    				60 *
     				Long.parseLong(
 							PreferencesManager.get(
     							PreferencesManager.PREFERENCE_KEYSTORE_CLOSE_KEYSTORE_TIMEOUT,
-    							Long.toString(0)
+    							Integer.toString(TimedPersistentCachePasswordCallback.INFINITE)
     						)
 					)
     		);

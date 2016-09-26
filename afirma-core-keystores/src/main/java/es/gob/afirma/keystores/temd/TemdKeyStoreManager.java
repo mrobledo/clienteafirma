@@ -36,7 +36,10 @@ public final class TemdKeyStoreManager extends AggregatedKeyStoreManager impleme
 		return LOGGER;
 	}
 
-	private TimedPersistentCachePasswordCallback pwc = new TimedPersistentCachePasswordCallback(KeyStoreMessages.getString("TemdKeyStoreManager.0"), DEFAULT_TIME_TO_CLOSE_KEYSTORE, null); //$NON-NLS-1$
+	private TimedPersistentCachePasswordCallback pwc = new TimedPersistentCachePasswordCallback(
+			KeyStoreMessages.getString("TemdKeyStoreManager.0"), //$NON-NLS-1$
+			DEFAULT_TIME_TO_CLOSE_KEYSTORE,
+			null);
 
 	/** Construye un almac&eacute;n TEMD en tarjeta.
 	 * @throws AOKeyStoreManagerException Si no puede construirse el almac&eacute;n. */
@@ -263,8 +266,8 @@ public final class TemdKeyStoreManager extends AggregatedKeyStoreManager impleme
 		}
 	}
 
-	private static void resetTimer() {
-		TimedPersistentCachePasswordCallback.resetTimer();
+	private void resetTimer() {
+		this.pwc.resetTimer();
 	}
 
 	/** Obtiene la versi&oacute;n de Java para determinar el nombre de la librer&iacute;a de las tarjetas de FNMT.
@@ -376,6 +379,5 @@ public final class TemdKeyStoreManager extends AggregatedKeyStoreManager impleme
 			this.pwc.clearPassword();
 			throw new AOKeyStoreManagerException(e);
 		}
-
 	}
 }
