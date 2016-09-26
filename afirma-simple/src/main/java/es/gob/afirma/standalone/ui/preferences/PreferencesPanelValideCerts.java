@@ -13,6 +13,7 @@ import javax.swing.JTextField;
 
 import es.gob.afirma.standalone.SimpleAfirmaMessages;
 
+/** Panel de preferencias para la validaci&oacute;n de certificados. */
 public class PreferencesPanelValideCerts extends JPanel {
 
 	private static final long serialVersionUID = 3776016646875294106L;

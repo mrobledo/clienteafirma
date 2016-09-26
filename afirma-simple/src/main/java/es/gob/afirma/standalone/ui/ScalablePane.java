@@ -23,6 +23,9 @@ public final class ScalablePane extends JPanel {
     private boolean toFit;
     private Image scaled;
 
+   /** Construye un panel que redimensiona su imagen de fondo (manteniendo la relaci&oacute;n de aspecto) cuando
+    * este es redimensionado.
+    * @param master Imagen de fondo del panel. */
    public ScalablePane(final Image master) {
         this(master, true);
     }
@@ -60,11 +63,11 @@ public final class ScalablePane extends JPanel {
         super.invalidate();
     }
 
-    public boolean isToFit() {
+    boolean isToFit() {
         return this.toFit;
     }
 
-    public void setToFit(final boolean value) {
+    void setToFit(final boolean value) {
         if (value != this.toFit) {
             this.toFit = value;
             invalidate();
@@ -107,7 +110,7 @@ public final class ScalablePane extends JPanel {
                         true);
     }
 
-    public static Dimension getSizeToFit(final Dimension original, final Dimension dim) {
+    static Dimension getSizeToFit(final Dimension original, final Dimension dim) {
         final double factor = getScaleFactorToFit(original, dim);
         final Dimension size = new Dimension(original);
         size.width *= factor;
@@ -115,7 +118,7 @@ public final class ScalablePane extends JPanel {
         return size;
     }
 
-    public static Dimension getSizeToFill(final Dimension original, final Dimension dim) {
+    static Dimension getSizeToFill(final Dimension original, final Dimension dim) {
         final double factor = getScaleFactorToFill(original, dim);
         final Dimension size = new Dimension(original);
         size.width *= factor;
