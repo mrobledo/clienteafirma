@@ -4,22 +4,8 @@ import java.security.cert.X509Certificate;
 
 import es.gob.afirma.keystores.filters.rfc.KeyUsageFilter;
 
-/** Filtro de Certificados para cifrado.
- * @author Mariano Mart&iacute;nez. */
+/** Filtro de certificados que muestra s&oacute; los certificados de cifrado de claves y datos. */
 public final class CipherCertificateFilter extends CertificateFilter {
-
-	private final KeyUsageFilter keyUsageFilter;
-
-	/** Construye un filtro de Certificados para cifrado. */
-	public CipherCertificateFilter() {
-		this.keyUsageFilter = new KeyUsageFilter(AUTHENTICATION_CERT_USAGE);
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public boolean matches(final X509Certificate cert) {
-		return this.keyUsageFilter.matches(cert);
-	}
 
 	/** Usos de clave permitidos en los certificados para la autenticaci&oacute;n de usuarios. */
     private static final Boolean[] AUTHENTICATION_CERT_USAGE = {
@@ -33,4 +19,19 @@ public final class CipherCertificateFilter extends CertificateFilter {
         null, // encipherOnly
         null  // decipherOnly
     };
+
+	private static final KeyUsageFilter keyUsageFilter = new KeyUsageFilter(AUTHENTICATION_CERT_USAGE);
+
+	/** {@inheritDoc} */
+	@Override
+	public boolean matches(final X509Certificate cert) {
+		return isCipherCertificate(cert);
+	}
+
+	/**
+	 * Comprueba si el certificado declara los keyusages de cifrado de datos y clave.
+	 */
+	private static boolean isCipherCertificate(final X509Certificate cert) {
+		return keyUsageFilter.matches(cert);
+	}
 }

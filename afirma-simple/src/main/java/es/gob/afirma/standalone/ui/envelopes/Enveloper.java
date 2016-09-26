@@ -173,7 +173,7 @@ final class Enveloper {
 	}
 
 	/**
-	 * Obtiene del almac&eacute;n del certificado de firma el certificado parejo de cifrado.
+	 * Obtiene del almac&eacute;n de claves el certificado parejo de cifrado.
 	 * @param ksm Almacen de claves.
 	 * @param signingCert Certificado de firma.
 	 * @return Certificado de cifrado asociado al de firma o el propio certificado de firma
