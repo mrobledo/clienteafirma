@@ -22,6 +22,7 @@ import es.gob.afirma.keystores.AOKeyStoreManagerFactory;
 import es.gob.afirma.keystores.AOKeystoreAlternativeException;
 import es.gob.afirma.keystores.AggregatedKeyStoreManager;
 import es.gob.afirma.keystores.AutoCloseableStore;
+import es.gob.afirma.keystores.KeyStoreMessages;
 import es.gob.afirma.keystores.KeyStoreUtilities;
 
 /** Almac&eacute;n TEMD en tarjeta.
@@ -35,43 +36,7 @@ public final class TemdKeyStoreManager extends AggregatedKeyStoreManager impleme
 		return LOGGER;
 	}
 
-	@Override
-	public void setParentComponent(final Object p) {
-		super.setParentComponent(p);
-		this.pwc.setParent(p);
-	}
-
-	private final TimedPersistentCachePasswordCallback pwc = new TimedPersistentCachePasswordCallback(DEFAULT_TIME_TO_CLOSE_KEYSTORE, null);
-
-	private AOKeyStoreManager getTemdPkcs11KeyStoreManager() throws AOKeyStoreManagerException {
-
-		final TEMD_CARD card = getInsertedTemd();
-
-		if (card == null) {
-			throw new AOKeyStoreManagerException("No hay ninguna TEMD insertada"); //$NON-NLS-1$
-		}
-
-		if (!card.libLoads()) {
-			throw new AOKeyStoreManagerException("No se puede cargar el PKCS#11 de la TEMD insertada"); //$NON-NLS-1$
-		}
-
-		try {
-			return AOKeyStoreManagerFactory.getAOKeyStoreManager(
-				AOKeyStore.PKCS11,
-				card.getLibPath(),
-				card.toString(),
-				this.// Pedimos el PIN para almacenarlo (peticion expresa del Ministerio de Defensa pese a lo
-				// inseguro de la practica).
-				pwc,
-				getParentComponent()
-			);
-		}
-		catch (AOKeystoreAlternativeException | IOException e) {
-			this.pwc.clearPassword();
-			throw new AOKeyStoreManagerException(e);
-		}
-
-	}
+	private TimedPersistentCachePasswordCallback pwc = new TimedPersistentCachePasswordCallback(KeyStoreMessages.getString("TemdKeyStoreManager.0"), DEFAULT_TIME_TO_CLOSE_KEYSTORE, null); //$NON-NLS-1$
 
 	/** Construye un almac&eacute;n TEMD en tarjeta.
 	 * @throws AOKeyStoreManagerException Si no puede construirse el almac&eacute;n. */
@@ -80,6 +45,18 @@ public final class TemdKeyStoreManager extends AggregatedKeyStoreManager impleme
 		setKeyStoreType(AOKeyStore.TEMD);
 		addKeyStoreManager(getTemdPkcs11KeyStoreManager());
 	}
+
+	/**
+	 *
+	 * @throws AOKeyStoreManagerException
+	 */
+	public TemdKeyStoreManager(final TimedPersistentCachePasswordCallback pwc) throws AOKeyStoreManagerException {
+		this.pwc = pwc;
+		System.setProperty("es.gob.afirma.keystores.DoNotReusePkcs11Provider", Boolean.TRUE.toString()); //$NON-NLS-1$
+		setKeyStoreType(AOKeyStore.TEMD);
+		addKeyStoreManager(getTemdPkcs11KeyStoreManager());
+	}
+
 
 	@Override
 	public boolean isKeyEntry(final String alias) throws KeyStoreException {
@@ -96,6 +73,7 @@ public final class TemdKeyStoreManager extends AggregatedKeyStoreManager impleme
 
 	@Override
 	public String[] getAliases() {
+		resetTimer();
 		if (lacksKeyStores()) {
 			try {
 				refresh();
@@ -112,6 +90,7 @@ public final class TemdKeyStoreManager extends AggregatedKeyStoreManager impleme
 
     @Override
 	public X509Certificate getCertificate(final String alias) {
+    	resetTimer();
 		if (lacksKeyStores()) {
 			try {
 				refresh();
@@ -128,6 +107,7 @@ public final class TemdKeyStoreManager extends AggregatedKeyStoreManager impleme
 
     @Override
 	public X509Certificate[] getCertificateChain(final String alias) {
+    	resetTimer();
 		if (lacksKeyStores()) {
 			try {
 				refresh();
@@ -146,6 +126,7 @@ public final class TemdKeyStoreManager extends AggregatedKeyStoreManager impleme
 	public KeyStore.PrivateKeyEntry getKeyEntry(final String alias) throws KeyStoreException,
                                                                      NoSuchAlgorithmException,
                                                                      UnrecoverableEntryException {
+    	resetTimer();
 		if (lacksKeyStores()) {
 			try {
 				refresh();
@@ -362,4 +343,39 @@ public final class TemdKeyStoreManager extends AggregatedKeyStoreManager impleme
     	return null;
     }
 
+    @Override
+	public void setParentComponent(final Object p) {
+		super.setParentComponent(p);
+		this.pwc.setParent(p);
+	}
+
+	private AOKeyStoreManager getTemdPkcs11KeyStoreManager() throws AOKeyStoreManagerException {
+
+		final TEMD_CARD card = getInsertedTemd();
+
+		if (card == null) {
+			throw new AOKeyStoreManagerException("No hay ninguna TEMD insertada"); //$NON-NLS-1$
+		}
+
+		if (!card.libLoads()) {
+			throw new AOKeyStoreManagerException("No se puede cargar el PKCS#11 de la TEMD insertada"); //$NON-NLS-1$
+		}
+
+		try {
+			return AOKeyStoreManagerFactory.getAOKeyStoreManager(
+				AOKeyStore.PKCS11,
+				card.getLibPath(),
+				card.toString(),
+				this.// Pedimos el PIN para almacenarlo (peticion expresa del Ministerio de Defensa pese a lo
+				// inseguro de la practica).
+				pwc,
+				getParentComponent()
+			);
+		}
+		catch (AOKeystoreAlternativeException | IOException e) {
+			this.pwc.clearPassword();
+			throw new AOKeyStoreManagerException(e);
+		}
+
+	}
 }

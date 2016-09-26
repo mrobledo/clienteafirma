@@ -14,6 +14,7 @@ import java.awt.Component;
 import java.io.IOException;
 import java.util.logging.Logger;
 
+import javax.security.auth.callback.PasswordCallback;
 import javax.swing.JOptionPane;
 
 import es.gob.afirma.core.misc.Platform;
@@ -26,6 +27,7 @@ import es.gob.afirma.keystores.AOKeyStoreManagerFactory;
 import es.gob.afirma.keystores.AOKeystoreAlternativeException;
 import es.gob.afirma.keystores.SmartCardLockedException;
 import es.gob.afirma.keystores.mozilla.MozillaKeyStoreUtilities;
+import es.gob.afirma.keystores.temd.TimedPersistentCachePasswordCallback;
 import es.gob.afirma.standalone.ui.preferences.PreferencesManager;
 
 /** Gestor simple de <code>KeyStores</code>. Obtiene o un <code>KeyStore</code> de DNIe
@@ -116,8 +118,9 @@ public final class SimpleKeyStoreManager {
         // Probamos antes si instancia el almacen prioritario, y si instancia, lo usamos directamente
         final AOKeyStore pks = AOKeyStore.getKeyStore(preferedKeyStore);
         if (pks != null) {
+        	AOKeyStoreManager ksm = null;
     		try {
-    			return getKeyStoreManager(
+    			 ksm = getKeyStoreManager(
     				pks,
     				parent
     			);
@@ -127,6 +130,8 @@ public final class SimpleKeyStoreManager {
         			"No se ha podido inicializar el almacen de claves prioritario: " + e //$NON-NLS-1$
     			);
             }
+
+    		return ksm;
         }
 
         // No ha funcionado el prioritario, obtenemos el por defecto
@@ -146,11 +151,24 @@ public final class SimpleKeyStoreManager {
     }
 
     private static AOKeyStoreManager getKeyStoreManager(final AOKeyStore aoks, final Component parent) throws IOException, AOKeystoreAlternativeException, AOKeyStoreManagerException {
+
+    	final PasswordCallback psc = aoks.getStorePasswordCallback(parent);
+    	if (psc instanceof TimedPersistentCachePasswordCallback) {
+    		((TimedPersistentCachePasswordCallback) psc).setSecondsToClose(
+    				Long.parseLong(
+							PreferencesManager.get(
+    							PreferencesManager.PREFERENCE_KEYSTORE_CLOSE_KEYSTORE_TIMEOUT,
+    							Long.toString(0)
+    						)
+					)
+    		);
+    	}
+
     	return AOKeyStoreManagerFactory.getAOKeyStoreManager(
     		aoks,
     		null,
     		null,
-    		aoks.getStorePasswordCallback(parent),
+    		psc,
     		parent
 		);
     }

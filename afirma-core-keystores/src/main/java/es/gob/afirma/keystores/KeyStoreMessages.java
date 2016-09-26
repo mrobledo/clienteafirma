@@ -14,7 +14,7 @@ import java.util.Locale;
 import java.util.ResourceBundle;
 
 /** Clase para la obtencion de los recursos textuales del UI. */
-final class KeyStoreMessages {
+public final class KeyStoreMessages {
 
     private static final String BUNDLE_NAME = "keystoremessages"; //$NON-NLS-1$
     private static final ResourceBundle RESOURCE_BUNDLE = ResourceBundle.getBundle(BUNDLE_NAME, Locale.getDefault());
@@ -27,7 +27,7 @@ final class KeyStoreMessages {
      * @param key
      *        Clave del texto.
      * @return Recuerso textual. */
-    static String getString(final String key) {
+    public static String getString(final String key) {
         try {
             return RESOURCE_BUNDLE.getString(key);
         }

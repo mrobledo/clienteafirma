@@ -26,6 +26,7 @@ import es.gob.afirma.core.misc.Platform;
 import es.gob.afirma.core.ui.AOUIFactory;
 import es.gob.afirma.keystores.callbacks.NullPasswordCallback;
 import es.gob.afirma.keystores.temd.TemdKeyStoreManager;
+import es.gob.afirma.keystores.temd.TimedPersistentCachePasswordCallback;
 
 /** Obtiene clases de tipo AOKeyStoreManager seg&uacute;n se necesiten,
  * proporcionando adem&aacute;s ciertos m&eacute;todos de utilidad. Contiene
@@ -34,7 +35,7 @@ import es.gob.afirma.keystores.temd.TemdKeyStoreManager;
 public final class AOKeyStoreManagerFactory {
 
 	private static final Logger LOGGER = Logger.getLogger("es.gob.afirma"); //$NON-NLS-1$
-	
+
     private AOKeyStoreManagerFactory() {
         // No permitimos la instanciacion
     }
@@ -86,13 +87,13 @@ public final class AOKeyStoreManagerFactory {
 
     	// Almacen PKCS#12, en cualquier sistema operativo
     	if (AOKeyStore.PKCS12.equals(store)) {
-    		AggregatedKeyStoreManager aksm = new AggregatedKeyStoreManager(getPkcs12KeyStoreManager(lib, pssCallback, forceReset, parentComponent));
-    		CRC32 crc = new CRC32();
+    		final AggregatedKeyStoreManager aksm = new AggregatedKeyStoreManager(getPkcs12KeyStoreManager(lib, pssCallback, forceReset, parentComponent));
+    		final CRC32 crc = new CRC32();
     		if(aksm.getAliases().length > 0) {
 	    		try {
 					crc.update(aksm.getCertificate(aksm.getAliases()[0]).getEncoded());
 					String.valueOf(crc.getValue());
-				} catch (CertificateEncodingException e) {
+				} catch (final CertificateEncodingException e) {
 					LOGGER.warning("Error al abrir el certificado: " + e); //$NON-NLS-1$
 				}
     		}
@@ -157,26 +158,29 @@ public final class AOKeyStoreManagerFactory {
 
         // Driver Java para TEMD
         if (Platform.getOS().equals(Platform.OS.WINDOWS) && AOKeyStore.TEMD.equals(store)) {
+        	if (pssCallback instanceof TimedPersistentCachePasswordCallback) {
+        		return new TemdKeyStoreManager((TimedPersistentCachePasswordCallback) pssCallback);
+        	}
         	return new TemdKeyStoreManager();
         }
-        
+
         // Directorio de certificados frecuentes
         if (AOKeyStore.FRECUENTCERTS.equals(store)) {
         	// Se recorre el directorio y se obtiene cada uno de los certificados
-        	String[] ficheros = new File(lib).list();
+        	final String[] ficheros = new File(lib).list();
         	if (ficheros == null) {
         		LOGGER.info("No existen certificados frecuentes"); //$NON-NLS-1$
         		return null;
         	}
-			AggregatedKeyStoreManager aks = new AggregatedKeyStoreManager();
+			final AggregatedKeyStoreManager aks = new AggregatedKeyStoreManager();
 			 for (int x = 0; x < ficheros.length; x++) {
 				 String extension = ""; //$NON-NLS-1$
 				 // Se obtiene la extension del certificado
-				 int i = ficheros[x].lastIndexOf('.');
+				 final int i = ficheros[x].lastIndexOf('.');
 				 if (i > 0) {
 				     extension = ficheros[x].substring(i+1);
 				 }
-				 
+
 				 if("p12".equals(extension) || "pfx".equals(extension)) { //$NON-NLS-1$ //$NON-NLS-2$
 					 aks.addKeyStoreManager(getPkcs12KeyStoreManager(ficheros[x], pssCallback, forceReset, parentComponent));
 				 }

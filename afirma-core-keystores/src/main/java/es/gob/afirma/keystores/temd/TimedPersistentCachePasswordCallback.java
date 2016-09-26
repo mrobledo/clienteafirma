@@ -5,12 +5,13 @@ import java.util.prefs.Preferences;
 
 import javax.security.auth.callback.PasswordCallback;
 
-import es.gob.afirma.keystores.AOKeyStore;
+import es.gob.afirma.keystores.callbacks.UIPasswordCallback;
 
-final class TimedPersistentCachePasswordCallback extends PasswordCallback {
+public final class TimedPersistentCachePasswordCallback extends PasswordCallback {
 
 	private static final long serialVersionUID = -711589400619807544L;
 
+	private final String dialogMsg;
 	private long milisecondsToClose;
 	private Component parent;
 
@@ -24,9 +25,23 @@ final class TimedPersistentCachePasswordCallback extends PasswordCallback {
 		preferences = Preferences.userNodeForPackage(TimedPersistentCachePasswordCallback.class);
 	}
 
-	TimedPersistentCachePasswordCallback(final long segsToClose, final Object p) {
+	public TimedPersistentCachePasswordCallback(final String dialogMsg, final Object p) {
 		super("dummy", false); //$NON-NLS-1$
-		this.milisecondsToClose = segsToClose * 1000;
+		this.dialogMsg = dialogMsg;
+		this.milisecondsToClose = 0;
+		if (p instanceof Component) {
+			this.parent = (Component) p;
+		}
+		else {
+			this.parent = null;
+		}
+	}
+
+
+	public TimedPersistentCachePasswordCallback(final String dialogMsg, final long secsToClose, final Object p) {
+		super("dummy", false); //$NON-NLS-1$
+		this.dialogMsg = dialogMsg;
+		this.milisecondsToClose = secsToClose * 1000;
 		if (p instanceof Component) {
 			this.parent = (Component) p;
 		}
@@ -41,8 +56,8 @@ final class TimedPersistentCachePasswordCallback extends PasswordCallback {
 		}
 	}
 
-	void setSecondsToClose(final long segsToClose) {
-		this.milisecondsToClose = segsToClose * 1000;
+	public void setSecondsToClose(final long secsToClose) {
+		this.milisecondsToClose = secsToClose * 1000;
 	}
 
 	@Override
@@ -80,7 +95,7 @@ final class TimedPersistentCachePasswordCallback extends PasswordCallback {
 			resetTimer();
 			return pin.toCharArray();
 		}
-		final char[] newpin = AOKeyStore.TEMD.getStorePasswordCallback(this.parent).getPassword();
+		final char[] newpin = new UIPasswordCallback(this.dialogMsg, this.parent).getPassword();
 		preferences.put(KEY_TEMD_OBJ, new String(newpin));
 		resetTimer();
 		return newpin;

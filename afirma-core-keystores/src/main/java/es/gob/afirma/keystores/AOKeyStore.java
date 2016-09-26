@@ -17,6 +17,7 @@ import javax.security.auth.callback.PasswordCallback;
 import es.gob.afirma.keystores.callbacks.CachePasswordCallback;
 import es.gob.afirma.keystores.callbacks.NullPasswordCallback;
 import es.gob.afirma.keystores.callbacks.UIPasswordCallback;
+import es.gob.afirma.keystores.temd.TimedPersistentCachePasswordCallback;
 
 /** Almacenes de claves y certificados soportados. */
 public enum AOKeyStore {
@@ -108,8 +109,8 @@ public enum AOKeyStore {
 		"TEMD (Tarjeta del Ministerio de Defensa)", //$NON-NLS-1$
 		10,
 		"PKCS11", //$NON-NLS-1$
-		null, // Sin contrasena para los certificados sueltos
-		new UIPasswordCallback(KeyStoreMessages.getString("AOKeyStore.14")) //$NON-NLS-1$
+		new TimedPersistentCachePasswordCallback(KeyStoreMessages.getString("AOKeyStore.14"), 0, null), //$NON-NLS-1$
+		new TimedPersistentCachePasswordCallback(KeyStoreMessages.getString("AOKeyStore.14"), 0, null) //$NON-NLS-1$
 	),
     /** Windows / Internet Explorer (CAPI, certificados de otras personas /
      * libreta de direcciones). */
@@ -240,8 +241,8 @@ public enum AOKeyStore {
 	 * @param parent Componente padre para la modalidad
 	 * @return <i>PasswordCallback</i> necesario para abrir el almac&eacute;n */
 	public PasswordCallback getStorePasswordCallback(final Object parent) {
-		if (this.certificatePasswordCallback instanceof UIPasswordCallback) {
-			((UIPasswordCallback)this.certificatePasswordCallback).setParent(parent);
+		if (this.storePasswordCallback instanceof UIPasswordCallback) {
+			((UIPasswordCallback)this.storePasswordCallback).setParent(parent);
 		}
 		return this.storePasswordCallback;
 	}

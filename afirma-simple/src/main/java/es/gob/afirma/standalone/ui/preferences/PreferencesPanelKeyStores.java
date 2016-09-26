@@ -400,7 +400,7 @@ final class PreferencesPanelKeyStores extends JPanel {
 		PreferencesManager.putBoolean(PREFERENCE_KEYSTORE_SIGN_ONLY_CERTS, this.onlySignature.isSelected());
 		PreferencesManager.putBoolean(PREFERENCE_KEYSTORE_ALIAS_ONLY_CERTS, this.onlyAlias.isSelected());
 		PreferencesManager.putBoolean(PREFERENCE_KEYSTORE_CLOSE_KEYSTORE, this.closeKeyStore.isSelected());
-		PreferencesManager.put(PREFERENCE_KEYSTORE_CLOSE_KEYSTORE_TIMEOUT, getSelectedTimeout());
+		PreferencesManager.put(PREFERENCE_KEYSTORE_CLOSE_KEYSTORE_TIMEOUT, this.sizeSpinner.getValue().toString());
 		PreferencesManager.put(
 			PREFERENCE_KEYSTORE_DEFAULT_STORE,
 			getDefaultStore().name()
@@ -415,6 +415,7 @@ final class PreferencesPanelKeyStores extends JPanel {
 		this.onlySignature.setSelected(PreferencesManager.getBoolean(PREFERENCE_KEYSTORE_SIGN_ONLY_CERTS, true));
 		this.onlyAlias.setSelected(PreferencesManager.getBoolean(PREFERENCE_KEYSTORE_ALIAS_ONLY_CERTS, false));
 		this.closeKeyStore.setSelected(PreferencesManager.getBoolean(PREFERENCE_KEYSTORE_CLOSE_KEYSTORE, false));
+		this.sizeSpinner.setValue(Integer.valueOf(PreferencesManager.get(PREFERENCE_KEYSTORE_CLOSE_KEYSTORE_TIMEOUT, Integer.toString(MIN_WAIT_TIME))));
 		this.defaultStore.setSelectedItem(
 			SimpleKeyStoreManager.getDefaultKeyStoreType()
 		);
