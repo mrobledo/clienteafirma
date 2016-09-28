@@ -200,7 +200,7 @@ Section "Programa" sPrograma
 	;Exec "explorer $SMPROGRAMS\$PATH_ACCESO_DIRECTO\"
 	
 	;Registro
-	;CascadeAfirma.reg
+	;Firmar
 	WriteRegStr HKEY_CLASSES_ROOT "*\shell\afirma.sign" "" "Firmar con AutoFirma"
 	WriteRegStr HKEY_CLASSES_ROOT "*\shell\afirma.sign" "Icon" "$INSTDIR\AutoFirma\AutoFirma.exe"
 	WriteRegStr HKEY_CLASSES_ROOT "*\shell\afirma.sign\command" "" "$INSTDIR\AutoFirma\AutoFirma.exe sign -gui -i %1" 
@@ -234,6 +234,13 @@ Section "Programa" sPrograma
 	WriteRegStr HKEY_CLASSES_ROOT ".xsig\DefaultIcon" "" "$INSTDIR\AutoFirma\ic_firmar.ico"
 	WriteRegStr HKEY_CLASSES_ROOT ".xsig\shell\Verify" "" "Verificar con AutoFirma"
 	WriteRegStr HKEY_CLASSES_ROOT ".xsig\shell\Verify\command" "" "$INSTDIR\AutoFirma\AutoFirma.exe verify -gui -i %1"	
+	
+	;Verify
+	; .p7s
+	WriteRegStr HKEY_CLASSES_ROOT ".p7s" "" "Firma binaria CMS/CAdES"
+	WriteRegStr HKEY_CLASSES_ROOT ".p7s\DefaultIcon" "" "$INSTDIR\AutoFirma\ic_firmar.ico"
+	WriteRegStr HKEY_CLASSES_ROOT ".p7s\shell\Verify" "" "Verificar con AutoFirma"
+	WriteRegStr HKEY_CLASSES_ROOT ".p7s\shell\Verify\command" "" "$INSTDIR\AutoFirma\AutoFirma.exe verify -gui -i %1"	
 	
 	;Protocolo afirma
 	WriteRegStr HKEY_CLASSES_ROOT "afirma" "" "URL:Afirma Protocol"
