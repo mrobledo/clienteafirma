@@ -118,7 +118,8 @@ public final class SimpleAfirma implements PropertyChangeListener, WindowListene
 
     private File currentDir;
 
-    private AOKeyStoreManager ksManager;
+    private static AOKeyStoreManager ksManager = null;
+
     private final MainMenu mainMenu;
 
     /** Construye la aplicaci&oacute;n principal y establece el
@@ -131,21 +132,21 @@ public final class SimpleAfirma implements PropertyChangeListener, WindowListene
      * y est&aacute; listo para su uso.
      * @return <code>true</code> si el <code>AOKeyStoreManager</code> est&aacute; listo para usarse, <code>false</code> en caso
      *         contrario */
-    public boolean isKeyStoreReady() {
-        return this.ksManager != null;
+    public static boolean isKeyStoreReady() {
+        return ksManager != null;
     }
 
     synchronized void setKeyStoreManager(final AOKeyStoreManager ksm) {
         if (ksm != null) {
             LOGGER.info("Establecido KeyStoreManager: " + ksm); //$NON-NLS-1$
-            this.ksManager = ksm;
+            ksManager = ksm;
 
             if (this.currentPanel instanceof SignPanel) {
                 ((SignPanel) this.currentPanel).notifyStoreReady();
             }
         }
         else {
-        	LOGGER.info("No se ha podido inicializar el almacen por defecto"); //$NON-NLS-1$
+        	LOGGER.severe("No se ha podido inicializar el almacen por defecto"); //$NON-NLS-1$
         	AOUIFactory.showErrorMessage(
                 this.container,
                 SimpleAfirmaMessages.getString("SimpleAfirma.6"), //$NON-NLS-1$
@@ -210,7 +211,7 @@ public final class SimpleAfirma implements PropertyChangeListener, WindowListene
 	}
 
     private void loadDefaultKeyStore() {
-    	if (this.ksManager != null) {
+    	if (SimpleAfirma.ksManager != null) {
     		LOGGER.info(
     			"Se omite la carga concurrente de almacen por haberse hecho una precarga previa" //$NON-NLS-1$
     		);
@@ -238,7 +239,7 @@ public final class SimpleAfirma implements PropertyChangeListener, WindowListene
 
     @Override
     public void propertyChange(final PropertyChangeEvent evt) {
-    	if (this.ksManager != null) {
+    	if (SimpleAfirma.ksManager != null) {
     		return;
     	}
     	if (DNIeWaitPanel.PROP_DNIE_REJECTED.equals(evt.getPropertyName())) {
@@ -308,8 +309,8 @@ public final class SimpleAfirma implements PropertyChangeListener, WindowListene
 
     /** Obtiene el <code>AOKeyStoreManager</code> en uso en la aplicaci&oacute;n.
      * @return <code>AOKeyStoreManager</code> en uso en la aplicaci&oacute;n */
-    public synchronized AOKeyStoreManager getAOKeyStoreManager() {
-        return this.ksManager;
+    public static synchronized AOKeyStoreManager getAOKeyStoreManager() {
+        return ksManager;
     }
 
     /** Elimina el panel actual y carga el panel de resultados de firma.

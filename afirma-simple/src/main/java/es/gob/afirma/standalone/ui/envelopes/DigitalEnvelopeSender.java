@@ -10,18 +10,15 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-import java.io.File;
-import java.io.IOException;
 import java.security.KeyStore.PrivateKeyEntry;
 import java.security.UnrecoverableEntryException;
+import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
 import javax.swing.BorderFactory;
-import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
-import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -29,16 +26,15 @@ import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 
 import es.gob.afirma.core.AOCancelledOperationException;
+import es.gob.afirma.core.misc.AOUtil;
 import es.gob.afirma.core.misc.Platform;
 import es.gob.afirma.core.ui.AOUIFactory;
 import es.gob.afirma.keystores.AOCertificatesNotFoundException;
-import es.gob.afirma.keystores.AOKeyStore;
 import es.gob.afirma.keystores.AOKeyStoreDialog;
 import es.gob.afirma.keystores.AOKeyStoreManager;
-import es.gob.afirma.keystores.AOKeyStoreManagerFactory;
-import es.gob.afirma.keystores.KeyStoreConfiguration;
 import es.gob.afirma.keystores.filters.CertificateFilter;
 import es.gob.afirma.keystores.filters.rfc.KeyUsageFilter;
+import es.gob.afirma.standalone.SimpleAfirma;
 import es.gob.afirma.standalone.SimpleAfirmaMessages;
 
 /**
@@ -55,8 +51,6 @@ public class DigitalEnvelopeSender extends JPanel {
 	DigitalEnvelopePresentation getDialog() {
 		return this.dialog;
 	}
-
-	private final JComboBox<KeyStoreConfiguration> comboBoxRecipients = new JComboBox<>();
 
 	private final JButton addButton = new JButton(SimpleAfirmaMessages.getString("DigitalEnvelopeSender.17")); //$NON-NLS-1$
 	private final JButton nextButton = new JButton(SimpleAfirmaMessages.getString("DigitalEnvelopePresentation.3")); //$NON-NLS-1$
@@ -105,10 +99,26 @@ public class DigitalEnvelopeSender extends JPanel {
 			this.senderKeyStoreManager = this.dialog.getEnvelopeData().getSenderKeyStoreManager();
 			this.senderPrivateKeyEntry = this.dialog.getEnvelopeData().getSenderPrivateKeyEntry();
 
-			this.senderTextField.setText(this.dialog.getEnvelopeData().getSenderCertificateAlias());
+			// Mostramos el CN/alias del certificado seleccionado en el cuadro de texto
+			showSenderCertAlias();
 		}
 
 		createUI();
+	}
+
+	/**
+	 * Muestra el CN o alias del certificado seleccionado para firmar la petici&oacute;n.
+	 */
+	private void showSenderCertAlias() {
+		if (this.senderPrivateKeyEntry != null) {
+			String senderText = null;
+			if (this.senderPrivateKeyEntry.getCertificate() instanceof X509Certificate) {
+				senderText = AOUtil.getCN((X509Certificate) this.senderPrivateKeyEntry.getCertificate());
+			}
+			this.senderTextField.setText(
+					senderText != null ?
+							senderText.trim() : this.dialog.getEnvelopeData().getSenderCertificateAlias().trim());
+		}
 	}
 
 	void createUI() {
@@ -133,12 +143,9 @@ public class DigitalEnvelopeSender extends JPanel {
 
         // Eleccion del remitente
         final JLabel labelCombo = new JLabel(SimpleAfirmaMessages.getString("DigitalEnvelopeSender.12")); //$NON-NLS-1$
-        labelCombo.setLabelFor(this.comboBoxRecipients);
-        this.comboBoxRecipients.setModel(new DefaultComboBoxModel<>(EnvelopesUtils.getKeyStoresToSign()));
- 		this.comboBoxRecipients.setSelectedItem(
- 			SimpleAfirmaMessages.getString("DigitalEnvelopeSender.13") //$NON-NLS-1$
- 		);
- 		this.comboBoxRecipients.addKeyListener(this.dialog);
+        labelCombo.setLabelFor(this.senderTextField);
+        this.senderTextField.setFont(new java.awt.Font ("Century Schoolbook L", 0, 13)); //$NON-NLS-1$
+        this.senderTextField.setFocusable(false);
 
  		// Boton de anadir
 		this.addButton.setMnemonic('D');
@@ -176,12 +183,6 @@ public class DigitalEnvelopeSender extends JPanel {
 				getDialog().keyPressed(ke);
 			}
 		});
-
-		// Area de texto con el remitente
-		final JLabel labelText = new JLabel(SimpleAfirmaMessages.getString("DigitalEnvelopeSender.18")); //$NON-NLS-1$
-		labelText.setLabelFor(this.senderTextField);
-        this.senderTextField.setFont(new java.awt.Font ("Century Schoolbook L", 0, 13)); //$NON-NLS-1$
-        this.senderTextField.setFocusable(false);
 
 		 // Boton de siguiente
  		this.nextButton.setMnemonic('S');
@@ -291,21 +292,13 @@ public class DigitalEnvelopeSender extends JPanel {
 		c.insets = new Insets(5, 10, 0, 11);
 		c.weightx = 1.0;
 		c.gridy++;
-		panelCentral.add(this.comboBoxRecipients, c);
+		panelCentral.add(this.senderTextField, c);
 		c.gridwidth = GridBagConstraints.REMAINDER;
 		c.insets = new Insets(5, 0, 0, 20);
 		c.weightx = 0.0;
 		c.gridx = 1;
 		c.anchor = GridBagConstraints.LINE_END;
 		panelCentral.add(this.addButton, c);
-		c.insets = new Insets(20, 10, 0, 20);
-		c.gridx = 0;
-		c.weightx = 1.0;
-		c.gridy++;
-		panelCentral.add(labelText, c);
-		c.insets = new Insets(5, 10, 0, 20);
-		c.gridy++;
-		panelCentral.add(this.senderTextField, c);
 		c.insets = new Insets(20, 10, 20, 20);
 		c.weighty = 1.0;
 		c.gridy++;
@@ -323,65 +316,15 @@ public class DigitalEnvelopeSender extends JPanel {
 
     	setCertificateDialogOpenned(true);
 
-    	String[] filter;
-    	final AOKeyStoreManager keyStoreManager;
-        final KeyStoreConfiguration kc = (KeyStoreConfiguration) this.comboBoxRecipients.getSelectedItem();
-        try {
-            final AOKeyStore ao = kc.getType();
-            String lib = null;
-            if (ao == AOKeyStore.PKCS12 || ao == AOKeyStore.SINGLE) {
-                if (ao == AOKeyStore.PKCS12) {
-                    filter = new String[] {"p12", "pfx"};  //$NON-NLS-1$//$NON-NLS-2$
-                }
-                else {
-                    filter = new String[] { "cer", "p7b", "p7s"}; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-                }
-                final File keystorePath = EnvelopesUtils.addFileSelected(filter, this.comboBoxRecipients, getDialog());
-                if (keystorePath == null) {
-                    throw new AOCancelledOperationException();
-                }
-                lib = keystorePath.getAbsolutePath();
-            }
-            else if (ao == AOKeyStore.PKCS11) {
-                filter = new String[] {"dll", "so"};  //$NON-NLS-1$//$NON-NLS-2$
-                final File keystorePath = EnvelopesUtils.addFileSelected(filter, this.comboBoxRecipients, getDialog());
-                if (keystorePath == null) {
-                    throw new AOCancelledOperationException();
-                }
-                lib = keystorePath.getAbsolutePath();
-            }
-            keyStoreManager = AOKeyStoreManagerFactory.getAOKeyStoreManager(
-        		ao,
-        		lib,
-        		"default", //$NON-NLS-1$
-        		ao.getStorePasswordCallback(getDialog()),
-        		getDialog()
-            );
-        }
-        catch (final AOCancelledOperationException e) {
-            LOGGER.info("Operacion cancelada por el usuario: " + e); //$NON-NLS-1$
-            return;
-        }
-        catch (final IOException e) {
-        	AOUIFactory.showErrorMessage(
-				this.dialog,
-				SimpleAfirmaMessages.getString("DigitalEnvelopeRecipients.23"), //$NON-NLS-1$
-				SimpleAfirmaMessages.getString("DigitalEnvelopeRecipients.20"), //$NON-NLS-1$
-				JOptionPane.ERROR_MESSAGE
-			);
-			LOGGER.severe("Error abriendo el certificado: " + e);//$NON-NLS-1$
-			return;
-	    }
-	    catch (final Exception e) {
-	        LOGGER.severe("No se ha podido abrir el almacen de certificados: " + e); //$NON-NLS-1$
-	        AOUIFactory.showErrorMessage(
-				this.dialog,
-				SimpleAfirmaMessages.getString("DigitalEnvelopeRecipients.19"), //$NON-NLS-1$
-				SimpleAfirmaMessages.getString("DigitalEnvelopeRecipients.20"), //$NON-NLS-1$
-				JOptionPane.ERROR_MESSAGE
-			);
-	        return;
-	    }
+    	final AOKeyStoreManager keyStoreManager = SimpleAfirma.getAOKeyStoreManager();
+    	if (keyStoreManager == null) {
+    		JOptionPane.showMessageDialog(
+    				this,
+    				SimpleAfirmaMessages.getString("DigitalEnvelopePresentation.11"), //$NON-NLS-1$
+    				SimpleAfirmaMessages.getString("DigitalEnvelopePresentation.12"), //$NON-NLS-1$
+    				JOptionPane.WARNING_MESSAGE);
+    		return;
+    	}
 
         // Solo permitimos usar certificados de firma como remitentes
         final List<CertificateFilter> filtersList = new ArrayList<>();
@@ -445,7 +388,7 @@ public class DigitalEnvelopeSender extends JPanel {
     	setCertificateDialogOpenned(false);
 
     	// Mostramos el alias del certificado
-    	this.senderTextField.setText(keyStoreDialog.getSelectedAlias());
+    	showSenderCertAlias();
 
         enableButtons(this.senderPrivateKeyEntry != null);
     }

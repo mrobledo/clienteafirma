@@ -118,9 +118,8 @@ public final class SimpleKeyStoreManager {
         // Probamos antes si instancia el almacen prioritario, y si instancia, lo usamos directamente
         final AOKeyStore pks = AOKeyStore.getKeyStore(preferedKeyStore);
         if (pks != null) {
-        	AOKeyStoreManager ksm = null;
     		try {
-    			 ksm = getKeyStoreManager(
+    			 return getKeyStoreManager(
     				pks,
     				parent
     			);
@@ -130,8 +129,6 @@ public final class SimpleKeyStoreManager {
         			"No se ha podido inicializar el almacen de claves prioritario: " + e //$NON-NLS-1$
     			);
             }
-
-    		return ksm;
         }
 
         // No ha funcionado el prioritario, obtenemos el por defecto
