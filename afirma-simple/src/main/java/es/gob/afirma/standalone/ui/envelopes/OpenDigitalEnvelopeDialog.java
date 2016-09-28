@@ -23,15 +23,13 @@ import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.swing.DefaultComboBoxModel;
+import javax.security.auth.callback.PasswordCallback;
 import javax.swing.JButton;
-import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
-import javax.swing.ListModel;
 
 import es.gob.afirma.core.AOCancelledOperationException;
 import es.gob.afirma.core.misc.Platform;
@@ -45,10 +43,12 @@ import es.gob.afirma.keystores.AOKeyStoreManager;
 import es.gob.afirma.keystores.AOKeyStoreManagerException;
 import es.gob.afirma.keystores.AOKeyStoreManagerFactory;
 import es.gob.afirma.keystores.AOKeystoreAlternativeException;
-import es.gob.afirma.keystores.KeyStoreConfiguration;
 import es.gob.afirma.keystores.filters.DecipherCertificateFilter;
+import es.gob.afirma.keystores.temd.TemdKeyStoreManager;
+import es.gob.afirma.keystores.temd.TimedPersistentCachePasswordCallback;
 import es.gob.afirma.standalone.AutoFirmaUtil;
 import es.gob.afirma.standalone.LookAndFeelManager;
+import es.gob.afirma.standalone.SimpleAfirma;
 import es.gob.afirma.standalone.SimpleAfirmaMessages;
 import es.gob.afirma.standalone.ui.preferences.PreferencesManager;
 
@@ -61,14 +61,13 @@ public class OpenDigitalEnvelopeDialog extends JDialog implements KeyListener {
 	private static final long serialVersionUID = -5949140119173965513L;
 	static final Logger LOGGER = Logger.getLogger("es.gob.afirma"); //$NON-NLS-1$
 	private static final int PREFERRED_WIDTH = 600;
-	private static final int PREFERRED_HEIGHT = 200;
+	private static final int PREFERRED_HEIGHT = 140;
 
 	private final JTextField selectedFilePath = new JTextField();
 	void setSelectedFilePath(final String path) {
 		this.selectedFilePath.setText(path);
 	}
 
-	private final JComboBox<KeyStoreConfiguration> comboBoxRecipients = new JComboBox<>();
 	private final JTextField senderTextField = new JTextField();
 
 	private final JButton examineFileButton = new JButton(SimpleAfirmaMessages.getString("OpenDigitalEnvelope.2")); //$NON-NLS-1$
@@ -78,10 +77,8 @@ public class OpenDigitalEnvelopeDialog extends JDialog implements KeyListener {
 
 	private boolean certificateDialogOpenned = false;
 
-	/** XXX: Hay que reorganizar todo el codigo para obtener el envelopType de forma mas elegante */
 	private String envelopType = null;
 
-	/** XXX: Hay que reorganizar todo el codigo para obtener el certificado de firma de forma mas elegante */
 	private X509Certificate signingCert = null;
 
 
@@ -231,12 +228,6 @@ public class OpenDigitalEnvelopeDialog extends JDialog implements KeyListener {
 			}
 		});
 
-        // Eleccion del certificado
-        final JLabel labelCombo = new JLabel(SimpleAfirmaMessages.getString("OpenDigitalEnvelope.24")); //$NON-NLS-1$
-        labelCombo.setLabelFor(this.comboBoxRecipients);
-        this.comboBoxRecipients.setModel(new DefaultComboBoxModel<>(EnvelopesUtils.getKeyStoresToUnwrap()));
- 		this.comboBoxRecipients.addKeyListener(this);
-
 		// Area de texto con el alias del certificado seleccionado
 		final JLabel labelText = new JLabel(SimpleAfirmaMessages.getString("DigitalEnvelopeSender.18")); //$NON-NLS-1$
 		labelText.setLabelFor(this.senderTextField);
@@ -292,18 +283,10 @@ public class OpenDigitalEnvelopeDialog extends JDialog implements KeyListener {
         add(this.examineFileButton, c);
         c.gridx = 0;
         c.gridy++;
-        c.insets = new Insets(11, 11, 0, 11);
-		add(labelCombo, c);
-		c.gridy++;
-		c.insets = new Insets(5, 10, 0, 11);
-		c.weightx = 1.0;
-		add(this.comboBoxRecipients, c);
-		c.gridy++;
+		c.gridwidth = GridBagConstraints.REMAINDER;
 		c.insets = new Insets(11, 11, 0, 11);
         c.anchor = GridBagConstraints.PAGE_END;
         add(panel, c);
-
- 		loadConfiguration();
 
         enableOpenbutton();
 	}
@@ -323,11 +306,17 @@ public class OpenDigitalEnvelopeDialog extends JDialog implements KeyListener {
 	 */
 	public boolean open() {
 
-		saveConfiguration();
-
 		final PrivateKeyEntry pke;
         try {
             pke = getPrivateKeyEntry();
+        }
+        catch (final UninitializedKeyStoreException e) {
+        	JOptionPane.showMessageDialog(
+    				this,
+    				SimpleAfirmaMessages.getString("OpenDigitalEnvelope.27"), //$NON-NLS-1$
+    				SimpleAfirmaMessages.getString("OpenDigitalEnvelope.28"), //$NON-NLS-1$
+    				JOptionPane.WARNING_MESSAGE);
+    		return false;
         }
         catch (final UnrecoverableEntryException e) {
         	LOGGER.warning("Error de contrasena: " + e); //$NON-NLS-1$
@@ -464,50 +453,19 @@ public class OpenDigitalEnvelopeDialog extends JDialog implements KeyListener {
 	 * @throws AOKeyStoreManagerException
 	 * @throws AOKeystoreAlternativeException
 	 * @throws IOException
+	 * @throws UninitializedKeyStoreException
 	 */
-	private PrivateKeyEntry getPrivateKeyEntry() throws AOCertificatesNotFoundException, KeyStoreException, NoSuchAlgorithmException, UnrecoverableEntryException, AOKeyStoreManagerException, AOKeystoreAlternativeException, IOException {
+	private PrivateKeyEntry getPrivateKeyEntry() throws AOCertificatesNotFoundException, KeyStoreException, NoSuchAlgorithmException, UnrecoverableEntryException, AOKeyStoreManagerException, AOKeystoreAlternativeException, IOException, UninitializedKeyStoreException {
 
 		setCertificateDialogOpenned(true);
 
-    	String[] filter;
-    	final AOKeyStoreManager keyStoreManager;
-    	final KeyStoreConfiguration kc = (KeyStoreConfiguration) this.comboBoxRecipients.getSelectedItem();
-    	final AOKeyStore ao = kc.getType();
-    	String lib = null;
-    	if (ao == AOKeyStore.PKCS12 || ao == AOKeyStore.SINGLE) {
-    		if (ao == AOKeyStore.PKCS12) {
-    			filter = new String[] {"p12", "pfx"};  //$NON-NLS-1$//$NON-NLS-2$
-    		}
-    		else {
-    			filter = new String[] { "cer", "p7b", "p7s"}; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-    		}
-    		final File keystorePath = EnvelopesUtils.addFileSelected(filter, this.comboBoxRecipients, this);
-    		if (keystorePath == null) {
-    			throw new AOCancelledOperationException();
-    		}
-    		lib = keystorePath.getAbsolutePath();
-    	}
-    	else if (ao == AOKeyStore.PKCS11) {
-    		filter = new String[] {"dll", "so"};  //$NON-NLS-1$//$NON-NLS-2$
-    		final File keystorePath = EnvelopesUtils.addFileSelected(filter, this.comboBoxRecipients, this);
-    		if (keystorePath == null) {
-    			throw new AOCancelledOperationException();
-    		}
-    		lib = keystorePath.getAbsolutePath();
+    	final AOKeyStoreManager keyStoreManager = SimpleAfirma.getAOKeyStoreManager();
+
+    	if (keyStoreManager == null) {
+    		throw new UninitializedKeyStoreException("El almacen configurado aun no se ha incializado"); //$NON-NLS-1$
     	}
 
-    	try {
-    		keyStoreManager = AOKeyStoreManagerFactory.getAOKeyStoreManager(
-    			ao,
-    			lib,
-    			"default", //$NON-NLS-1$
-    			ao.getStorePasswordCallback(this),
-    			this
-    			);
-    	}
-    	catch (final IOException e) {
-    		throw new UnrecoverableEntryException("No se pudo abrir el almacen: " + e); //$NON-NLS-1$
-    	}
+    	keyStoreManager.setParentComponent(this);
 
     	final AOKeyStoreDialog dialog = new AOKeyStoreDialog(
 			keyStoreManager,
@@ -520,10 +478,71 @@ public class OpenDigitalEnvelopeDialog extends JDialog implements KeyListener {
 		);
     	dialog.show();
 
-    	keyStoreManager.setParentComponent(this);
-    	return keyStoreManager.getKeyEntry(
-			dialog.getSelectedAlias()
-		);
+    	// IMPORTANTE: Si se trata de la tarjeta de defensa, como sabemos que no se puede descifrar
+    	// los datos desde su PKCS#11, buscaremos ese mismo certificado en el almacen por defecto
+    	// para cargar la clave desde ahi
+    	if (keyStoreManager instanceof TemdKeyStoreManager) {
+    		final X509Certificate selectedCert = keyStoreManager.getCertificate(dialog.getSelectedAlias());
+    		final PrivateKeyEntry pke = getKeyEntryFromDefaultKeyStore(selectedCert);
+    		if (pke != null) {
+    			return pke;
+    		}
+    	}
+
+    	return keyStoreManager.getKeyEntry(dialog.getSelectedAlias());
+	}
+
+	/**
+	 * Devuelve la referencia a la claves de un certificado igual al indicado pero alojado en el
+	 * almac&eacute;n por defecto configurado.
+	 * @param originalCert Certificado que se desea seleccionar.
+	 * @return Referencia a las claves del certificado en el almac&eacute;n por defecto o {@code null},
+	 * si no se pudo obtener.
+	 */
+	private PrivateKeyEntry getKeyEntryFromDefaultKeyStore(final X509Certificate originalCert) {
+
+		final PasswordCallback psc = AOKeyStore.TEMD.getStorePasswordCallback(this);
+    	if (psc instanceof TimedPersistentCachePasswordCallback) {
+    		((TimedPersistentCachePasswordCallback) psc).setSecondsToClose(
+    				60 *
+    				Long.parseLong(
+							PreferencesManager.get(
+    							PreferencesManager.PREFERENCE_KEYSTORE_CLOSE_KEYSTORE_TIMEOUT,
+    							Integer.toString(TimedPersistentCachePasswordCallback.INFINITE)
+    						)
+					)
+    		);
+    	}
+    	AOKeyStoreManager systemKsm;
+		try {
+			systemKsm = AOKeyStoreManagerFactory.getAOKeyStoreManager(
+					AOKeyStore.WINDOWS,
+					null,
+					null,
+					psc,
+					this);
+		} catch (final Exception e) {
+			LOGGER.warning("No se pudo cargar el almacen por defecto para usar las claves desde ahi. " //$NON-NLS-1$
+					+ "Se utilizara el de la tarjeta: " + e); //$NON-NLS-1$
+			return null;
+		}
+
+    	for (final String alias : systemKsm.getAliases()) {
+    		final X509Certificate cert = systemKsm.getCertificate(alias);
+    		if (cert.getSerialNumber().equals(originalCert.getSerialNumber()) &&
+    				Arrays.equals(cert.getKeyUsage(), originalCert.getKeyUsage()) &&
+    				cert.getIssuerX500Principal().equals(originalCert.getIssuerX500Principal())) {
+    			try {
+					return systemKsm.getKeyEntry(alias);
+				} catch (final Exception e) {
+					LOGGER.warning("No se pudo extraer la referencia las claves del certificado del almacen por defecto. " //$NON-NLS-1$
+							+ "Se utilizara el de la tarjeta: " + e); //$NON-NLS-1$
+					break;
+				}
+    		}
+    	}
+
+    	return null;
 	}
 
 	/** {@inheritDoc} */
@@ -553,34 +572,6 @@ public class OpenDigitalEnvelopeDialog extends JDialog implements KeyListener {
 	}
 
 	/**
-	 * Guarda el tipo de almac&eacute;n configurado para futuros usos.
-	 */
-	private void saveConfiguration() {
-
-		final AOKeyStore ks = ((KeyStoreConfiguration) this.comboBoxRecipients.getSelectedItem()).getType();
-		PreferencesManager.put(PreferencesManager.PREFERENCE_ENVELOP_PRIVATE_KEYSTORE, ks.getName());
-	}
-
-	/**
-	 * Carga el tipo de almac&eacute;n previamente configurado.
-	 */
-	private void loadConfiguration() {
-
-		final String ksName = PreferencesManager.get(PreferencesManager.PREFERENCE_ENVELOP_PRIVATE_KEYSTORE, null);
-
-		if (ksName != null) {
-			final int itemIndex = -1;
-			final ListModel<KeyStoreConfiguration> model = this.comboBoxRecipients.getModel();
-			for (int i = 0; i < model.getSize() && itemIndex < 0; i++) {
-				if (ksName.equals(model.getElementAt(i).getType().getName())) {
-					this.comboBoxRecipients.setSelectedIndex(i);
-					break;
-				}
-			}
-		}
-	}
-
-	/**
 	 * Recupera el tipo de envoltorio.
 	 * @return Tipo de envoltorio.
 	 */
@@ -594,5 +585,18 @@ public class OpenDigitalEnvelopeDialog extends JDialog implements KeyListener {
 	 */
 	public X509Certificate getSigningCert() {
 		return this.signingCert;
+	}
+
+	/**
+	 * Excepci&oacute;n que se&ntilde;ala que el almac&eacute;n principal configurado a&uacute;n no est&aacute;
+	 * cargado.
+	 */
+	private class UninitializedKeyStoreException extends Exception {
+		/** Serial Id. */
+		private static final long serialVersionUID = -8158759834892078547L;
+
+		public UninitializedKeyStoreException(final String msg) {
+			super(msg);
+		}
 	}
 }
