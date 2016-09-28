@@ -20,8 +20,8 @@ import java.security.Provider;
 import java.security.Security;
 import java.security.UnrecoverableEntryException;
 import java.security.cert.X509Certificate;
-import java.util.Collection;
 import java.util.Collections;
+import java.util.Map;
 
 import javax.security.auth.callback.PasswordCallback;
 
@@ -344,9 +344,8 @@ public final class CAPIKeyStoreManager extends AOKeyStoreManager {
 
     		field = keyStoreVeritable.getClass().getEnclosingClass().getDeclaredField("entries"); //$NON-NLS-1$
     		field.setAccessible(true);
-    		final Collection<?> entries = (Collection<?>) field.get(keyStoreVeritable);
-
-    		for (final Object entry : entries) {
+    		final Map<?, ?> entries = (Map<?,?>) field.get(keyStoreVeritable);
+    		for (final Object entry : entries.values()) {
     			field = entry.getClass().getDeclaredField("certChain"); //$NON-NLS-1$
     			field.setAccessible(true);
     			certificates = (X509Certificate[]) field.get(entry);
