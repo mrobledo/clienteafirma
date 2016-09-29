@@ -94,9 +94,9 @@ final class Enveloper {
         for (int i = 0; i < dialog.getEnvelopeData().getCertificateRecipientsList().size(); i++) {
             certs[i] = (X509Certificate) dialog.getEnvelopeData().getCertificateRecipientsList().get(i).getCertificate();
 
-            System.out.println("CN: " + AOUtil.getCN(certs[i])); //$NON-NLS-1$
+            System.out.println("CN: " + AOUtil.getCN(certs[i]));
             for (final boolean b : certs[i].getKeyUsage()) {
-            	System.out.print(", " + b); //$NON-NLS-1$
+            	System.out.print(", " + b);
             }
             System.out.println();
         }
