@@ -12,7 +12,6 @@ import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 
 import es.gob.afirma.cert.certvalidation.CertificateVerifierFactory;
-import es.gob.afirma.cert.certvalidation.CertificateVerifierFactoryException;
 import es.gob.afirma.cert.certvalidation.ValidationResult;
 import es.gob.afirma.core.misc.AOUtil;
 import es.gob.afirma.core.misc.Base64;
@@ -45,28 +44,7 @@ public final class CertValidationUi {
 			currentComponent.setCursor(new Cursor(Cursor.WAIT_CURSOR));
 		}
 
-		final ValidationResult vr;
-		try {
-			vr = CertificateVerifierFactory.getCertificateVerifier(certificate).validateCertificate();
-		}
-		catch (final CertificateVerifierFactoryException e) {
-			LOGGER.severe(
-				"No se conocen mecanismos de validacion para los certificados de este emisor (" + certificate.getIssuerX500Principal() + "): " + e //$NON-NLS-1$ //$NON-NLS-2$
-			);
-			AOUIFactory.showErrorMessage(
-				icon,
-				SimpleAfirmaMessages.getString("MenuValidation.9"), //$NON-NLS-1$
-				SimpleAfirmaMessages.getString("MenuValidation.5"), //$NON-NLS-1$
-				JOptionPane.ERROR_MESSAGE
-			);
-			if (parent != null) {
-				parent.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-			}
-			else if (currentComponent != null) {
-				currentComponent.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-			}
-			return;
-		}
+		final ValidationResult vr = CertificateVerifierFactory.getCertificateVerifier(certificate).validateCertificate();
 
 		if (!ValidationResult.VALID.equals(vr)) {
 			AOUIFactory.showErrorMessage(
