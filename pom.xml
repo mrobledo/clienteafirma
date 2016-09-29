@@ -22,6 +22,7 @@
 		<module>afirma-crypto-validation</module>
 		<module>afirma-local-batch-sign</module>
 		<module>afirma-simple</module>
+		<module>afirma-trayIcon</module>
 	</modules>
 	
 	<repositories>
