@@ -6,12 +6,10 @@ import static es.gob.afirma.standalone.ui.preferences.PreferencesManager.PREFERE
 import static es.gob.afirma.standalone.ui.preferences.PreferencesManager.PREFERENCE_GENERAL_DEFAULT_FORMAT_OOXML;
 import static es.gob.afirma.standalone.ui.preferences.PreferencesManager.PREFERENCE_GENERAL_DEFAULT_FORMAT_PDF;
 import static es.gob.afirma.standalone.ui.preferences.PreferencesManager.PREFERENCE_GENERAL_DEFAULT_FORMAT_XML;
-import static es.gob.afirma.standalone.ui.preferences.PreferencesManager.PREFERENCE_GENERAL_HIDE_DNIE_START_SCREEN;
 import static es.gob.afirma.standalone.ui.preferences.PreferencesManager.PREFERENCE_GENERAL_OMIT_ASKONCLOSE;
 import static es.gob.afirma.standalone.ui.preferences.PreferencesManager.PREFERENCE_GENERAL_SHOW_ICON_INIT;
 import static es.gob.afirma.standalone.ui.preferences.PreferencesManager.PREFERENCE_GENERAL_SIGNATURE_ALGORITHM;
 import static es.gob.afirma.standalone.ui.preferences.PreferencesManager.PREFERENCE_GENERAL_UPDATECHECK;
-import static es.gob.afirma.standalone.ui.preferences.PreferencesManager.PREFERENCE_GENERAL_USEANALYTICS;
 
 import java.awt.Container;
 import java.awt.Cursor;
@@ -75,11 +73,7 @@ final class PreferencesPanelGeneral extends JPanel {
 
 	private final JCheckBox avoidAskForClose = new JCheckBox(SimpleAfirmaMessages.getString("PreferencesPanel.36")); //$NON-NLS-1$
 
-	private final JCheckBox hideDniStartScreen = new JCheckBox(SimpleAfirmaMessages.getString("PreferencesPanel.81")); //$NON-NLS-1$
-
 	private final JCheckBox checkForUpdates = new JCheckBox(SimpleAfirmaMessages.getString("PreferencesPanel.87")); //$NON-NLS-1$
-
-	private final JCheckBox sendAnalytics = new JCheckBox(SimpleAfirmaMessages.getString("PreferencesPanel.89")); //$NON-NLS-1$
 
 	private final DisposableInterface disposableInterface;
 	DisposableInterface getDisposableInterface() {
@@ -101,10 +95,8 @@ final class PreferencesPanelGeneral extends JPanel {
 		// Opciones varias
 		PreferencesManager.put(PREFERENCE_GENERAL_SIGNATURE_ALGORITHM, this.signarureAlgorithms.getSelectedItem().toString());
 		PreferencesManager.putBoolean(PREFERENCE_GENERAL_OMIT_ASKONCLOSE, this.avoidAskForClose.isSelected());
-		PreferencesManager.putBoolean(PREFERENCE_GENERAL_HIDE_DNIE_START_SCREEN, this.hideDniStartScreen.isSelected());
 		PreferencesManager.putBoolean(PREFERENCE_GENERAL_SHOW_ICON_INIT, this.showIconInit.isSelected());
 		PreferencesManager.putBoolean(PREFERENCE_GENERAL_UPDATECHECK, this.checkForUpdates.isSelected());
-		PreferencesManager.putBoolean(PREFERENCE_GENERAL_USEANALYTICS, this.sendAnalytics.isSelected());
 
 		// Formatos por defecto
 		PreferencesManager.put(PREFERENCE_GENERAL_DEFAULT_FORMAT_BIN, this.binFilesCombo.getSelectedItem().toString());
@@ -123,9 +115,7 @@ final class PreferencesPanelGeneral extends JPanel {
 		this.signarureAlgorithms.setSelectedItem(PreferencesManager.get(PREFERENCE_GENERAL_SIGNATURE_ALGORITHM, "SHA256withRSA")); //$NON-NLS-1$
 		this.showIconInit.setSelected(PreferencesManager.getBoolean(PREFERENCE_GENERAL_SHOW_ICON_INIT, false));
 		this.avoidAskForClose.setSelected(PreferencesManager.getBoolean(PREFERENCE_GENERAL_OMIT_ASKONCLOSE, false));
-		this.hideDniStartScreen.setSelected(PreferencesManager.getBoolean(PREFERENCE_GENERAL_HIDE_DNIE_START_SCREEN, false));
 		this.checkForUpdates.setSelected(PreferencesManager.getBoolean(PREFERENCE_GENERAL_UPDATECHECK, true));
-		this.sendAnalytics.setSelected(PreferencesManager.getBoolean(PREFERENCE_GENERAL_USEANALYTICS, true));
 
 		// Formatos por defecto
 		this.pdfFilesCombo.setSelectedItem(PreferencesManager.get(PREFERENCE_GENERAL_DEFAULT_FORMAT_PDF, PADES));
@@ -284,13 +274,11 @@ final class PreferencesPanelGeneral extends JPanel {
 		panel.add(importConfigFromFileButton);
 		panel.add(restoreConfigFromFileButton);
 
-		// TODO: Descomentar una vez se entregue
 		signConfigPanel.add(panel, signConstraint);
 
 		signConstraint.insets = new Insets(5, 7, 3, 7);
 		signConstraint.anchor = GridBagConstraints.LINE_START;
 
-		// TODO: Descomentar una vez se entregue
 		if (Platform.OS.WINDOWS.equals(Platform.getOS())) {
 			signConstraint.gridy++;
 			signConfigPanel.add(this.showIconInit, signConstraint);
@@ -308,16 +296,6 @@ final class PreferencesPanelGeneral extends JPanel {
 
 		signConstraint.gridy++;
 
-		this.hideDniStartScreen.getAccessibleContext().setAccessibleDescription(
-			SimpleAfirmaMessages.getString("PreferencesPanel.82") //$NON-NLS-1$
-		);
-		this.hideDniStartScreen.setMnemonic('D');
-		this.hideDniStartScreen.addItemListener(modificationListener);
-		this.hideDniStartScreen.addKeyListener(keyListener);
-		signConfigPanel.add(this.hideDniStartScreen, signConstraint);
-
-		signConstraint.gridy++;
-
 		this.checkForUpdates.getAccessibleContext().setAccessibleDescription(
 			SimpleAfirmaMessages.getString("PreferencesPanel.88") //$NON-NLS-1$
 		);
@@ -325,16 +303,6 @@ final class PreferencesPanelGeneral extends JPanel {
 		this.checkForUpdates.addItemListener(modificationListener);
 		this.checkForUpdates.addKeyListener(keyListener);
 		signConfigPanel.add(this.checkForUpdates, signConstraint);
-
-		signConstraint.gridy++;
-
-		this.sendAnalytics.getAccessibleContext().setAccessibleDescription(
-			SimpleAfirmaMessages.getString("PreferencesPanel.90") //$NON-NLS-1$
-		);
-		this.sendAnalytics.setMnemonic('t');
-		this.sendAnalytics.addItemListener(modificationListener);
-		this.sendAnalytics.addKeyListener(keyListener);
-		signConfigPanel.add(this.sendAnalytics, signConstraint);
 
 		add(signConfigPanel, gbc);
 
