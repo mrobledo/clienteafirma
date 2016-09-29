@@ -35,6 +35,7 @@ import es.gob.afirma.signers.pades.PdfUtil;
 import es.gob.afirma.signers.pades.PdfUtil.SignatureField;
 import es.gob.afirma.signers.xades.AOFacturaESigner;
 import es.gob.afirma.signers.xades.AOXAdESSigner;
+import es.gob.afirma.standalone.SimpleAfirma;
 import es.gob.afirma.standalone.SimpleAfirmaMessages;
 import es.gob.afirma.standalone.ui.pdf.PdfEmptySignatureFieldsChooserDialog;
 import es.gob.afirma.standalone.ui.pdf.SignPdfDialog;
@@ -54,7 +55,7 @@ final class SignPanelSignTask extends SwingWorker<Void, Void> {
 	}
 
 	private PrivateKeyEntry getPrivateKeyEntry() throws AOCertificatesNotFoundException, KeyStoreException, NoSuchAlgorithmException, UnrecoverableEntryException {
-		final AOKeyStoreManager ksm = this.signPanel.getSimpleAfirma().getAOKeyStoreManager();
+		final AOKeyStoreManager ksm = SimpleAfirma.getAOKeyStoreManager();
     	final AOKeyStoreDialog dialog = new AOKeyStoreDialog(
 			ksm,
 			this.signPanel,

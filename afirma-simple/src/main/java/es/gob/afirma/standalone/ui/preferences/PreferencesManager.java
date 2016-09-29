@@ -73,12 +73,6 @@ public final class PreferencesManager {
 	 * esta comprobaci&oacute;n. */
 	public static final String PREFERENCE_GENERAL_UPDATECHECK = "checkForUpdates"; //$NON-NLS-1$
 
-	/** Env&iacute;a estad&iacute;sticas de uso.
-	 * Un valor de <code>true</code> en esta preferencia hace que, al arrancar, la aplicaci&oacute;n env&iacute;e
-	 * de forma an&oacute;nima estad&iacute;sticas de uso a <i>Google Analytics</i>. Un valor de <code>false</code>
-	 * har&aacute; que no se env&iacute;e ning&uacute;n dato. */
-	public static final String PREFERENCE_GENERAL_USEANALYTICS = "useAnalytics"; //$NON-NLS-1$
-
 	/** Algoritmo de firma.
 	 * Esta preferencia debe tener uno de estos valores:
 	 * <ul>

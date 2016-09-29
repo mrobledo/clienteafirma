@@ -7,6 +7,7 @@ import es.gob.afirma.core.signers.AOSigner;
 import es.gob.afirma.signers.pades.AOPDFSigner;
 import es.gob.afirma.signers.xades.AOFacturaESigner;
 import es.gob.afirma.signers.xades.AOXAdESSigner;
+import es.gob.afirma.standalone.ui.preferences.CertificationLevelResources;
 import es.gob.afirma.standalone.ui.preferences.PreferencesManager;
 
 final class ExtraParamsHelper {
@@ -214,6 +215,20 @@ final class ExtraParamsHelper {
     			PreferencesManager.get(PreferencesManager.PREFERENCE_PADES_FORMAT, AOSignConstants.PADES_SUBFILTER_BASIC)
 			);
         }
+
+        // Nivel de certificacion de firma firma
+        if (PreferencesManager.get(
+        		PreferencesManager.PREFERENCE_PADES_CERTIFICATION_LEVEL,
+        		null) != null) {
+
+        	p.put(
+        		"certificationLevel", //$NON-NLS-1$
+        		PreferencesManager.get(PreferencesManager.PREFERENCE_PADES_CERTIFICATION_LEVEL,
+        				Integer.toString(CertificationLevelResources.ORDINARY.getIndex()))
+    		);
+
+        }
+
 		return p;
 	}
 

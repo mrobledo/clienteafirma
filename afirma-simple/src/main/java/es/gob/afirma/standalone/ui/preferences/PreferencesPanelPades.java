@@ -71,7 +71,7 @@ final class PreferencesPanelPades extends JPanel {
     final JButton configureTimeStampOptionsButton = new JButton(SimpleAfirmaMessages.getString("PreferencesPanel.119")); //$NON-NLS-1$
 
 	private final JComboBox<CertificationLevelResources> certificationLevel = new JComboBox<>(
-		CertificationLevelResources.getAllCertificationLevelResources()
+		CertificationLevelResources.getCertificationLevelsAllowed()
 	);
 	JComboBox<CertificationLevelResources> getCertificationLevel() {
 		return this.certificationLevel;

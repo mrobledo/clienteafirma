@@ -2,7 +2,7 @@ package es.gob.afirma.standalone.ui.preferences;
 
 import es.gob.afirma.standalone.SimpleAfirmaMessages;
 
-enum CertificationLevelResources {
+public enum CertificationLevelResources {
 
 		ORDINARY(			SimpleAfirmaMessages.getString("CertificationLevelResources.0"), 	0), //$NON-NLS-1$
 		AUTHOR(				SimpleAfirmaMessages.getString("CertificationLevelResources.1"), 	1), //$NON-NLS-1$
@@ -23,7 +23,7 @@ enum CertificationLevelResources {
 			return this.certLevelName;
 		}
 
-		int getIndex() {
+		public int getIndex() {
 			return this.certLevelIndex;
 		}
 
@@ -44,13 +44,10 @@ enum CertificationLevelResources {
 			}
 		}
 
-		static CertificationLevelResources[] getAllCertificationLevelResources() {
+		static CertificationLevelResources[] getCertificationLevelsAllowed() {
 			return new CertificationLevelResources[] {
 				ORDINARY,
-				AUTHOR,
-				AUTHOR_CERTIFICATED,
-				CERTIFICATED,
-				ASK_BEFORE_SIGN
+				CERTIFICATED
 			};
 		}
 	}
