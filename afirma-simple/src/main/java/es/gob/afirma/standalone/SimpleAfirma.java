@@ -80,7 +80,6 @@ public final class SimpleAfirma implements PropertyChangeListener, WindowListene
 	private static final int DEFAULT_WINDOW_WIDTH = 780;
 	private static final int DEFAULT_WINDOW_HEIGHT = 550;
 
-	private static final String GOOGLE_ANALYTICS_TRACKING_CODE = "UA-41615516-4"; //$NON-NLS-1$
 	private static final String IP_DISCOVERY_AUTOMATION = "http://checkip.amazonaws.com"; //$NON-NLS-1$
 
 	private static final String SYSTEM_PROPERTY_DEBUG_FILE = "afirma_debug"; //$NON-NLS-1$

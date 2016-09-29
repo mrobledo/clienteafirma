@@ -310,7 +310,7 @@ public final class SignPanel extends JPanel {
 
         this.currentFile = file;
 
-        if (this.saf.isKeyStoreReady()) {
+        if (SimpleAfirma.isKeyStoreReady()) {
             setSignCommandEnabled(true);
         }
         else {

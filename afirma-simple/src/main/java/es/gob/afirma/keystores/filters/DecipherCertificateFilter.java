@@ -43,7 +43,7 @@ public final class DecipherCertificateFilter extends CertificateFilter {
 	public String[] matches(final String[] aliases, final KeyStoreManager ksm) {
 
 		X509Certificate cert;
-		final Set<String> filteredCerts = new HashSet<String>();
+		final Set<String> filteredCerts = new HashSet<>();
 		for (final String aliase : aliases) {
 			cert = ksm.getCertificate(aliase);
 			if (cert == null) {

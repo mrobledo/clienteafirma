@@ -40,9 +40,7 @@ import es.gob.afirma.keystores.AOCertificatesNotFoundException;
 import es.gob.afirma.keystores.AOKeyStore;
 import es.gob.afirma.keystores.AOKeyStoreDialog;
 import es.gob.afirma.keystores.AOKeyStoreManager;
-import es.gob.afirma.keystores.AOKeyStoreManagerException;
 import es.gob.afirma.keystores.AOKeyStoreManagerFactory;
-import es.gob.afirma.keystores.AOKeystoreAlternativeException;
 import es.gob.afirma.keystores.filters.DecipherCertificateFilter;
 import es.gob.afirma.keystores.temd.TemdKeyStoreManager;
 import es.gob.afirma.keystores.temd.TimedPersistentCachePasswordCallback;
@@ -443,19 +441,9 @@ public class OpenDigitalEnvelopeDialog extends JDialog implements KeyListener {
 		return true;
 	}
 
-	/**
-	 * Recupera la entrada de un certificado seleccionado por el usuario para la apertura del sobre.
-	 * @return Entrada con el certificado y la referencia a su clave privada.
-	 * @throws AOCertificatesNotFoundException
-	 * @throws KeyStoreException
-	 * @throws NoSuchAlgorithmException
-	 * @throws UnrecoverableEntryException
-	 * @throws AOKeyStoreManagerException
-	 * @throws AOKeystoreAlternativeException
-	 * @throws IOException
-	 * @throws UninitializedKeyStoreException
-	 */
-	private PrivateKeyEntry getPrivateKeyEntry() throws AOCertificatesNotFoundException, KeyStoreException, NoSuchAlgorithmException, UnrecoverableEntryException, AOKeyStoreManagerException, AOKeystoreAlternativeException, IOException, UninitializedKeyStoreException {
+	/** Recupera la entrada de un certificado seleccionado por el usuario para la apertura del sobre.
+	 * @return Entrada con el certificado y la referencia a su clave privada. */
+	private PrivateKeyEntry getPrivateKeyEntry() throws AOCertificatesNotFoundException, KeyStoreException, NoSuchAlgorithmException, UnrecoverableEntryException, UninitializedKeyStoreException {
 
 		setCertificateDialogOpenned(true);
 
