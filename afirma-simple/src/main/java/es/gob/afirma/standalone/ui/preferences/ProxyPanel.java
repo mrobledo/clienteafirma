@@ -278,6 +278,16 @@ final class ProxyPanel extends JPanel{
 				"" //$NON-NLS-1$
 			)
 		);
+		this.usernameProxy.setText(PreferencesManager.get(
+				PreferencesManager.PREFERENCE_GENERAL_PROXY_USERNAME,
+				"" //$NON-NLS-1$
+			)
+		);
+		this.passwordProxy.setText(PreferencesManager.get(
+				PreferencesManager.PREFERENCE_GENERAL_PROXY_PASSWORD,
+				"" //$NON-NLS-1$
+			)
+		);
 		enableComponents(this.proxyCheckBox.isSelected());
 	}
 
