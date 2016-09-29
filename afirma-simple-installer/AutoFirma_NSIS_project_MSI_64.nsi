@@ -174,10 +174,15 @@ Section "Programa" sPrograma
 	WriteRegStr HKEY_CLASSES_ROOT "*\shell\afirma.signedenvelop" "Icon" "$INSTDIR\AutoFirma\AutoFirma.exe"
 	WriteRegStr HKEY_CLASSES_ROOT "*\shell\afirma.signedenvelop\command" "" "$INSTDIR\AutoFirma\AutoFirma.exe createenvelope -gui -type signed -i %1" 
 
-	;Desifrar / Abrir sobres digitales
+	;Descifrar / Abrir sobres digitales (enveloped)
  	WriteRegStr HKEY_CLASSES_ROOT ".enveloped\shell\afirma.enveloped" "" "Descifrar"
 	WriteRegStr HKEY_CLASSES_ROOT ".enveloped\shell\afirma.enveloped" "Icon" "$INSTDIR\AutoFirma\AutoFirma.exe"
 	WriteRegStr HKEY_CLASSES_ROOT ".enveloped\shell\afirma.enveloped\command" "" "$INSTDIR\AutoFirma\AutoFirma.exe openenvelope -i %1" 
+
+	;Descifrar / Abrir sobres digitales (p7m)
+ 	WriteRegStr HKEY_CLASSES_ROOT ".p7m\shell\afirma.enveloped" "" "Descifrar"
+	WriteRegStr HKEY_CLASSES_ROOT ".p7m\shell\afirma.enveloped" "Icon" "$INSTDIR\AutoFirma\AutoFirma.exe"
+	WriteRegStr HKEY_CLASSES_ROOT ".p7m\shell\afirma.enveloped\command" "" "$INSTDIR\AutoFirma\AutoFirma.exe openenvelope -i %1" 
 
 	;Verify
 	; .csig
