@@ -1,0 +1,1 @@
+Copiar aquí el JRE de Java 8 de 64 bits que se deba instalar junto con AutoFirma.
