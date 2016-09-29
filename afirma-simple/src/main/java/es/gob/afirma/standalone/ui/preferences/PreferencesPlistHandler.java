@@ -14,6 +14,8 @@ import java.util.logging.Logger;
 
 import javax.swing.JOptionPane;
 
+import xmlwise.Plist;
+import xmlwise.XmlParseException;
 import es.gob.afirma.cert.signvalidation.SignValider;
 import es.gob.afirma.cert.signvalidation.SignValiderFactory;
 import es.gob.afirma.cert.signvalidation.SignValidity;
@@ -28,8 +30,6 @@ import es.gob.afirma.core.util.tree.AOTreeModel;
 import es.gob.afirma.core.util.tree.AOTreeNode;
 import es.gob.afirma.signers.xades.AOXAdESSigner;
 import es.gob.afirma.standalone.SimpleAfirmaMessages;
-import xmlwise.Plist;
-import xmlwise.XmlParseException;
 
 /** Carga las preferencias de la aplicaci&oacute;n desde un fichero PList. */
 final class PreferencesPlistHandler {
@@ -132,7 +132,15 @@ final class PreferencesPlistHandler {
 
 		SignValidity sv = new SignValidity(SIGN_DETAIL_TYPE.UNKNOWN, null);
 		try {
-			sv = SignValiderFactory.getSignValider(configData).validate(configData);
+			final SignValider valider = SignValiderFactory.getSignValider(configData);
+			if (valider == null) {
+				LOGGER.warning(
+						"No se ha encontrado un validador compatible con el fichero de configuracion proporcionado" //$NON-NLS-1$
+					);
+			}
+			else {
+				sv = valider.validate(configData);
+			}
 		}
 		catch (final Exception e) {
 			LOGGER.severe(
@@ -141,6 +149,19 @@ final class PreferencesPlistHandler {
 		}
 		final String signMessage;
 		if (!sv.getValidity().equals(SIGN_DETAIL_TYPE.OK)) {
+
+			if (sv.getValidity().equals(SIGN_DETAIL_TYPE.UNKNOWN) || sv.getError() == null) {
+				LOGGER.severe(
+						"No se ha podido comprobar la validez de la firma" //$NON-NLS-1$
+					);
+					AOUIFactory.showErrorMessage(
+						parent,
+						SimpleAfirmaMessages.getString("PreferencesPlistHandler.9"), //$NON-NLS-1$
+						SimpleAfirmaMessages.getString("PreferencesPlistHandler.1"), //$NON-NLS-1$
+						JOptionPane.ERROR_MESSAGE
+					);
+					return;
+			}
 			switch(sv.getError()) {
 				case NO_SIGN:
 					if (ALLOW_UNSIGNED_PREFERENCES) {
@@ -296,5 +317,4 @@ final class PreferencesPlistHandler {
 			super(desc);
 		}
 	}
-
 }
