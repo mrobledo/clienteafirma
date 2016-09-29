@@ -42,11 +42,9 @@ public final class CertificateVerifierFactory {
 	}
 
 	/** Obtiene un validador para el certificado proporcionado.
-	 * @param cert Certificado a validar
-	 * @return Validador para el certificado proporcionado
-	 * @throws CertificateVerifierFactoryException Si o se conocen mecanismos de validacion
-	 *                                             para los certificados del emisor indicado.*/
-	public static CertificateVerificable getCertificateVerifier(final X509Certificate cert) throws CertificateVerifierFactoryException {
+	 * @param cert Certificado a validar.
+	 * @return Validador para el certificado proporcionado. */
+	public static CertificateVerificable getCertificateVerifier(final X509Certificate cert) {
 		if (cert == null) {
 			throw new IllegalArgumentException("El certificado no puede ser nulo"); //$NON-NLS-1$
 		}
