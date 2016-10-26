@@ -65,10 +65,11 @@ public final class CreateHashFiles extends JDialog {
 	private static final long serialVersionUID = -7224732001218823361L;
 	private static final int SIZE_WAIT = 50000000; //Tamano en bytes
 
-	private static final String[] HASH_ALGOS = new String[] { "SHA-512", //$NON-NLS-1$
-		"SHA-384", //$NON-NLS-1$
+	private static final String[] HASH_ALGOS = new String[] {
 		"SHA-256", //$NON-NLS-1$
 		"SHA-1", //$NON-NLS-1$
+		"SHA-384", //$NON-NLS-1$
+		"SHA-512" //$NON-NLS-1$
 	};
 	private final JComboBox<String> hashAlgorithms = new JComboBox<>(HASH_ALGOS);
 	private final JTextField selectedFile = new JTextField();
@@ -316,7 +317,7 @@ public final class CreateHashFiles extends JDialog {
 				xml.getBytes(),
 				SimpleAfirmaMessages.getString("CreateHashFiles.19"), //$NON-NLS-1$ ,,,
 				null,
-				AutoFirmaUtil.sfn2lfn(new File(dir)).getName() + ext,
+				AutoFirmaUtil.getCanonicalFile(new File(dir)).getName() + ext,
 				new String[] { ext },
 				SimpleAfirmaMessages.getString("CreateHashDialog.9") + " (*" + ext + ")", //$NON-NLS-1$//$NON-NLS-2$ //$NON-NLS-3$
 				parent

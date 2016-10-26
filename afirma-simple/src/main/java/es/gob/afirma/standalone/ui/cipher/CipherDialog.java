@@ -421,7 +421,7 @@ public final class CipherDialog extends JDialog implements KeyListener{
 	                        result,
 	            			SimpleAfirmaMessages.getString("CipherDialog.20"), //$NON-NLS-1$
 	            			null,
-	            			AutoFirmaUtil.sfn2lfn(new File(getTextFieldDataText())).getName() + ".cifrado", //$NON-NLS-1$
+	            			AutoFirmaUtil.getCanonicalFile(new File(getTextFieldDataText())).getName() + ".cifrado", //$NON-NLS-1$
 	                        null,
 	                        null,
 	                        this

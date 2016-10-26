@@ -229,7 +229,7 @@ final class CommandLineLauncher {
 		de.remove(de.getPanelCentral());
 		de.remove(de.getPanel());
 		de.getEnvelopeData().setEnvelopeType(type);
-		de.getEnvelopeData().setFilePath(AutoFirmaUtil.sfn2lfn(inputFile).getAbsolutePath());
+		de.getEnvelopeData().setFilePath(AutoFirmaUtil.getCanonicalFile(inputFile).getAbsolutePath());
 		de.setFilePanel(
 			new DigitalEnvelopeSelectFile(
 				de
@@ -249,7 +249,7 @@ final class CommandLineLauncher {
 			throw new CommandLineException(CommandLineMessages.getString("CommandLineLauncher.5")); //$NON-NLS-1$
 		}
 		try {
-			OpenDigitalEnvelopeDialog.startOpenDigitalEnvelopeDialog(null, AutoFirmaUtil.sfn2lfn(inputFile).getAbsolutePath());
+			OpenDigitalEnvelopeDialog.startOpenDigitalEnvelopeDialog(null, AutoFirmaUtil.getCanonicalFile(inputFile).getAbsolutePath());
 //			final OpenDigitalEnvelopeDialog oed = new OpenDigitalEnvelopeDialog(
 //				null,
 //
