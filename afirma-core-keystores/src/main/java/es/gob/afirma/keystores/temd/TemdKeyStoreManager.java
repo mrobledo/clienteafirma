@@ -49,10 +49,9 @@ public final class TemdKeyStoreManager extends AggregatedKeyStoreManager impleme
 		addKeyStoreManager(getTemdPkcs11KeyStoreManager());
 	}
 
-	/**
-	 *
-	 * @throws AOKeyStoreManagerException
-	 */
+	/** Obtiene el gestor de claves para las tarjetas TEMD.
+	 * @param pwc <code>PasswordCallback</code> para pedir el PIN de las tarjetas.
+	 * @throws AOKeyStoreManagerException Si no se puede obtener el gestor de almacenes. */
 	public TemdKeyStoreManager(final TimedPersistentCachePasswordCallback pwc) throws AOKeyStoreManagerException {
 		this.pwc = pwc;
 		System.setProperty("es.gob.afirma.keystores.DoNotReusePkcs11Provider", Boolean.TRUE.toString()); //$NON-NLS-1$
@@ -369,9 +368,7 @@ public final class TemdKeyStoreManager extends AggregatedKeyStoreManager impleme
 				AOKeyStore.PKCS11,
 				card.getLibPath(),
 				card.toString(),
-				this.// Pedimos el PIN para almacenarlo (peticion expresa del Ministerio de Defensa pese a lo
-				// inseguro de la practica).
-				pwc,
+				this.pwc, // Pedimos el PIN para almacenarlo (peticion expresa del Ministerio de Defensa pese a lo inseguro de la practica).
 				getParentComponent()
 			);
 		}
